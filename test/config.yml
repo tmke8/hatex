@@ -1,0 +1,10 @@
+source: ../test/source.hbs
+css: ../test/style.scss
+data:
+    name: Alan
+    hometown: Somewhere, TX
+    kids:
+        - name: Jimmy
+          age: 12
+        - name: Sally
+          age: 4

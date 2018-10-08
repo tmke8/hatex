@@ -1,0 +1,8 @@
+@page {
+  @top-left {
+    content: counter(page);
+  }
+  @top-right {
+    content: string(heading);
+  }
+}
