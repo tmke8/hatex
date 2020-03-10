@@ -1,5 +1,8 @@
 source: ../test/source.hbs
 css: ../test/style.scss
+title: Test document
+author: Jane Doe
+language: en-US
 data:
     name: Alan
     hometown: Somewhere, TX
