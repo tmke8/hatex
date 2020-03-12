@@ -1,5 +1,5 @@
-source: ../test/source.hbs
-css: ../test/style.scss
+source: source.hbs
+scss: style.scss
 title: Test document
 author: Jane Doe
 language: en-US

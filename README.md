@@ -1,8 +1,9 @@
-# htmltypesetting
+# Latex-like documents with HTML and CSS
 
-Usage:
+## Usage
+Install with `npm install -g .`. Then run with
 
 ```
-cd src
-node app.js ../test/config.yml
+cd test
+htmllatex config.yml
 ```
