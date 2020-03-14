@@ -1,4 +1,4 @@
-- id: KinBa15
+KinBa15:
   type: inproceedings
   title: "Adam: A Method for Stochastic Optimization"
   author: Diederik P. Kingma and Jimmy Ba

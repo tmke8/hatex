@@ -23,10 +23,21 @@ if (configFile === undefined) {
     process.exit(1)
 }
 
+// load config file
 try {
     var config = yaml.safeLoad(fs.readFileSync(configFile, 'utf8'))
 } catch (e) {
     console.log(e)
+}
+
+// load bibliography file
+var bibliography
+if (config.bibliography) {
+    try {
+        bibliography = yaml.safeLoad(fs.readFileSync(config.bibliography, 'utf8'))
+    } catch (e) {
+        console.log(e)
+    }
 }
 
 // register helpers
@@ -35,6 +46,18 @@ Handlebars.registerHelper('section', helpers.sectionHelper)
 Handlebars.registerHelper('subsection', helpers.subSectionHelper)
 Handlebars.registerHelper('makeTitle', function() {
     return new Handlebars.SafeString(`<h1 class="title">${config.title}</h1><p class="author">${config.author}</p>`)
+})
+var citeCounter = 0
+Handlebars.registerHelper('cite', function(bibKey) {
+    let citeNumber
+    if (bibliography[bibKey].citeNumber) {
+        citeNumber = bibliography[bibKey].citeNumber
+    } else {
+        citeCounter++
+        bibliography[bibKey].citeNumber = citeCounter
+        citeNumber = citeCounter
+    }
+    return new Handlebars.SafeString(`<span class="citation">[${citeNumber}]</span>`)
 })
 
 // compile handlebars file and register it as a partial (it will be included in the base template)
