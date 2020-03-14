@@ -4,6 +4,6 @@
 Install with `npm install -g .`. Then run with
 
 ```
-cd test
-htmllatex config.yml
+cd examples/test
+htmllatex config.yaml
 ```

@@ -29,31 +29,31 @@ try {
     console.log(e)
 }
 
-// compile handlebars file
-var source = fs.readFileSync(config.source, 'utf8')
-
+// register helpers
 Handlebars.registerHelper('math', helpers.mathHelper)
+Handlebars.registerHelper('section', helpers.sectionHelper)
+Handlebars.registerHelper('subsection', helpers.subSectionHelper)
 Handlebars.registerHelper('makeTitle', function() {
     return new Handlebars.SafeString(`<h1 class="title">${config.title}</h1><p class="author">${config.author}</p>`)
 })
+
+// compile handlebars file and register it as a partial (it will be included in the base template)
+var source = fs.readFileSync(config.source, 'utf8')
 var compiledSource = Handlebars.compile(source)
-
-// var content = compiledSource(config.data)
-// console.log(content)
-
-// console.log('-----------------')
-// compile SCSS file
-var sassResult = sass.renderSync({file: config.scss})
-// console.log(sassResult.css.toString())
-
-// load template file from where this script is (__dirname)
-var template_source = fs.readFileSync(path.resolve(__dirname, 'template.hbs'), 'utf8')
-
-var template = Handlebars.compile(template_source)
 Handlebars.registerPartial('content', compiledSource)
+
+// compile SCSS file and register it as a partial
+var sassResult = sass.renderSync({file: config.scss})
 Handlebars.registerPartial('css', sassResult.css.toString())
 
-var output = template(Object.assign({'title_': config.title, 'language_': config.language}, config.data))
+// load BASE template file from where this script is (__dirname) and compile it
+var base_template_source = fs.readFileSync(path.resolve(__dirname, 'template.hbs'), 'utf8')
+var base_template = Handlebars.compile(base_template_source)
+
+// apply base template
+var output = base_template(Object.assign({'title_': config.title, 'language_': config.language}, config.data))
+
+// write output
 parsedFilename = path.parse(config.source)
 var outputFile = path.join(parsedFilename.dir, parsedFilename.name + '.html')
 fs.writeFileSync(outputFile, output)

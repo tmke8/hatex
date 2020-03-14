@@ -3,6 +3,7 @@ scss: style.scss
 title: Test document
 author: Jane Doe
 language: en-US
+bibliography: bib.yaml
 data:
     name: Alan
     hometown: Somewhere, TX
