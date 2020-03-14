@@ -1,3 +1,20 @@
+muehlhauser2012intelligence:
+  type: incollection
+  title: "Intelligence explosion: Evidence and import"
+  author: Muehlhauser, Luke and Salamon, Anna
+  booktitle: Singularity hypotheses
+  pages: 15--42
+  year: 2012
+  publisher: Springer
+
+santurkar2018does:
+  type: inproceedings
+  title: How does batch normalization help optimization?
+  author: Santurkar, Shibani and Tsipras, Dimitris and Ilyas, Andrew and Madry, Aleksander
+  booktitle: Advances in Neural Information Processing Systems
+  pages: 2483--2493
+  year: 2018
+
 KinBa15:
   type: inproceedings
   title: "Adam: A Method for Stochastic Optimization"

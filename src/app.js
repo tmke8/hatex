@@ -57,28 +57,44 @@ Handlebars.registerHelper('cite', function(bibKey) {
         bibliography[bibKey].citeNumber = citeCounter
         citeNumber = citeCounter
     }
-    return new Handlebars.SafeString(`<span class="citation">[${citeNumber}]</span>`)
+    return new Handlebars.SafeString(`<a href="#citation-${citeNumber}" class="citation">[${citeNumber}]</a>`)
+})
+Handlebars.registerHelper('bibliography', function() {
+    let entries = {}
+    for (let bibKey in bibliography) {
+        entry = bibliography[bibKey]
+        if (entry.citeNumber) {
+            entries[entry.citeNumber] = entry
+        }
+    }
+    let buffer = ['<h1>Bibliography</h1><ol class="bibliography">']
+    for (let citeNumber of Object.keys(entries).sort()) {
+        entry = entries[citeNumber]
+        buffer.push(`\t<li id="citation-${citeNumber}">${entry.author}, &ldquo;${entry.title}&rdquo;, ${entry.booktitle}, ${entry.year}.`)
+    }
+    buffer.push('</ol>')
+    return new Handlebars.SafeString(buffer.join('\n'))
 })
 
 // compile handlebars file and register it as a partial (it will be included in the base template)
-var source = fs.readFileSync(config.source, 'utf8')
-var compiledSource = Handlebars.compile(source)
+let source = fs.readFileSync(config.source, 'utf8')
+let compiledSource = Handlebars.compile(source)
 Handlebars.registerPartial('content', compiledSource)
 
 // compile SCSS file and register it as a partial
-var sassResult = sass.renderSync({file: config.scss})
+let sassResult = sass.renderSync({file: config.scss})
 Handlebars.registerPartial('css', sassResult.css.toString())
 
 // load BASE template file from where this script is (__dirname) and compile it
-var base_template_source = fs.readFileSync(path.resolve(__dirname, 'template.hbs'), 'utf8')
-var base_template = Handlebars.compile(base_template_source)
+let base_template_source = fs.readFileSync(path.resolve(__dirname, 'template.hbs'), 'utf8')
+let base_template = Handlebars.compile(base_template_source)
 
 // apply base template
-var output = base_template(Object.assign({'title_': config.title, 'language_': config.language}, config.data))
+let output = base_template(Object.assign({'title_': config.title, 'language_': config.language}, config.data))
 
 // write output
 parsedFilename = path.parse(config.source)
-var outputFile = path.join(parsedFilename.dir, parsedFilename.name + '.html')
+let outputFile = path.join(parsedFilename.dir, parsedFilename.name + '.html')
 fs.writeFileSync(outputFile, output)
 
 console.log(`Success! Written to ${outputFile}`)

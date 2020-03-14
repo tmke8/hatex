@@ -1,24 +1,24 @@
 {
-  "name": "htmltypesetting",
+  "name": "hatex",
   "version": "1.0.0",
   "description": "",
   "main": "src/app.js",
   "bin": {
-    "htmllatex": "./src/app.js"
+    "hatex": "./src/app.js"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/thomkeh/htmltypesetting.git"
+    "url": "git+https://github.com/thomkeh/hatex.git"
   },
   "author": "",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/thomkeh/htmltypesetting/issues"
+    "url": "https://github.com/thomkeh/hatex/issues"
   },
-  "homepage": "https://github.com/thomkeh/htmltypesetting#readme",
+  "homepage": "https://github.com/thomkeh/hatex#readme",
   "dependencies": {
     "commander": "^4.1.1",
     "eslint": "^5.6.1",
