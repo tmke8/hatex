@@ -1,0 +1,211 @@
+<!--
+  Copyright 2018 The Distill Template Authors
+
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+-->
+<!doctype html>
+<html lang="en-US">
+<head>
+  <!-- <script src="https://distill.pub/template.v2.js"></script> -->
+  <script src="template.v2.js"></script>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta charset="utf8">
+</head>
+
+<body>
+  <!--
+  <div class="my-header"> <div class="content">
+      <a href="/" class="logo">
+        <svg viewBox="-607 419 64 64"><path d="M-573.4,478.9c-8,0-14.6-6.4-14.6-14.5s14.6-25.9,14.6-40.8c0,14.9,14.6,32.8,14.6,40.8S-565.4,478.9-573.4,478.9z"></path></svg>
+        {Your organization name here}
+      </a>
+      <nav class="nav"> <a href="/about/">Link 1</a> <a href="/prize/">Link 2</a> <a href="/journal/">Link 3</a></nav>
+  </div> </div>
+  -->
+
+  <d-front-matter>
+    <script id='distill-front-matter' type="text/json">{
+    "title": "Why Momentum Really Works",
+    "description": "Although \" extremely useful for visualizing high-dimensional data, t-SNE plots can sometimes be mysterious or misleading.",
+    "published": "Jan 10, 2017",
+    "authors": [
+      {
+        "author":"Chris Olah",
+        "authorURL":"https://colah.github.io/",
+        "affiliations": [{"name": "Google Brain"}]
+      },
+      {
+        "author":"Ludwig Schubert",
+        "authorURL":"https://shancarter.com/",
+        "affiliations": [{"name": "Google Brain", "url": "https://g.co/brain"}]
+      },
+      {
+        "author":"Shan Carter",
+        "authorURL":"https://shancarter.com/",
+        "affiliations": [
+          {"name": "Google Brain", "url": "https://g.co/brain"},
+          {"name": "NYT", "url": "https://nytimes.com"}
+        ]
+      }
+    ],
+    "katex": {
+      "delimiters": [
+        {"left": "$", "right": "$", "display": false}
+      ]
+    }
+  }</script>
+  </d-front-matter>
+  <d-title></d-title>
+  <d-byline></d-byline>
+  <d-abstract>
+    <p>We often think of Momentum<d-cite key="mercier2011humans"></d-cite> as a means of dampening oscillations and
+      speeding up the iterations, leading to faster convergence. But it has other interesting behavior. It allows a
+      larger range of step-sizes to be used, and creates its own oscillations. What is going on?</p>
+  </d-abstract>
+  <article>
+    <d-toc></d-toc>
+    <!-- <a class="marker" href="#section-1" id="section-1"><span>1</span></a> -->
+    <h1 id="h1-survey">A Brief Survey of Techniques</h1>
+    <p>Before diving in: if you haven’t encountered t-SNE before, here’s what you need to know about the math behind it.
+      The goal is to take a set of points in a high-dimensional space and find a faithful representation of those points
+      in a lower-dimensional space, typically the 2D plane. The algorithm is non-linear and adapts to the underlying
+      data, performing different transformations on different regions. Those differences can be a major source of
+      confusion.</p>
+    <p>This is the first paragraph of the article. Test a long dash&thinsp;&mdash;&thinsp;here it is.
+    And a short dash: &ndash;.
+    </p>
+    <p>Test for owner's possessive. Test for "quoting a passage." And another sentence. Or two. Some flopping fins; for
+      diving.</p>
+    <!-- <aside>Some text in an aside, margin notes, etc...</aside> -->
+    <p>Here's a test of an inline equation <d-math>c = a^2 + b^2</d-math>. Also with configurable katex standards just
+      using inline '<span>$</span>' signs: $x^2$. And then there's a block equation:</p>
+    <d-math block>
+      c = \pm \sqrt{ \sum_{i=0}^{n}{a^{222} + b^2}}
+    </d-math>
+    <p>Math can also be quite involved:</p>
+    <d-math block>
+      \frac{1}{\Bigl(\sqrt{\phi \sqrt{5}}-\phi\Bigr) e^{\frac25 \pi}} = 1+\frac{e^{-2\pi}} {1+\frac{e^{-4\pi}}
+      {1+\frac{e^{-6\pi}} {1+\frac{e^{-8\pi}} {1+\cdots} } } }
+    </d-math>
+    <h2 id="h2-citations">Citations</h2>
+    <p>We can<d-cite bibtex-key="mercier2011humans"></d-cite> also cite
+      <d-cite key="gregor2015draw,mercier2011humans,openai2018charter"></d-cite> external publications.
+      <d-cite key="dong2014image,dumoulin2016guide,mordvintsev2015inceptionism"></d-cite>.
+      We should also be testing footnotes
+      <d-footnote>This will become a hoverable footnote. This will become a hoverable footnote. This will become a
+        hoverable footnote. This will become a hoverable footnote. This will become a hoverable footnote. This will
+        become a hoverable footnote. This will become a hoverable footnote. This will become a hoverable footnote.
+      </d-footnote>.
+      There are multiple footnotes, and they appear in the appendix
+      <d-footnote>Given I have coded them
+        right. Also, here's math in a footnote: <d-math>c = \sum_0^i{x}</d-math>. Also, a citation. Box-ception
+        <d-cite key='gregor2015draw'></d-cite>!
+      </d-footnote>
+      as well.</p>
+    <div style="grid-column: text; margin: 1rem 0;"><img src="momentum.png"
+        style="width:100%; border: 1px solid rgba(0, 0, 0, 0.2);" />
+      <d-figure-caption>Illustration of momentum.</d-figure-caption>
+    </div>
+    <h1 id="h1-code">Displaying code snippets</h1>
+    <h2>Subheading</h2>
+    <h2>Next Subheading</h2>
+    <p>Some inline javascript:<d-code language="javascript">var x = 25;</d-code>. And here's a javascript code block.
+    </p>
+    <d-code block language="javascript">
+      var x = 25;
+      function(x){
+      return x * x;
+      }
+    </d-code>
+    <p>We also support python.</p>
+    <d-code block language="python">
+      # Python 3: Fibonacci series up to n
+      def fib(n):
+      a, b = 0, 1
+      while a < n: print(a, end=' ' ) a, b=b, a+b </d-code>
+        <p>And a table</p>
+        <table>
+          <thead>
+            <tr>
+              <th>First</th>
+              <th>Second</th>
+              <th>Third</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>23</td>
+              <td>654</td>
+              <td>23</td>
+            </tr>
+            <tr>
+              <td>14</td>
+              <td>54</td>
+              <td>34</td>
+            </tr>
+            <tr>
+              <td>234</td>
+              <td>54</td>
+              <td>23</td>
+            </tr>
+          </tbody>
+        </table>
+        <p>And lists:</p>
+        <ul>
+          <li>item 1
+          <li>item 2
+        </ul>
+        <ol>
+          <li>item 1
+          <li>item 2
+        </ol>
+        <p>That's it for the example article!</p>
+
+        <h1 id="h1-politics">Politics and the English language</h1>
+        <p>Most people who bother with the matter at all would admit that the English language is in a bad way, but it is generally assumed that we cannot by conscious action do anything about it. Our civilization is decadent and our language—so the argument runs—must inevitably share in the general collapse. It follows that any struggle against the abuse of language is a sentimental archaism, like preferring candles to electric light or hansom cabs to aeroplanes. Underneath this lies the half-conscious belief that language is a natural growth and not an instrument which we shape for our own purposes.</p>
+
+<p>Now, it is clear that the decline of a language must ultimately have political and economic causes: it is not due simply to the bad influence of this or that individual writer. But an effect can become a cause, reinforcing the original cause and producing the same effect in an intensified form, and so on indefinitely. A man may take to drink because he feels himself to be a failure, and then fail all the more completely because he drinks. It is rather the same thing that is happening to the English language. It becomes ugly and inaccurate because our thoughts are foolish, but the slovenliness of our language makes it easier for us to have foolish thoughts. The point is that the process is reversible. Modern English, especially written English, is full of bad habits which spread by imitation and which can be avoided if one is willing to take the necessary trouble. If one gets rid of these habits one can think more clearly, and to think clearly is a necessary first step toward political regeneration: so that the fight against bad English is not frivolous and is not the exclusive concern of professional writers. I will come back to this presently, and I hope that by that time the meaning of what I have said here will have become clearer. Meanwhile, here are five specimens of the English language as it is now habitually written.</p>
+
+  </article>
+
+  <d-appendix>
+    <d-bibliography src="bibliography.bib"></d-bibliography>
+    <d-footnote-list></d-footnote-list>
+    <d-citation-list></d-citation-list>
+  </d-appendix>
+
+  <!--
+  <div class="my-footer">
+    <div class="footer-container">
+      <a href="/" class="logo">
+        <svg viewBox="-607 419 64 64">
+          <path d="M-573.4,478.9c-8,0-14.6-6.4-14.6-14.5s14.6-25.9,14.6-40.8c0,14.9,14.6,32.8,14.6,40.8S-565.4,478.9-573.4,478.9z"></path>
+        </svg>
+        {Your organization}
+      </a> is dedicated to clear explanations of machine learning
+    
+      <div class="nav">
+        <a href="https://distill.pub/about/">Link 1</a>
+        <a href="https://distill.pub/journal/">Link 2</a>
+        <a href="https://distill.pub/prize/">Link 3</a>
+        <a href="https://distill.pub/archive/">Link 4</a>
+        <a href="https://distill.pub/rss.xml">Link 5</a>
+        <a href="https://github.com/distillpub">Link 6</a>
+        <a href="https://twitter.com/distillpub">Link 7</a>
+        &nbsp;&nbsp;&nbsp;&nbsp; {some other info}
+      </div>
+    </div>
+  </div>
+  -->
+</body>
+</html>
