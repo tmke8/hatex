@@ -1,131 +1,1582 @@
-(function(e,t){'object'==typeof exports&&'undefined'!=typeof module?t():'function'==typeof define&&define.amd?define(t):t()})(this,function(){'use strict';function e(e,t){e.title=t.title,t.published&&(t.published instanceof Date?e.publishedDate=t.published:t.published.constructor===String&&(e.publishedDate=new Date(t.published))),t.publishedDate&&(t.publishedDate instanceof Date?e.publishedDate=t.publishedDate:t.publishedDate.constructor===String?e.publishedDate=new Date(t.publishedDate):console.error('Don\'t know what to do with published date: '+t.publishedDate)),e.description=t.description,e.authors=t.authors.map((e)=>new wi(e)),e.katex=t.katex,e.password=t.password,t.doi&&(e.doi=t.doi)}function t(e=document){const t=new Set,n=e.querySelectorAll('d-cite');for(const i of n){const e=i.getAttribute('key')||i.getAttribute('bibtex-key'),n=e.split(',').map((e)=>e.trim());for(const e of n)t.add(e)}return[...t]}function n(e,t,n,i){if(null==e.author)return'';var a=e.author.split(' and ');let d=a.map((e)=>{if(e=e.trim(),-1!=e.indexOf(','))var n=e.split(',')[0].trim(),i=e.split(',')[1];else if(-1!=e.indexOf(' '))var n=e.split(' ').slice(-1)[0].trim(),i=e.split(' ').slice(0,-1).join(' ');else var n=e.trim();var a='';return void 0!=i&&(a=i.trim().split(' ').map((e)=>e.trim()[0]),a=a.join('.')+'.'),t.replace('${F}',i).replace('${L}',n).replace('${I}',a).trim()});if(1<a.length){var r=d.slice(0,a.length-1).join(n);return r+=(i||n)+d[a.length-1],r}return d[0]}function i(e){var t=e.journal||e.booktitle||'';if('volume'in e){var n=e.issue||e.number;n=void 0==n?'':'('+n+')',t+=', Vol '+e.volume+n}return'pages'in e&&(t+=', pp. '+e.pages),''!=t&&(t+='. '),'publisher'in e&&(t+=e.publisher,'.'!=t[t.length-1]&&(t+='.')),t}function a(e){if('url'in e){var t=e.url,n=/arxiv\.org\/abs\/([0-9\.]*)/.exec(t);if(null!=n&&(t=`http://arxiv.org/pdf/${n[1]}.pdf`),'.pdf'==t.slice(-4))var i='PDF';else if('.html'==t.slice(-5))var i='HTML';return` &ensp;<a href="${t}">[${i||'link'}]</a>`}return''}function d(e,t){return'doi'in e?`${t?'<br>':''} <a href="https://doi.org/${e.doi}" style="text-decoration:inherit;">DOI: ${e.doi}</a>`:''}function r(e){return'<span class="title">'+e.title+'</span> '}function o(e){if(e){var t=r(e);return t+=a(e)+'<br>',e.author&&(t+=n(e,'${L}, ${I}',', ',' and '),(e.year||e.date)&&(t+=', ')),t+=e.year||e.date?(e.year||e.date)+'. ':'. ',t+=i(e),t+=d(e),t}return'?'}function l(e){if(e){var t='';t+='<strong>'+e.title+'</strong>',t+=a(e),t+='<br>';var r=n(e,'${I} ${L}',', ')+'.',o=i(e).trim()+' '+e.year+'. '+d(e,!0);return t+=(r+o).length<hi(40,e.title.length)?r+' '+o:r+'<br>'+o,t}return'?'}function s(){return-1!==['interactive','complete'].indexOf(document.readyState)}function c(e){for(let t of e.authors){const e=!!t.affiliation,n=!!t.affiliations;if(e)if(n)console.warn(`Author ${t.author} has both old-style ("affiliation" & "affiliationURL") and new style ("affiliations") affiliation information!`);else{let e={name:t.affiliation};t.affiliationURL&&(e.url=t.affiliationURL),t.affiliations=[e]}}return e}function u(e){const t=e.firstElementChild;if(t){const e=t.getAttribute('type');if('json'==e.split('/')[1]){const e=t.textContent,n=JSON.parse(e);return c(n)}console.error('Distill only supports JSON frontmatter tags anymore; no more YAML.')}else console.error('You added a frontmatter tag but did not provide a script tag with front matter data in it. Please take a look at our templates.');return{}}function p(e){const t='distill-prerendered-styles',n=e.getElementById(t);if(!n){const n=e.createElement('style');n.id=t,n.type='text/css';const i=e.createTextNode(Pi);n.appendChild(i);const a=e.head.querySelector('script');e.head.insertBefore(n,a)}}function g(e,t){console.debug('Runlevel 0: Polyfill required: '+e.name);const n=document.createElement('script');n.src=e.url,n.async=!1,t&&(n.onload=function(){t(e)}),n.onerror=function(){new Error('Runlevel 0: Polyfills failed to load script '+e.name)},document.head.appendChild(n)}function f(e,t){return t={exports:{}},e(t,t.exports),t.exports}function h(e){return e.replace(/[\t\n ]+/g,' ').replace(/{\\["^`.'acu~Hvs]( )?([a-zA-Z])}/g,(e,t,n)=>n).replace(/{\\([a-zA-Z])}/g,(e,t)=>t)}function b(e){const t=new Map,n=Xi.toJSON(e);for(const i of n){for(const[e,t]of Object.entries(i.entryTags))i.entryTags[e.toLowerCase()]=h(t);i.entryTags.type=i.entryType,t.set(i.citationKey,i.entryTags)}return t}function m(e){return`@article{${e.slug},
-  author = {${e.bibtexAuthors}},
-  title = {${e.title}},
-  journal = {${e.journal.title}},
-  year = {${e.publishedYear}},
-  note = {${e.url}},
-  doi = {${e.doi}}
-}`}function y(e){return`
-  <div class="byline grid">
-    <div class="authors-affiliations grid">
-      <h3>Authors</h3>
-      <h3>Affiliations</h3>
-      ${e.authors.map((e)=>`
-        <p class="author">
-          ${e.personalURL?`
-            <a class="name" href="${e.personalURL}">${e.name}</a>`:`
-            <span class="name">${e.name}</span>`}
-        </p>
-        <p class="affiliation">
-        ${e.affiliations.map((e)=>e.url?`<a class="affiliation" href="${e.url}">${e.name}</a>`:`<span class="affiliation">${e.name}</span>`).join(', ')}
-        </p>
-      `).join('')}
-    </div>
-    <div>
-      <h3>Published</h3>
-      ${e.publishedDate?`
-        <p>${e.publishedMonth} ${e.publishedDay}, ${e.publishedYear}</p> `:`
-        <p><em>Not published yet.</em></p>`}
-    </div>
-    <div>
-      <h3>DOI</h3>
-      ${e.doi?`
-        <p><a href="https://doi.org/${e.doi}">${e.doi}</a></p>`:`
-        <p><em>No DOI yet.</em></p>`}
-    </div>
-  </div>
-`}function x(e,t,n=document){if(0<t.size){e.style.display='';let i=e.querySelector('.references');if(i)i.innerHTML='';else{const t=n.createElement('style');t.innerHTML=ta,e.appendChild(t);const a=n.createElement('h3');a.id='references',a.textContent='References',e.appendChild(a),i=n.createElement('ol'),i.id='references-list',i.className='references',e.appendChild(i)}for(const[e,a]of t){const t=n.createElement('li');t.id=e,t.innerHTML=o(a),i.appendChild(t)}}else e.style.display='none'}function k(e,t){let n=`
-  <style>
+(function (factory) {
+  typeof define === 'function' && define.amd ? define(factory) :
+  factory();
+}((function () { 'use strict';
 
-  d-toc {
-    contain: layout style;
-    display: block;
+  // Copyright 2018 The Distill Template Authors
+  //
+  // Licensed under the Apache License, Version 2.0 (the "License");
+  // you may not use this file except in compliance with the License.
+  // You may obtain a copy of the License at
+  //
+  //      http://www.apache.org/licenses/LICENSE-2.0
+  //
+  // Unless required by applicable law or agreed to in writing, software
+  // distributed under the License is distributed on an "AS IS" BASIS,
+  // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  // See the License for the specific language governing permissions and
+  // limitations under the License.
+
+  const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+  const months = ['Jan.', 'Feb.', 'March', 'April', 'May', 'June', 'July', 'Aug.', 'Sept.', 'Oct.', 'Nov.', 'Dec.'];
+  const zeroPad = n => n < 10 ? '0' + n : n;
+
+  const RFC = function(date) {
+    const day = days[date.getDay()].substring(0, 3);
+    const paddedDate = zeroPad(date.getDate());
+    const month = months[date.getMonth()].substring(0,3);
+    const year = date.getFullYear().toString();
+    const hours = date.getUTCHours().toString();
+    const minutes = date.getUTCMinutes().toString();
+    const seconds = date.getUTCSeconds().toString();
+    return `${day}, ${paddedDate} ${month} ${year} ${hours}:${minutes}:${seconds} Z`;
+  };
+
+  const objectFromMap = function(map) {
+    const object = Array.from(map).reduce((object, [key, value]) => (
+      Object.assign(object, { [key]: value }) // Be careful! Maps can have non-String keys; object literals can't.
+    ), {});
+    return object;
+  };
+
+  const mapFromObject = function(object) {
+    const map = new Map();
+    for (var property in object) {
+      if (object.hasOwnProperty(property)) {
+        map.set(property, object[property]);
+      }
+    }
+    return map;
+  };
+
+  class Author {
+
+    // constructor(name='', personalURL='', affiliation='', affiliationURL='') {
+    //   this.name = name; // 'Chris Olah'
+    //   this.personalURL = personalURL; // 'https://colah.github.io'
+    //   this.affiliation = affiliation; // 'Google Brain'
+    //   this.affiliationURL = affiliationURL; // 'https://g.co/brain'
+    // }
+
+    constructor(object) {
+      this.name = object.author; // 'Chris Olah'
+      this.personalURL = object.authorURL; // 'https://colah.github.io'
+      this.affiliation = object.affiliation; // 'Google Brain'
+      this.affiliationURL = object.affiliationURL; // 'https://g.co/brain'
+      this.affiliations = object.affiliations || []; // new-style affiliations
+    }
+
+    // 'Chris'
+    get firstName() {
+      const names = this.name.split(' ');
+      return names.slice(0, names.length - 1).join(' ');
+    }
+
+    // 'Olah'
+    get lastName() {
+      const names = this.name.split(' ');
+      return names[names.length -1];
+    }
   }
 
-  d-toc ul {
-    padding-left: 0;
+  function mergeFromYMLFrontmatter(target, source) {
+    target.title = source.title;
+    if (source.published) {
+      if (source.published instanceof Date) {
+        target.publishedDate = source.published;
+      } else if (source.published.constructor === String) {
+        target.publishedDate = new Date(source.published);
+      }
+    }
+    if (source.publishedDate) {
+      if (source.publishedDate instanceof Date) {
+        target.publishedDate = source.publishedDate;
+      } else if (source.publishedDate.constructor === String) {
+        target.publishedDate = new Date(source.publishedDate);
+      } else {
+        console.error('Don\'t know what to do with published date: ' + source.publishedDate);
+      }
+    }
+    target.published = source.published;
+    target.description = source.description;
+    target.authors = source.authors.map( (authorObject) => new Author(authorObject));
+    target.katex = source.katex;
+    target.password = source.password;
+    if (source.doi) {
+      target.doi = source.doi;
+    }
   }
 
-  d-toc ul > ul {
-    padding-left: 24px;
+  class FrontMatter {
+    constructor() {
+      this.title = 'unnamed article'; // 'Attention and Augmented Recurrent Neural Networks'
+      this.description = ''; // 'A visual overview of neural attention...'
+      this.authors = []; // Array of Author(s)
+
+      this.bibliography = new Map();
+      this.bibliographyParsed = false;
+      //  {
+      //    'gregor2015draw': {
+      //      'title': 'DRAW: A recurrent neural network for image generation',
+      //      'author': 'Gregor, Karol and Danihelka, Ivo and Graves, Alex and Rezende, Danilo Jimenez and Wierstra, Daan',
+      //      'journal': 'arXiv preprint arXiv:1502.04623',
+      //      'year': '2015',
+      //      'url': 'https://arxiv.org/pdf/1502.04623.pdf',
+      //      'type': 'article'
+      //    },
+      //  }
+
+      // Citation keys should be listed in the order that they are appear in the document.
+      // Each key refers to a key in the bibliography dictionary.
+      this.citations = []; // [ 'gregor2015draw', 'mercier2011humans' ]
+      this.citationsCollected = false;
+
+      //
+      // Assigned from posts.csv
+      //
+
+      //  publishedDate: 2016-09-08T07:00:00.000Z,
+      //  tags: [ 'rnn' ],
+      //  distillPath: '2016/augmented-rnns',
+      //  githubPath: 'distillpub/post--augmented-rnns',
+      //  doiSuffix: 1,
+
+      //
+      // Assigned from journal
+      //
+      this.journal = {};
+      //  journal: {
+      //    'title': 'Distill',
+      //    'full_title': 'Distill',
+      //    'abbrev_title': 'Distill',
+      //    'url': 'http://distill.pub',
+      //    'doi': '10.23915/distill',
+      //    'publisherName': 'Distill Working Group',
+      //    'publisherEmail': 'admin@distill.pub',
+      //    'issn': '2476-0757',
+      //    'editors': [...],
+      //    'committee': [...]
+      //  }
+      //  volume: 1,
+      //  issue: 9,
+
+      this.katex = {};
+
+      //
+      // Assigned from publishing process
+      //
+
+      //  githubCompareUpdatesUrl: 'https://github.com/distillpub/post--augmented-rnns/compare/1596e094d8943d2dc0ea445d92071129c6419c59...3bd9209e0c24d020f87cf6152dcecc6017cbc193',
+      //  updatedDate: 2017-03-21T07:13:16.000Z,
+      //  doi: '10.23915/distill.00001',
+      this.doi = undefined;
+      this.publishedDate = undefined;
+    }
+
+    // Example:
+    // title: Demo Title Attention and Augmented Recurrent Neural Networks
+    // published: Jan 10, 2017
+    // authors:
+    // - Chris Olah:
+    // - Shan Carter: http://shancarter.com
+    // affiliations:
+    // - Google Brain:
+    // - Google Brain: http://g.co/brain
+
+    //
+    // Computed Properties
+    //
+
+    // 'http://distill.pub/2016/augmented-rnns',
+    set url(value) {
+      this._url = value;
+    }
+    get url() {
+      if (this._url) {
+        return this._url;
+      } else if (this.distillPath && this.journal.url) {
+        return this.journal.url + '/' + this.distillPath;
+      } else if (this.journal.url) {
+        return this.journal.url;
+      }
+    }
+
+    // 'https://github.com/distillpub/post--augmented-rnns',
+    get githubUrl() {
+      if (this.githubPath) {
+        return 'https://github.com/' + this.githubPath;
+      } else {
+        return undefined;
+      }
+    }
+
+    // TODO resolve differences in naming of URL/Url/url.
+    // 'http://distill.pub/2016/augmented-rnns/thumbnail.jpg',
+    set previewURL(value) {
+      this._previewURL = value;
+    }
+    get previewURL() {
+      return this._previewURL ? this._previewURL : this.url + '/thumbnail.jpg';
+    }
+
+    // 'Thu, 08 Sep 2016 00:00:00 -0700',
+    get publishedDateRFC() {
+      return RFC(this.publishedDate);
+    }
+
+    // 'Thu, 08 Sep 2016 00:00:00 -0700',
+    get updatedDateRFC() {
+      return RFC(this.updatedDate);
+    }
+
+    // 2016,
+    get publishedYear() {
+      return this.publishedDate.getFullYear();
+    }
+
+    // 'Sept',
+    get publishedMonth() {
+      return months[this.publishedDate.getMonth()];
+    }
+
+    // 8,
+    get publishedDay() {
+      return this.publishedDate.getDate();
+    }
+
+    // '09',
+    get publishedMonthPadded() {
+      return zeroPad(this.publishedDate.getMonth() + 1);
+    }
+
+    // '08',
+    get publishedDayPadded() {
+      return zeroPad(this.publishedDate.getDate());
+    }
+
+    get publishedISODateOnly() {
+      return this.publishedDate.toISOString().split('T')[0];
+    }
+
+    get volume() {
+      const volume = this.publishedYear - 2015;
+      if (volume < 1) {
+        throw new Error('Invalid publish date detected during computing volume');
+      }
+      return volume;
+    }
+
+    get issue() {
+      return this.publishedDate.getMonth() + 1;
+    }
+
+    // 'Olah & Carter',
+    get concatenatedAuthors() {
+      if (this.authors.length > 2) {
+        return this.authors[0].lastName + ', et al.';
+      } else if (this.authors.length === 2) {
+        return this.authors[0].lastName + ' & ' + this.authors[1].lastName;
+      } else if (this.authors.length === 1) {
+        return this.authors[0].lastName;
+      }
+    }
+
+    // 'Olah, Chris and Carter, Shan',
+    get bibtexAuthors() {
+      return this.authors.map(author => {
+        return author.lastName + ', ' + author.firstName;
+      }).join(' and ');
+    }
+
+    // 'olah2016attention'
+    get slug() {
+      let slug = '';
+      if (this.authors.length) {
+        slug += this.authors[0].lastName.toLowerCase();
+        slug += this.publishedYear;
+        slug += this.title.split(' ')[0].toLowerCase();
+      }
+      return slug || 'Untitled';
+    }
+
+    get bibliographyEntries() {
+      return new Map(this.citations.map( citationKey => {
+        const entry = this.bibliography.get(citationKey);
+        return [citationKey, entry];
+      }));
+    }
+
+    set bibliography(bibliography) {
+      if (bibliography instanceof Map) {
+        this._bibliography = bibliography;
+      } else if (typeof bibliography === 'object') {
+        this._bibliography = mapFromObject(bibliography);
+      }
+    }
+
+    get bibliography() {
+      return this._bibliography;
+    }
+
+    static fromObject(source) {
+      const frontMatter = new FrontMatter();
+      Object.assign(frontMatter, source);
+      return frontMatter;
+    }
+
+    assignToObject(target) {
+      Object.assign(target, this);
+      target.bibliography = objectFromMap(this.bibliographyEntries);
+      target.url = this.url;
+      target.doi = this.doi;
+      target.githubUrl = this.githubUrl;
+      target.previewURL = this.previewURL;
+      if (this.publishedDate) {
+        target.volume = this.volume;
+        target.issue = this.issue;
+        target.publishedDateRFC = this.publishedDateRFC;
+        target.publishedYear = this.publishedYear;
+        target.publishedMonth = this.publishedMonth;
+        target.publishedDay = this.publishedDay;
+        target.publishedMonthPadded = this.publishedMonthPadded;
+        target.publishedDayPadded = this.publishedDayPadded;
+      }
+      if (this.updatedDate) {
+        target.updatedDateRFC = this.updatedDateRFC;
+      }
+      target.concatenatedAuthors = this.concatenatedAuthors;
+      target.bibtexAuthors = this.bibtexAuthors;
+      target.slug = this.slug;
+    }
+
   }
 
-  d-toc a {
-    border-bottom: none;
-    text-decoration: none;
-  }
+  // Copyright 2018 The Distill Template Authors
+  //
+  // Licensed under the Apache License, Version 2.0 (the "License");
+  // you may not use this file except in compliance with the License.
+  // You may obtain a copy of the License at
+  //
+  //      http://www.apache.org/licenses/LICENSE-2.0
+  //
+  // Unless required by applicable law or agreed to in writing, software
+  // distributed under the License is distributed on an "AS IS" BASIS,
+  // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  // See the License for the specific language governing permissions and
+  // limitations under the License.
 
-  </style>
-  <nav role="navigation" class="table-of-contents"></nav>
-  <h2>Table of contents</h2>
-  <ul>`;for(const i of t){const e='D-TITLE'==i.parentElement.tagName,t=i.getAttribute('no-toc');if(e||t)continue;const a=i.textContent,d='#'+i.getAttribute('id');let r='<li><a href="'+d+'">'+a+'</a></li>';'H3'==i.tagName?r='<ul>'+r+'</ul>':r+='<br>',n+=r}n+='</ul></nav>',e.innerHTML=n}function v(e){return function(t,n){return xa(e(t),n)}}function w(e,t,n){var i=(t-e)/ui(0,n),a=fi(ci(i)/si),d=i/li(10,a);return 0<=a?(d>=Ca?10:d>=Sa?5:d>=Ta?2:1)*li(10,a):-li(10,-a)/(d>=Ca?10:d>=Sa?5:d>=Ta?2:1)}function S(e,t,n){var i=oi(t-e)/ui(0,n),a=li(10,fi(ci(i)/si)),d=i/a;return d>=Ca?a*=10:d>=Sa?a*=5:d>=Ta&&(a*=2),t<e?-a:a}function _(e,t){var n=Object.create(e.prototype);for(var i in t)n[i]=t[i];return n}function L(){}function M(){return this.rgb().formatHex()}function U(){return this.rgb().formatRgb()}function O(e){var t,n;return e=(e+'').trim().toLowerCase(),(t=Oa.exec(e))?(n=t[1].length,t=parseInt(t[1],16),6===n?N(t):3===n?new q(15&t>>8|240&t>>4,15&t>>4|240&t,(15&t)<<4|15&t,1):8===n?new q(255&t>>24,255&t>>16,255&t>>8,(255&t)/255):4===n?new q(15&t>>12|240&t>>8,15&t>>8|240&t>>4,15&t>>4|240&t,((15&t)<<4|15&t)/255):null):(t=Na.exec(e))?new q(t[1],t[2],t[3],1):(t=Ia.exec(e))?new q(255*t[1]/100,255*t[2]/100,255*t[3]/100,1):(t=ja.exec(e))?I(t[1],t[2],t[3],t[4]):(t=Ra.exec(e))?I(255*t[1]/100,255*t[2]/100,255*t[3]/100,t[4]):(t=qa.exec(e))?z(t[1],t[2]/100,t[3]/100,1):(t=Ha.exec(e))?z(t[1],t[2]/100,t[3]/100,t[4]):Pa.hasOwnProperty(e)?N(Pa[e]):'transparent'===e?new q(NaN,NaN,NaN,0):null}function N(e){return new q(255&e>>16,255&e>>8,255&e,1)}function I(e,t,n,i){return 0>=i&&(e=t=n=NaN),new q(e,t,n,i)}function j(e){return(e instanceof L||(e=O(e)),!e)?new q:(e=e.rgb(),new q(e.r,e.g,e.b,e.opacity))}function R(e,t,n,i){return 1===arguments.length?j(e):new q(e,t,n,null==i?1:i)}function q(e,t,n,i){this.r=+e,this.g=+t,this.b=+n,this.opacity=+i}function H(){return'#'+F(this.r)+F(this.g)+F(this.b)}function P(){var e=this.opacity;return e=isNaN(e)?1:ui(0,hi(1,e)),(1===e?'rgb(':'rgba(')+ui(0,hi(255,gi(this.r)||0))+', '+ui(0,hi(255,gi(this.g)||0))+', '+ui(0,hi(255,gi(this.b)||0))+(1===e?')':', '+e+')')}function F(e){return e=ui(0,hi(255,gi(e)||0)),(16>e?'0':'')+e.toString(16)}function z(e,t,n,i){return 0>=i?e=t=n=NaN:0>=n||1<=n?e=t=NaN:0>=t&&(e=NaN),new W(e,t,n,i)}function Y(e){if(e instanceof W)return new W(e.h,e.s,e.l,e.opacity);if(e instanceof L||(e=O(e)),!e)return new W;if(e instanceof W)return e;e=e.rgb();var t=e.r/255,n=e.g/255,i=e.b/255,a=hi(t,n,i),d=ui(t,n,i),r=NaN,c=d-a,s=(d+a)/2;return c?(r=t===d?(n-i)/c+6*(n<i):n===d?(i-t)/c+2:(t-n)/c+4,c/=0.5>s?d+a:2-d-a,r*=60):c=0<s&&1>s?0:r,new W(r,c,s,e.opacity)}function W(e,t,n,i){this.h=+e,this.s=+t,this.l=+n,this.opacity=+i}function V(e,t,n){return 255*(60>e?t+(n-t)*e/60:180>e?n:240>e?t+(n-t)*(240-e)/60:t)}function $(e){if(e instanceof Q)return new Q(e.l,e.a,e.b,e.opacity);if(e instanceof te)return ne(e);e instanceof q||(e=j(e));var t,n,i=G(e.r),a=G(e.g),d=G(e.b),r=X((0.2225045*i+0.7168786*a+0.0606169*d)/Xn);return i===a&&a===d?t=n=r:(t=X((0.4360747*i+0.3850649*a+0.1430804*d)/K),n=X((0.0139322*i+0.0971045*a+0.7141733*d)/Yn)),new Q(116*r-16,500*(t-r),200*(r-n),e.opacity)}function Q(e,t,n,i){this.l=+e,this.a=+t,this.b=+n,this.opacity=+i}function X(e){return e>Va?li(e,1/3):e/Wa+Zn}function Z(e){return e>Ba?e*e*e:Wa*(e-Zn)}function J(e){return 255*(0.0031308>=e?12.92*e:1.055*li(e,1/2.4)-0.055)}function G(e){return 0.04045>=(e/=255)?e/12.92:li((e+0.055)/1.055,2.4)}function ee(e){if(e instanceof te)return new te(e.h,e.c,e.l,e.opacity);if(e instanceof Q||(e=$(e)),0===e.a&&0===e.b)return new te(NaN,0<e.l&&100>e.l?0:NaN,e.l,e.opacity);var t=di(e.b,e.a)*za;return new te(0>t?t+360:t,ai(e.a*e.a+e.b*e.b),e.l,e.opacity)}function te(e,t,n,i){this.h=+e,this.c=+t,this.l=+n,this.opacity=+i}function ne(e){if(isNaN(e.h))return new Q(e.l,0,0,e.opacity);var t=e.h*Fa;return new Q(e.l,ii(t)*e.c,ni(t)*e.c,e.opacity)}function ie(e){if(e instanceof de)return new de(e.h,e.s,e.l,e.opacity);e instanceof q||(e=j(e));var t=e.r/255,n=e.g/255,i=e.b/255,a=(Qa*i+E*t-$a*n)/(Qa+E-$a),d=i-a,r=(D*(n-a)-B*d)/C,o=ai(r*r+d*d)/(D*a*(1-a)),l=o?di(r,d)*za-120:NaN;return new de(0>l?l+360:l,o,a,e.opacity)}function ae(e,t,n,i){return 1===arguments.length?ie(e):new de(e,t,n,null==i?1:i)}function de(e,t,n,i){this.h=+e,this.s=+t,this.l=+n,this.opacity=+i}function oe(e,n){return function(i){return e+i*n}}function le(e,n,i){return e=li(e,i),n=li(n,i)-e,i=1/i,function(a){return li(e+a*n,i)}}function se(e){return 1==(e=+e)?ce:function(t,n){return n-t?le(t,n,e):Xa(isNaN(t)?n:t)}}function ce(e,t){var n=t-e;return n?oe(e,n):Xa(isNaN(e)?t:e)}function ue(e){return ArrayBuffer.isView(e)&&!(e instanceof DataView)}function pe(e,t){var n,i=t?t.length:0,a=e?hi(i,e.length):0,d=Array(a),r=Array(i);for(n=0;n<a;++n)d[n]=dd(e[n],t[n]);for(;n<i;++n)r[n]=t[n];return function(e){for(n=0;n<a;++n)r[n]=d[n](e);return r}}function ge(e){return function(){return e}}function fe(e){return function(n){return e(n)+''}}function he(e){return function t(n){function i(i,t){var a=e((i=ae(i)).h,(t=ae(t)).h),d=ce(i.s,t.s),r=ce(i.l,t.l),o=ce(i.opacity,t.opacity);return function(e){return i.h=a(e),i.s=d(e),i.l=r(li(e,n)),i.opacity=o(e),i+''}}return n=+n,i.gamma=t,i}(1)}function be(e,t){return(t-=e=+e)?function(n){return(n-e)/t}:ld(t)}function me(e){return function(t,n){var i=e(t=+t,n=+n);return function(e){return e<=t?0:e>=n?1:i(e)}}}function ye(e){return function(n,i){var d=e(n=+n,i=+i);return function(e){return 0>=e?n:1<=e?i:d(e)}}}function xe(e,t,n,i){var a=e[0],d=e[1],r=t[0],o=t[1];return d<a?(a=n(d,a),r=i(o,r)):(a=n(a,d),r=i(r,o)),function(e){return r(a(e))}}function ke(e,t,n,a){var o=hi(e.length,t.length)-1,l=Array(o),d=Array(o),r=-1;for(e[o]<e[0]&&(e=e.slice().reverse(),t=t.slice().reverse());++r<o;)l[r]=n(e[r],e[r+1]),d[r]=a(t[r],t[r+1]);return function(t){var n=va(e,t,1,o)-1;return d[n](l[n](t))}}function ve(e,t){return t.domain(e.domain()).range(e.range()).interpolate(e.interpolate()).clamp(e.clamp())}function we(e,t){function n(){return a=2<hi(o.length,l.length)?ke:xe,d=r=null,i}function i(t){return(d||(d=a(o,l,c?me(e):e,s)))(+t)}var a,d,r,o=sd,l=sd,s=dd,c=!1;return i.invert=function(e){return(r||(r=a(l,o,be,c?ye(t):t)))(+e)},i.domain=function(e){return arguments.length?(o=map.call(e,number),n()):o.slice()},i.range=function(e){return arguments.length?(l=slice.call(e),n()):l.slice()},i.rangeRound=function(e){return l=slice.call(e),interpolate=rd,n()},i.clamp=function(e){return arguments.length?(c=!!e,n()):c},i.interpolate=function(e){return arguments.length?(interpolate=e,n()):s},n()}function Ce(e){if(!(t=fd.exec(e)))throw new Error('invalid format: '+e);var t;return new Se({fill:t[1],align:t[2],sign:t[3],symbol:t[4],zero:t[5],width:t[6],comma:t[7],precision:t[8]&&t[8].slice(1),trim:t[9],type:t[10]})}function Se(e){this.fill=e.fill===void 0?' ':e.fill+'',this.align=e.align===void 0?'>':e.align+'',this.sign=e.sign===void 0?'-':e.sign+'',this.symbol=e.symbol===void 0?'':e.symbol+'',this.zero=!!e.zero,this.width=e.width===void 0?void 0:+e.width,this.comma=!!e.comma,this.precision=e.precision===void 0?void 0:+e.precision,this.trim=!!e.trim,this.type=e.type===void 0?'':e.type+''}function Te(e){var t=e.domain;return e.ticks=function(e){var n=t();return _a(n[0],n[n.length-1],null==e?10:e)},e.tickFormat=function(e,n){return Ad(t(),e,n)},e.nice=function(n){null==n&&(n=10);var i,a=t(),d=0,r=a.length-1,o=a[d],l=a[r];return l<o&&(i=o,o=l,l=i,i=d,d=r,r=i),i=w(o,l,n),0<i?(o=fi(o/i)*i,l=pi(l/i)*i,i=w(o,l,n)):0>i&&(o=pi(o*i)/i,l=fi(l*i)/i,i=w(o,l,n)),0<i?(a[d]=fi(o/i)*i,a[r]=pi(l/i)*i,t(a)):0>i&&(a[d]=pi(o*i)/i,a[r]=fi(l*i)/i,t(a)),e},e}function _e(){var e=we(be,ed);return e.copy=function(){return ve(e,_e())},Te(e)}function Le(e,t,n,i){function a(t){return e(t=0===arguments.length?new Date:new Date(+t)),t}return a.floor=function(t){return e(t=new Date(+t)),t},a.ceil=function(n){return e(n=new Date(n-1)),t(n,1),e(n),n},a.round=function(e){var t=a(e),n=a.ceil(e);return e-t<n-e?t:n},a.offset=function(e,n){return t(e=new Date(+e),null==n?1:fi(n)),e},a.range=function(n,i,d){var r,o=[];if(n=a.ceil(n),d=null==d?1:fi(d),!(n<i)||!(0<d))return o;do o.push(r=new Date(+n)),t(n,d),e(n);while(r<n&&n<i);return o},a.filter=function(n){return Le(function(t){if(t>=t)for(;e(t),!n(t);)t.setTime(t-1)},function(e,i){if(e>=e)if(0>i)for(;0>=++i;)for(;t(e,-1),!n(e););else for(;0<=--i;)for(;t(e,1),!n(e););})},n&&(a.count=function(t,i){return Zn.setTime(+t),Ba.setTime(+i),e(Zn),e(Ba),fi(n(Ed,Dd))},a.every=function(e){return e=fi(e),isFinite(e)&&0<e?1<e?a.filter(i?function(t){return 0==i(t)%e}:function(t){return 0==a.count(0,t)%e}):a:null}),a}function Ae(e){return Le(function(t){t.setDate(t.getDate()-(t.getDay()+7-e)%7),t.setHours(0,0,0,0)},function(e,t){e.setDate(e.getDate()+7*t)},function(e,t){return(t-e-(t.getTimezoneOffset()-e.getTimezoneOffset())*Od)/jd})}function Ee(e){return Le(function(t){t.setUTCDate(t.getUTCDate()-(t.getUTCDay()+7-e)%7),t.setUTCHours(0,0,0,0)},function(e,t){e.setUTCDate(e.getUTCDate()+7*t)},function(e,t){return(t-e)/jd})}function De(e){if(0<=e.y&&100>e.y){var t=new Date(-1,e.m,e.d,e.H,e.M,e.S,e.L);return t.setFullYear(e.y),t}return new Date(e.y,e.m,e.d,e.H,e.M,e.S,e.L)}function Me(e){if(0<=e.y&&100>e.y){var t=new Date(Date.UTC(-1,e.m,e.d,e.H,e.M,e.S,e.L));return t.setUTCFullYear(e.y),t}return new Date(Date.UTC(e.y,e.m,e.d,e.H,e.M,e.S,e.L))}function Ue(e,t,n){return{y:e,m:t,d:n,H:0,M:0,S:0,L:0}}function Oe(e){function t(e,t){return function(a){var d,r,o,l=[],s=-1,i=0,c=e.length;for(a instanceof Date||(a=new Date(+a));++s<c;)37===e.charCodeAt(s)&&(l.push(e.slice(i,s)),null==(r=ur[d=e.charAt(++s)])?r='e'===d?' ':'0':d=e.charAt(++s),(o=t[d])&&(d=o(a,r)),l.push(d),i=s+1);return l.push(e.slice(i,s)),l.join('')}}function n(e,t){return function(n){var r,o,l=Ue(1900,void 0,1),d=a(l,e,n+='',0);if(d!=n.length)return null;if('Q'in l)return new Date(l.Q);if('s'in l)return new Date(1e3*l.s+('L'in l?l.L:0));if(t&&!('Z'in l)&&(l.Z=0),'p'in l&&(l.H=l.H%12+12*l.p),void 0===l.m&&(l.m='q'in l?l.q:0),'V'in l){if(1>l.V||53<l.V)return null;'w'in l||(l.w=1),'Z'in l?(r=Me(Ue(l.y,0,1)),Pd=r.getUTCDay(),r=4<o||0===o?er.ceil(r):er(r),r=Jd.offset(r,7*(l.V-1)),l.y=r.getUTCFullYear(),l.m=r.getUTCMonth(),l.d=r.getUTCDate()+(l.w+6)%7):(r=De(Ue(l.y,0,1)),Pd=r.getDay(),r=4<o||0===o?zd.ceil(r):zd(r),r=Pd.offset(r,7*(l.V-1)),l.y=r.getFullYear(),l.m=r.getMonth(),l.d=r.getDate()+(l.w+6)%7)}else('W'in l||'U'in l)&&('w'in l||(l.w='u'in l?l.u%7:'W'in l?1:0),o='Z'in l?Me(Ue(l.y,0,1)).getUTCDay():De(Ue(l.y,0,1)).getDay(),l.m=0,l.d='W'in l?(l.w+6)%7+7*l.W-(o+5)%7:l.w+7*l.U-(o+6)%7);return'Z'in l?(l.H+=0|l.Z/100,l.M+=l.Z%100,Me(l)):De(l)}}function a(e,t,a,d){for(var r,o,l=0,i=t.length,n=a.length;l<i;){if(d>=n)return-1;if(r=t.charCodeAt(l++),37===r){if(r=t.charAt(l++),o=S[r in ur?t.charAt(l++):r],!o||0>(d=o(e,a,d)))return-1;}else if(r!=a.charCodeAt(d++))return-1}return d}var r=e.dateTime,o=e.date,l=e.time,i=e.periods,s=e.days,c=e.shortDays,u=e.months,p=e.shortMonths,g=je(i),f=Re(i),h=je(s),b=Re(s),m=je(c),y=Re(c),x=je(u),k=Re(u),v=je(p),w=Re(p),d={a:function(e){return c[e.getDay()]},A:function(e){return s[e.getDay()]},b:function(e){return p[e.getMonth()]},B:function(e){return u[e.getMonth()]},c:null,d:at,e:at,f:st,H:dt,I:rt,j:ot,L:lt,m:ct,M:ut,p:function(e){return i[+(12<=e.getHours())]},q:function(e){return 1+~~(e.getMonth()/3)},Q:Ht,s:Pt,S:pt,u:gt,U:ft,V:ht,w:bt,W:mt,x:null,X:null,y:yt,Y:xt,Z:kt,"%":qt},C={a:function(e){return c[e.getUTCDay()]},A:function(e){return s[e.getUTCDay()]},b:function(e){return p[e.getUTCMonth()]},B:function(e){return u[e.getUTCMonth()]},c:null,d:vt,e:vt,f:_t,H:wt,I:Ct,j:St,L:Tt,m:Lt,M:At,p:function(e){return i[+(12<=e.getUTCHours())]},q:function(e){return 1+~~(e.getUTCMonth()/3)},Q:Ht,s:Pt,S:Et,u:Dt,U:Mt,V:Ut,w:Ot,W:Nt,x:null,X:null,y:It,Y:jt,Z:Rt,"%":qt},S={a:function(e,t,a){var i=m.exec(t.slice(a));return i?(e.w=y[i[0].toLowerCase()],a+i[0].length):-1},A:function(e,t,a){var i=h.exec(t.slice(a));return i?(e.w=b[i[0].toLowerCase()],a+i[0].length):-1},b:function(e,t,a){var i=v.exec(t.slice(a));return i?(e.m=w[i[0].toLowerCase()],a+i[0].length):-1},B:function(e,t,a){var i=x.exec(t.slice(a));return i?(e.m=k[i[0].toLowerCase()],a+i[0].length):-1},c:function(e,t,n){return a(e,r,t,n)},d:$e,e:$e,f:et,H:Xe,I:Xe,j:Qe,L:Ge,m:Ke,M:Ze,p:function(e,t,a){var i=g.exec(t.slice(a));return i?(e.p=f[i[0].toLowerCase()],a+i[0].length):-1},q:Ve,Q:nt,s:it,S:Je,u:He,U:Pe,V:Fe,w:qe,W:ze,x:function(e,t,n){return a(e,o,t,n)},X:function(e,t,n){return a(e,l,t,n)},y:Be,Y:Ye,Z:We,"%":tt};return d.x=t(o,d),d.X=t(l,d),d.c=t(r,d),C.x=t(o,C),C.X=t(l,C),C.c=t(r,C),{format:function(e){var n=t(e+='',d);return n.toString=function(){return e},n},parse:function(e){var t=n(e+='',!1);return t.toString=function(){return e},t},utcFormat:function(e){var n=t(e+='',C);return n.toString=function(){return e},n},utcParse:function(e){var t=n(e+='',!0);return t.toString=function(){return e},t}}}function Ne(e,t,n){var i=0>e?'-':'',a=(i?-e:e)+'',d=a.length;return i+(d<n?Array(n-d+1).join(t)+a:a)}function Ie(e){return e.replace(fr,'\\$&')}function je(e){return new RegExp('^(?:'+e.map(Ie).join('|')+')','i')}function Re(e){for(var t={},a=-1,i=e.length;++a<i;)t[e[a].toLowerCase()]=a;return t}function qe(e,t,a){var i=pr.exec(t.slice(a,a+1));return i?(e.w=+i[0],a+i[0].length):-1}function He(e,t,a){var i=pr.exec(t.slice(a,a+1));return i?(e.u=+i[0],a+i[0].length):-1}function Pe(e,t,a){var i=pr.exec(t.slice(a,a+2));return i?(e.U=+i[0],a+i[0].length):-1}function Fe(e,t,a){var i=pr.exec(t.slice(a,a+2));return i?(e.V=+i[0],a+i[0].length):-1}function ze(e,t,a){var i=pr.exec(t.slice(a,a+2));return i?(e.W=+i[0],a+i[0].length):-1}function Ye(e,t,a){var i=pr.exec(t.slice(a,a+4));return i?(e.y=+i[0],a+i[0].length):-1}function Be(e,t,a){var i=pr.exec(t.slice(a,a+2));return i?(e.y=+i[0]+(68<+i[0]?1900:2e3),a+i[0].length):-1}function We(e,t,a){var i=/^(Z)|([+-]\d\d)(?::?(\d\d))?/.exec(t.slice(a,a+6));return i?(e.Z=i[1]?0:-(i[2]+(i[3]||'00')),a+i[0].length):-1}function Ve(e,t,a){var i=pr.exec(t.slice(a,a+1));return i?(e.q=3*i[0]-3,a+i[0].length):-1}function Ke(e,t,a){var i=pr.exec(t.slice(a,a+2));return i?(e.m=i[0]-1,a+i[0].length):-1}function $e(e,t,a){var i=pr.exec(t.slice(a,a+2));return i?(e.d=+i[0],a+i[0].length):-1}function Qe(e,t,a){var i=pr.exec(t.slice(a,a+3));return i?(e.m=0,e.d=+i[0],a+i[0].length):-1}function Xe(e,t,a){var i=pr.exec(t.slice(a,a+2));return i?(e.H=+i[0],a+i[0].length):-1}function Ze(e,t,a){var i=pr.exec(t.slice(a,a+2));return i?(e.M=+i[0],a+i[0].length):-1}function Je(e,t,a){var i=pr.exec(t.slice(a,a+2));return i?(e.S=+i[0],a+i[0].length):-1}function Ge(e,t,a){var i=pr.exec(t.slice(a,a+3));return i?(e.L=+i[0],a+i[0].length):-1}function et(e,t,a){var i=pr.exec(t.slice(a,a+6));return i?(e.L=fi(i[0]/1e3),a+i[0].length):-1}function tt(e,t,a){var i=gr.exec(t.slice(a,a+1));return i?a+i[0].length:-1}function nt(e,t,a){var i=pr.exec(t.slice(a));return i?(e.Q=+i[0],a+i[0].length):-1}function it(e,t,a){var i=pr.exec(t.slice(a));return i?(e.s=+i[0],a+i[0].length):-1}function at(e,t){return Ne(e.getDate(),t,2)}function dt(e,t){return Ne(e.getHours(),t,2)}function rt(e,t){return Ne(e.getHours()%12||12,t,2)}function ot(e,t){return Ne(1+Pd.count(Qd(e),e),t,3)}function lt(e,t){return Ne(e.getMilliseconds(),t,3)}function st(e,t){return lt(e,t)+'000'}function ct(e,t){return Ne(e.getMonth()+1,t,2)}function ut(e,t){return Ne(e.getMinutes(),t,2)}function pt(e,t){return Ne(e.getSeconds(),t,2)}function gt(e){var t=e.getDay();return 0===t?7:t}function ft(e,t){return Ne(Fd.count(Qd(e)-1,e),t,2)}function ht(e,t){var n=e.getDay();return e=4<=n||0===n?Wd(e):Wd.ceil(e),Ne(Wd.count(Qd(e),e)+(4===Qd(e).getDay()),t,2)}function bt(e){return e.getDay()}function mt(e,t){return Ne(zd.count(Qd(e)-1,e),t,2)}function yt(e,t){return Ne(e.getFullYear()%100,t,2)}function xt(e,t){return Ne(e.getFullYear()%1e4,t,4)}function kt(e){var t=e.getTimezoneOffset();return(0<t?'-':(t*=-1,'+'))+Ne(0|t/60,'0',2)+Ne(t%60,'0',2)}function vt(e,t){return Ne(e.getUTCDate(),t,2)}function wt(e,t){return Ne(e.getUTCHours(),t,2)}function Ct(e,t){return Ne(e.getUTCHours()%12||12,t,2)}function St(e,t){return Ne(1+Jd.count(or(e),e),t,3)}function Tt(e,t){return Ne(e.getUTCMilliseconds(),t,3)}function _t(e,t){return Tt(e,t)+'000'}function Lt(e,t){return Ne(e.getUTCMonth()+1,t,2)}function At(e,t){return Ne(e.getUTCMinutes(),t,2)}function Et(e,t){return Ne(e.getUTCSeconds(),t,2)}function Dt(e){var t=e.getUTCDay();return 0===t?7:t}function Mt(e,t){return Ne(Gd.count(or(e)-1,e),t,2)}function Ut(e,t){var n=e.getUTCDay();return e=4<=n||0===n?ir(e):ir.ceil(e),Ne(ir.count(or(e),e)+(4===or(e).getUTCDay()),t,2)}function Ot(e){return e.getUTCDay()}function Nt(e,t){return Ne(er.count(or(e)-1,e),t,2)}function It(e,t){return Ne(e.getUTCFullYear()%100,t,2)}function jt(e,t){return Ne(e.getUTCFullYear()%1e4,t,4)}function Rt(){return'+0000'}function qt(){return'%'}function Ht(e){return+e}function Pt(e){return fi(+e/1e3)}function Ft(e){var i=e.length;return function(n){return e[ui(0,hi(i-1,fi(n*i)))]}}function zt(){for(var e,t=0,i=arguments.length,n={};t<i;++t){if(!(e=arguments[t]+'')||e in n||/[\s.]/.test(e))throw new Error('illegal type: '+e);n[e]=[]}return new Yt(n)}function Yt(e){this._=e}function Bt(e,n){return e.trim().split(/^|\s+/).map(function(e){var a='',d=e.indexOf('.');if(0<=d&&(a=e.slice(d+1),e=e.slice(0,d)),e&&!n.hasOwnProperty(e))throw new Error('unknown type: '+e);return{type:e,name:a}})}function Wt(e,t){for(var a,d=0,i=e.length;d<i;++d)if((a=e[d]).name===t)return a.value}function Vt(e,t,a){for(var d=0,i=e.length;d<i;++d)if(e[d].name===t){e[d]=Tr,e=e.slice(0,d).concat(e.slice(d+1));break}return null!=a&&e.push({name:t,value:a}),e}function Kt(e){return function(){var t=this.ownerDocument,n=this.namespaceURI;return n===_r&&t.documentElement.namespaceURI===_r?t.createElement(e):t.createElementNS(n,e)}}function $t(e){return function(){return this.ownerDocument.createElementNS(e.space,e.local)}}function Qt(){}function Xt(){return[]}function Zt(e,t){this.ownerDocument=e.ownerDocument,this.namespaceURI=e.namespaceURI,this._next=null,this._parent=e,this.__data__=t}function Jt(e,t,n,a,d,r){for(var o,l=0,i=t.length,s=r.length;l<s;++l)(o=t[l])?(o.__data__=r[l],a[l]=o):n[l]=new Zt(e,r[l]);for(;l<i;++l)(o=t[l])&&(d[l]=o)}function Gt(e,t,n,a,d,r,o){var l,i,s,c={},u=t.length,p=r.length,g=Array(u);for(l=0;l<u;++l)(i=t[l])&&(g[l]=s=Ir+o.call(i,i.__data__,l,t),s in c?d[l]=i:c[s]=i);for(l=0;l<p;++l)s=Ir+o.call(e,r[l],l,r),(i=c[s])?(a[l]=i,i.__data__=r[l],c[s]=null):n[l]=new Zt(e,r[l]);for(l=0;l<u;++l)(i=t[l])&&c[g[l]]===i&&(d[l]=i)}function en(e,t){return e<t?-1:e>t?1:e>=t?0:NaN}function tn(e){return function(){this.removeAttribute(e)}}function nn(e){return function(){this.removeAttributeNS(e.space,e.local)}}function an(e,t){return function(){this.setAttribute(e,t)}}function dn(e,t){return function(){this.setAttributeNS(e.space,e.local,t)}}function rn(e,t){return function(){var n=t.apply(this,arguments);null==n?this.removeAttribute(e):this.setAttribute(e,n)}}function on(e,t){return function(){var n=t.apply(this,arguments);null==n?this.removeAttributeNS(e.space,e.local):this.setAttributeNS(e.space,e.local,n)}}function ln(e){return function(){this.style.removeProperty(e)}}function sn(e,t,n){return function(){this.style.setProperty(e,t,n)}}function cn(e,t,n){return function(){var i=t.apply(this,arguments);null==i?this.style.removeProperty(e):this.style.setProperty(e,i,n)}}function un(e,t){return e.style.getPropertyValue(t)||jr(e).getComputedStyle(e,null).getPropertyValue(t)}function pn(e){return function(){delete this[e]}}function gn(e,t){return function(){this[e]=t}}function fn(e,t){return function(){var n=t.apply(this,arguments);null==n?delete this[e]:this[e]=n}}function hn(e){return e.trim().split(/^|\s+/)}function bn(e){return e.classList||new mn(e)}function mn(e){this._node=e,this._names=hn(e.getAttribute('class')||'')}function yn(e,t){for(var a=bn(e),d=-1,i=t.length;++d<i;)a.add(t[d])}function xn(e,t){for(var a=bn(e),d=-1,i=t.length;++d<i;)a.remove(t[d])}function kn(e){return function(){yn(this,e)}}function vn(e){return function(){xn(this,e)}}function wn(e,t){return function(){(t.apply(this,arguments)?yn:xn)(this,e)}}function Cn(){this.textContent=''}function Sn(e){return function(){this.textContent=e}}function Tn(e){return function(){var t=e.apply(this,arguments);this.textContent=null==t?'':t}}function _n(){this.innerHTML=''}function Ln(e){return function(){this.innerHTML=e}}function An(e){return function(){var t=e.apply(this,arguments);this.innerHTML=null==t?'':t}}function En(){this.nextSibling&&this.parentNode.appendChild(this)}function Dn(){this.previousSibling&&this.parentNode.insertBefore(this,this.parentNode.firstChild)}function Mn(){return null}function Un(){var e=this.parentNode;e&&e.removeChild(this)}function On(){var e=this.cloneNode(!1),t=this.parentNode;return t?t.insertBefore(e,this.nextSibling):e}function Nn(){var e=this.cloneNode(!0),t=this.parentNode;return t?t.insertBefore(e,this.nextSibling):e}function In(e,t,n){return e=jn(e,t,n),function(t){var n=t.relatedTarget;n&&(n===this||8&n.compareDocumentPosition(this))||e.call(this,t)}}function jn(e,t,n){return function(i){var a=qr;qr=i;try{e.call(this,this.__data__,t,n)}finally{qr=a}}}function Rn(e){return e.trim().split(/^|\s+/).map(function(e){var n='',a=e.indexOf('.');return 0<=a&&(n=e.slice(a+1),e=e.slice(0,a)),{type:e,name:n}})}function qn(e){return function(){var t=this.__on;if(t){for(var n,a=0,d=-1,i=t.length;a<i;++a)(n=t[a],(!e.type||n.type===e.type)&&n.name===e.name)?this.removeEventListener(n.type,n.listener,n.capture):t[++d]=n;++d?t.length=d:delete this.__on}}}function Hn(e,t,n){var a=Rr.hasOwnProperty(e.type)?In:jn;return function(r,d,i){var l,o=this.__on,s=a(t,d,i);if(o)for(var c=0,u=o.length;c<u;++c)if((l=o[c]).type===e.type&&l.name===e.name)return this.removeEventListener(l.type,l.listener,l.capture),this.addEventListener(l.type,l.listener=s,l.capture=n),void(l.value=t);this.addEventListener(e.type,s,n),l={type:e.type,name:e.name,value:t,listener:s,capture:n},o?o.push(l):this.__on=[l]}}function Pn(e,t,n,i){var a=qr;e.sourceEvent=qr,qr=e;try{return t.apply(n,i)}finally{qr=a}}function Fn(e,t,n){var i=jr(e),a=i.CustomEvent;'function'==typeof a?a=new a(t,n):(a=i.document.createEvent('Event'),n?(a.initEvent(t,n.bubbles,n.cancelable),a.detail=n.detail):a.initEvent(t,!1,!1)),e.dispatchEvent(a)}function zn(e,t){return function(){return Fn(this,e,t)}}function Bn(e,t){return function(){return Fn(this,e,t.apply(this,arguments))}}function Wn(e,t){this._groups=e,this._parents=t}function Vn(){qr.stopImmediatePropagation()}function Kn(e,t){var n=e.document.documentElement,i=Fr(e).on('dragstart.drag',null);t&&(i.on('click.drag',Vr,!0),setTimeout(function(){i.on('click.drag',null)},0)),'onselectstart'in n?i.on('selectstart.drag',null):(n.style.MozUserSelect=n.__noselect,delete n.__noselect)}function $n(e,t,n,i,a,d,r,o,l,s){this.target=e,this.type=t,this.subject=n,this.identifier=i,this.active=a,this.x=d,this.y=r,this.dx=o,this.dy=l,this._=s}function Qn(){return!qr.ctrlKey&&!qr.button}function Jn(){return this.parentNode}function Gn(e){return null==e?{x:qr.x,y:qr.y}:e}function ei(){return navigator.maxTouchPoints||'ontouchstart'in this}function ti(e){let t=no;'undefined'!=typeof e.githubUrl&&(t+=`
-    <h3 id="updates-and-corrections">Updates and Corrections</h3>
-    <p>`,e.githubCompareUpdatesUrl&&(t+=`<a href="${e.githubCompareUpdatesUrl}">View all changes</a> to this article since it was first published.`),t+=`
-    If you see mistakes or want to suggest changes, please <a href="${e.githubUrl+'/issues/new'}">create an issue on GitHub</a>. </p>
-    `);const n=e.journal;return'undefined'!=typeof n&&'Distill'===n.title&&(t+=`
-    <h3 id="reuse">Reuse</h3>
-    <p>Diagrams and text are licensed under Creative Commons Attribution <a href="https://creativecommons.org/licenses/by/4.0/">CC-BY 4.0</a> with the <a class="github" href="${e.githubUrl}">source available on GitHub</a>, unless noted otherwise. The figures that have been reused from other sources don’t fall under this license and can be recognized by a note in their caption: “Figure from …”.</p>
-    `),'undefined'!=typeof e.publishedDate&&(t+=`
-    <h3 id="citation">Citation</h3>
-    <p>For attribution in academic contexts, please cite this work as</p>
-    <pre class="citation short">${e.concatenatedAuthors}, "${e.title}", Distill, ${e.publishedYear}.</pre>
-    <p>BibTeX citation</p>
-    <pre class="citation long">${m(e)}</pre>
-    `),t}var ni=Math.sin,ii=Math.cos,ai=Math.sqrt,di=Math.atan2,ri=Math.PI,oi=Math.abs,li=Math.pow,si=Math.LN10,ci=Math.log,ui=Math.max,pi=Math.ceil,gi=Math.round,fi=Math.floor,hi=Math.min;const bi=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'],mi=['Jan.','Feb.','March','April','May','June','July','Aug.','Sept.','Oct.','Nov.','Dec.'],yi=(e)=>10>e?'0'+e:e,xi=function(e){const t=bi[e.getDay()].substring(0,3),n=yi(e.getDate()),i=mi[e.getMonth()].substring(0,3),a=e.getFullYear().toString(),d=e.getUTCHours().toString(),r=e.getUTCMinutes().toString(),o=e.getUTCSeconds().toString();return`${t}, ${n} ${i} ${a} ${d}:${r}:${o} Z`},ki=function(e){const t=Array.from(e).reduce((e,[t,n])=>Object.assign(e,{[t]:n}),{});return t},vi=function(e){const t=new Map;for(var n in e)e.hasOwnProperty(n)&&t.set(n,e[n]);return t};class wi{constructor(e){this.name=e.author,this.personalURL=e.authorURL,this.affiliation=e.affiliation,this.affiliationURL=e.affiliationURL,this.affiliations=e.affiliations||[]}get firstName(){const e=this.name.split(' ');return e.slice(0,e.length-1).join(' ')}get lastName(){const e=this.name.split(' ');return e[e.length-1]}}class Ci{constructor(){this.title='unnamed article',this.description='',this.authors=[],this.bibliography=new Map,this.bibliographyParsed=!1,this.citations=[],this.citationsCollected=!1,this.journal={},this.katex={},this.doi=void 0,this.publishedDate=void 0}set url(e){this._url=e}get url(){if(this._url)return this._url;return this.distillPath&&this.journal.url?this.journal.url+'/'+this.distillPath:this.journal.url?this.journal.url:void 0}get githubUrl(){return this.githubPath?'https://github.com/'+this.githubPath:void 0}set previewURL(e){this._previewURL=e}get previewURL(){return this._previewURL?this._previewURL:this.url+'/thumbnail.jpg'}get publishedDateRFC(){return xi(this.publishedDate)}get updatedDateRFC(){return xi(this.updatedDate)}get publishedYear(){return this.publishedDate.getFullYear()}get publishedMonth(){return mi[this.publishedDate.getMonth()]}get publishedDay(){return this.publishedDate.getDate()}get publishedMonthPadded(){return yi(this.publishedDate.getMonth()+1)}get publishedDayPadded(){return yi(this.publishedDate.getDate())}get publishedISODateOnly(){return this.publishedDate.toISOString().split('T')[0]}get volume(){const e=this.publishedYear-2015;if(1>e)throw new Error('Invalid publish date detected during computing volume');return e}get issue(){return this.publishedDate.getMonth()+1}get concatenatedAuthors(){if(2<this.authors.length)return this.authors[0].lastName+', et al.';return 2===this.authors.length?this.authors[0].lastName+' & '+this.authors[1].lastName:1===this.authors.length?this.authors[0].lastName:void 0}get bibtexAuthors(){return this.authors.map((e)=>{return e.lastName+', '+e.firstName}).join(' and ')}get slug(){let e='';return this.authors.length&&(e+=this.authors[0].lastName.toLowerCase(),e+=this.publishedYear,e+=this.title.split(' ')[0].toLowerCase()),e||'Untitled'}get bibliographyEntries(){return new Map(this.citations.map((e)=>{const t=this.bibliography.get(e);return[e,t]}))}set bibliography(e){e instanceof Map?this._bibliography=e:'object'==typeof e&&(this._bibliography=vi(e))}get bibliography(){return this._bibliography}static fromObject(e){const t=new Ci;return Object.assign(t,e),t}assignToObject(e){Object.assign(e,this),e.bibliography=ki(this.bibliographyEntries),e.url=this.url,e.doi=this.doi,e.githubUrl=this.githubUrl,e.previewURL=this.previewURL,this.publishedDate&&(e.volume=this.volume,e.issue=this.issue,e.publishedDateRFC=this.publishedDateRFC,e.publishedYear=this.publishedYear,e.publishedMonth=this.publishedMonth,e.publishedDay=this.publishedDay,e.publishedMonthPadded=this.publishedMonthPadded,e.publishedDayPadded=this.publishedDayPadded),this.updatedDate&&(e.updatedDateRFC=this.updatedDateRFC),e.concatenatedAuthors=this.concatenatedAuthors,e.bibtexAuthors=this.bibtexAuthors,e.slug=this.slug}}const Si=(e)=>{return class extends e{constructor(){super();const e={childList:!0,characterData:!0,subtree:!0},t=new MutationObserver(()=>{t.disconnect(),this.renderIfPossible(),t.observe(this,e)});t.observe(this,e)}connectedCallback(){super.connectedCallback(),this.renderIfPossible()}renderIfPossible(){this.textContent&&this.root&&this.renderContent()}renderContent(){console.error(`Your class ${this.constructor.name} must provide a custom renderContent() method!`)}}},Ti=(e,t,n=!0)=>{return(i)=>{const a=document.createElement('template');return a.innerHTML=t,n&&'ShadyCSS'in window&&ShadyCSS.prepareTemplate(a,e),class extends i{static get is(){return e}constructor(){super(),this.clone=document.importNode(a.content,!0),n&&(this.attachShadow({mode:'open'}),this.shadowRoot.appendChild(this.clone))}connectedCallback(){this.hasAttribute('distill-prerendered')||(n?'ShadyCSS'in window&&ShadyCSS.styleElement(this):this.insertBefore(this.clone,this.firstChild))}get root(){return n?this.shadowRoot:this}$(e){return this.root.querySelector(e)}$$(e){return this.root.querySelectorAll(e)}}}};var _i='/*\n * Copyright 2018 The Distill Template Authors\n *\n * Licensed under the Apache License, Version 2.0 (the "License");\n * you may not use this file except in compliance with the License.\n * You may obtain a copy of the License at\n *\n *      http://www.apache.org/licenses/LICENSE-2.0\n *\n * Unless required by applicable law or agreed to in writing, software\n * distributed under the License is distributed on an "AS IS" BASIS,\n * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.\n * See the License for the specific language governing permissions and\n * limitations under the License.\n */\n\nspan.katex-display {\n  text-align: left;\n  padding: 8px 0 8px 0;\n  margin: 0.5em 0 0.5em 1em;\n}\n\nspan.katex {\n  -webkit-font-smoothing: antialiased;\n  color: rgba(0, 0, 0, 0.8);\n  font-size: 1.18em;\n}\n';const Li=function(e,t,n){let i=n,a=0;for(const d=e.length;i<t.length;){const n=t[i];if(0>=a&&t.slice(i,i+d)===e)return i;'\\'===n?i++:'{'===n?a++:'}'===n&&a--;i++}return-1},Ai=function(e,t,n,i){const a=[];for(let d=0;d<e.length;d++)if('text'===e[d].type){const r=e[d].data;let o,l=!0,s=0;for(o=r.indexOf(t),-1!==o&&(s=o,a.push({type:'text',data:r.slice(0,s)}),l=!1);;){if(l){if(o=r.indexOf(t,s),-1===o)break;a.push({type:'text',data:r.slice(s,o)}),s=o}else{if(o=Li(n,r,s+t.length),-1===o)break;a.push({type:'math',data:r.slice(s+t.length,o),rawData:r.slice(s,o+n.length),display:i}),s=o+n.length}l=!l}a.push({type:'text',data:r.slice(s)})}else a.push(e[d]);return a},Ei=function(e,t){let n=[{type:'text',data:e}];for(let a=0;a<t.length;a++){const e=t[a];n=Ai(n,e.left,e.right,e.display||!1)}return n},Di=function(e,t){const n=Ei(e,t.delimiters),a=document.createDocumentFragment();for(let d=0;d<n.length;d++)if('text'===n[d].type)a.appendChild(document.createTextNode(n[d].data));else{const e=document.createElement('d-math'),i=n[d].data;t.displayMode=n[d].display;try{e.textContent=i,t.displayMode&&e.setAttribute('block','')}catch(i){if(!(i instanceof katex.ParseError))throw i;t.errorCallback('KaTeX auto-render: Failed to parse `'+n[d].data+'` with ',i),a.appendChild(document.createTextNode(n[d].rawData));continue}a.appendChild(e)}return a},Mi=function(e,t){for(let n=0;n<e.childNodes.length;n++){const i=e.childNodes[n];if(3===i.nodeType){const a=i.textContent;if(t.mightHaveMath(a)){const d=Di(a,t);n+=d.childNodes.length-1,e.replaceChild(d,i)}}else if(1===i.nodeType){const e=-1===t.ignoredTags.indexOf(i.nodeName.toLowerCase());e&&Mi(i,t)}}},Ui={delimiters:[{left:'$$',right:'$$',display:!0},{left:'\\[',right:'\\]',display:!0},{left:'\\(',right:'\\)',display:!1}],ignoredTags:['script','noscript','style','textarea','pre','code','svg'],errorCallback:function(e,t){console.error(e,t)}},Oi=function(e,t){if(!e)throw new Error('No element provided to render');const n=Object.assign({},Ui,t),i=n.delimiters.flatMap((e)=>[e.left,e.right]);n.mightHaveMath=(e)=>i.some((t)=>-1!==e.indexOf(t)),Mi(e,n)},Ni='<link rel="stylesheet" href="https://distill.pub/third-party/katex/katex.min.css" crossorigin="anonymous">',Ii=Ti('d-math',`
-${Ni}
+  const Mutating = (superclass) => {
+    return class extends superclass {
+
+      constructor() {
+        super();
+
+        // set up mutation observer
+        const options = {childList: true, characterData: true, subtree: true};
+        const observer = new MutationObserver( () => {
+          observer.disconnect();
+          this.renderIfPossible();
+          observer.observe(this, options);
+        });
+
+        // ...and listen for changes
+        observer.observe(this, options);
+      }
+
+      connectedCallback() {
+        super.connectedCallback();
+
+        this.renderIfPossible();
+      }
+
+      // potential TODO: check if this is enough for all our usecases
+      // maybe provide a custom function to tell if we have enough information to render
+      renderIfPossible() {
+        if (this.textContent && this.root) {
+          this.renderContent();
+        }
+      }
+
+      renderContent() {
+        console.error(`Your class ${this.constructor.name} must provide a custom renderContent() method!` );
+      }
+
+    }; // end class
+  }; // end mixin function
+
+  // Copyright 2018 The Distill Template Authors
+  //
+  // Licensed under the Apache License, Version 2.0 (the "License");
+  // you may not use this file except in compliance with the License.
+  // You may obtain a copy of the License at
+  //
+  //      http://www.apache.org/licenses/LICENSE-2.0
+  //
+  // Unless required by applicable law or agreed to in writing, software
+  // distributed under the License is distributed on an "AS IS" BASIS,
+  // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  // See the License for the specific language governing permissions and
+  // limitations under the License.
+
+  /*global ShadyCSS*/
+
+  const Template = (name, templateString, useShadow = true) => {
+
+    return (superclass) => {
+
+      const template = document.createElement('template');
+      template.innerHTML = templateString;
+
+      if (useShadow && 'ShadyCSS' in window) {
+        ShadyCSS.prepareTemplate(template, name);
+      }
+
+      return class extends superclass {
+
+        static get is() { return name; }
+
+        constructor() {
+          super();
+
+          this.clone = document.importNode(template.content, true);
+          if (useShadow) {
+            this.attachShadow({mode: 'open'});
+            this.shadowRoot.appendChild(this.clone);
+          }
+        }
+
+        connectedCallback() {
+          if (this.hasAttribute('distill-prerendered')) {
+            return;
+          }
+          if (useShadow) {
+            if ('ShadyCSS' in window) {
+              ShadyCSS.styleElement(this);
+            }
+          } else {
+            this.insertBefore(this.clone, this.firstChild);
+          }
+        }
+
+        get root() {
+          if (useShadow) {
+            return this.shadowRoot;
+          } else {
+            return this;
+          }
+        }
+
+        /* TODO: Are we using these? Should we even? */
+        $(query) {
+          return this.root.querySelector(query);
+        }
+
+        $$(query) {
+          return this.root.querySelectorAll(query);
+        }
+      };
+    };
+  };
+
+  var math = "/*\n * Copyright 2018 The Distill Template Authors\n *\n * Licensed under the Apache License, Version 2.0 (the \"License\");\n * you may not use this file except in compliance with the License.\n * You may obtain a copy of the License at\n *\n *      http://www.apache.org/licenses/LICENSE-2.0\n *\n * Unless required by applicable law or agreed to in writing, software\n * distributed under the License is distributed on an \"AS IS\" BASIS,\n * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.\n * See the License for the specific language governing permissions and\n * limitations under the License.\n */\n\nspan.katex-display {\n  /* text-align: left; */\n  padding: 8px 0 8px 0;\n  margin: 0.5em 0 0.5em 1em;\n}\n\nspan.katex {\n  -webkit-font-smoothing: antialiased;\n  color: rgba(0, 0, 0, 0.8);\n  font-size: 1.18em;\n}\n";
+
+  // Copyright 2018 The Distill Template Authors
+  //
+  // Licensed under the Apache License, Version 2.0 (the "License");
+  // you may not use this file except in compliance with the License.
+  // You may obtain a copy of the License at
+  //
+  //      http://www.apache.org/licenses/LICENSE-2.0
+  //
+  // Unless required by applicable law or agreed to in writing, software
+  // distributed under the License is distributed on an "AS IS" BASIS,
+  // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  // See the License for the specific language governing permissions and
+  // limitations under the License.
+
+  // This is a straight concatenation of code from KaTeX's contrib folder,
+  // but we aren't using some of their helpers that don't work well outside a browser environment.
+
+  /*global katex */
+
+  const findEndOfMath = function(delimiter, text, startIndex) {
+    // Adapted from
+    // https://github.com/Khan/perseus/blob/master/src/perseus-markdown.jsx
+    let index = startIndex;
+    let braceLevel = 0;
+
+    const delimLength = delimiter.length;
+
+    while (index < text.length) {
+      const character = text[index];
+
+      if (
+        braceLevel <= 0 &&
+        text.slice(index, index + delimLength) === delimiter
+      ) {
+        return index;
+      } else if (character === "\\") {
+        index++;
+      } else if (character === "{") {
+        braceLevel++;
+      } else if (character === "}") {
+        braceLevel--;
+      }
+
+      index++;
+    }
+
+    return -1;
+  };
+
+  const splitAtDelimiters = function(startData, leftDelim, rightDelim, display) {
+    const finalData = [];
+
+    for (let i = 0; i < startData.length; i++) {
+      if (startData[i].type === "text") {
+        const text = startData[i].data;
+
+        let lookingForLeft = true;
+        let currIndex = 0;
+        let nextIndex;
+
+        nextIndex = text.indexOf(leftDelim);
+        if (nextIndex !== -1) {
+          currIndex = nextIndex;
+          finalData.push({
+            type: "text",
+            data: text.slice(0, currIndex)
+          });
+          lookingForLeft = false;
+        }
+
+        while (true) {
+          // eslint-disable-line no-constant-condition
+          if (lookingForLeft) {
+            nextIndex = text.indexOf(leftDelim, currIndex);
+            if (nextIndex === -1) {
+              break;
+            }
+
+            finalData.push({
+              type: "text",
+              data: text.slice(currIndex, nextIndex)
+            });
+
+            currIndex = nextIndex;
+          } else {
+            nextIndex = findEndOfMath(
+              rightDelim,
+              text,
+              currIndex + leftDelim.length
+            );
+            if (nextIndex === -1) {
+              break;
+            }
+
+            finalData.push({
+              type: "math",
+              data: text.slice(currIndex + leftDelim.length, nextIndex),
+              rawData: text.slice(currIndex, nextIndex + rightDelim.length),
+              display: display
+            });
+
+            currIndex = nextIndex + rightDelim.length;
+          }
+
+          lookingForLeft = !lookingForLeft;
+        }
+
+        finalData.push({
+          type: "text",
+          data: text.slice(currIndex)
+        });
+      } else {
+        finalData.push(startData[i]);
+      }
+    }
+
+    return finalData;
+  };
+
+  const splitWithDelimiters = function(text, delimiters) {
+    let data = [{ type: "text", data: text }];
+    for (let i = 0; i < delimiters.length; i++) {
+      const delimiter = delimiters[i];
+      data = splitAtDelimiters(
+        data,
+        delimiter.left,
+        delimiter.right,
+        delimiter.display || false
+      );
+    }
+    return data;
+  };
+
+  /* Note: optionsCopy is mutated by this method. If it is ever exposed in the
+   * API, we should copy it before mutating.
+   */
+  const renderMathInText = function(text, optionsCopy) {
+    const data = splitWithDelimiters(text, optionsCopy.delimiters);
+    const fragment = document.createDocumentFragment();
+
+    for (let i = 0; i < data.length; i++) {
+      if (data[i].type === "text") {
+        fragment.appendChild(document.createTextNode(data[i].data));
+      } else {
+        const tag = document.createElement("d-math");
+        const math = data[i].data;
+        // Override any display mode defined in the settings with that
+        // defined by the text itself
+        optionsCopy.displayMode = data[i].display;
+        try {
+          tag.textContent = math;
+          if (optionsCopy.displayMode) {
+            tag.setAttribute("block", "");
+          }
+        } catch (e) {
+          if (!(e instanceof katex.ParseError)) {
+            throw e;
+          }
+          optionsCopy.errorCallback(
+            "KaTeX auto-render: Failed to parse `" + data[i].data + "` with ",
+            e
+          );
+          fragment.appendChild(document.createTextNode(data[i].rawData));
+          continue;
+        }
+        fragment.appendChild(tag);
+      }
+    }
+
+    return fragment;
+  };
+
+  const renderElem = function(elem, optionsCopy) {
+    for (let i = 0; i < elem.childNodes.length; i++) {
+      const childNode = elem.childNodes[i];
+      if (childNode.nodeType === 3) {
+        // Text node
+        const text = childNode.textContent;
+        if (optionsCopy.mightHaveMath(text)) {
+          const frag = renderMathInText(text, optionsCopy);
+          i += frag.childNodes.length - 1;
+          elem.replaceChild(frag, childNode);
+        }
+      } else if (childNode.nodeType === 1) {
+        // Element node
+        const shouldRender =
+          optionsCopy.ignoredTags.indexOf(childNode.nodeName.toLowerCase()) ===
+          -1;
+
+        if (shouldRender) {
+          renderElem(childNode, optionsCopy);
+        }
+      }
+      // Otherwise, it's something else, and ignore it.
+    }
+  };
+
+  const defaultAutoRenderOptions = {
+    delimiters: [
+      { left: "$$", right: "$$", display: true },
+      { left: "\\[", right: "\\]", display: true },
+      { left: "\\(", right: "\\)", display: false }
+      // LaTeX uses this, but it ruins the display of normal `$` in text:
+      // {left: '$', right: '$', display: false},
+    ],
+
+    ignoredTags: [
+      "script",
+      "noscript",
+      "style",
+      "textarea",
+      "pre",
+      "code",
+      "svg"
+    ],
+
+    errorCallback: function(msg, err) {
+      console.error(msg, err);
+    }
+  };
+
+  const renderMathInElement = function(elem, options) {
+    if (!elem) {
+      throw new Error("No element provided to render");
+    }
+
+    const optionsCopy = Object.assign({}, defaultAutoRenderOptions, options);
+    const delimiterStrings = optionsCopy.delimiters.flatMap(d => [
+      d.left,
+      d.right
+    ]);
+    const mightHaveMath = text =>
+      delimiterStrings.some(d => text.indexOf(d) !== -1);
+    optionsCopy.mightHaveMath = mightHaveMath;
+    renderElem(elem, optionsCopy);
+  };
+
+  // Copyright 2018 The Distill Template Authors
+
+  const katexJSURL = 'https://distill.pub/third-party/katex/katex.min.js';
+  const katexCSSTag = '<link rel="stylesheet" href="https://distill.pub/third-party/katex/katex.min.css" crossorigin="anonymous">';
+
+  const T = Template('d-math', `
+${katexCSSTag}
 <style>
 
 :host {
   display: inline-block;
   contain: style;
+  text-indent: 0;
 }
 
 :host([block]) {
   display: block;
 }
 
-${_i}
+${math}
 </style>
 <span id='katex-container'></span>
-`);class T extends Si(Ii(HTMLElement)){static set katexOptions(e){T._katexOptions=e,T.katexOptions.delimiters&&(T.katexAdded?T.katexLoadedCallback():T.addKatex())}static get katexOptions(){return T._katexOptions||(T._katexOptions={delimiters:[{left:'$$',right:'$$',display:!1}]}),T._katexOptions}static katexLoadedCallback(){const e=document.querySelectorAll('d-math');for(const t of e)t.renderContent();T.katexOptions.delimiters&&Oi(document.body,T.katexOptions)}static addKatex(){document.head.insertAdjacentHTML('beforeend',Ni);const e=document.createElement('script');e.src='https://distill.pub/third-party/katex/katex.min.js',e.async=!0,e.onload=T.katexLoadedCallback,e.crossorigin='anonymous',document.head.appendChild(e),T.katexAdded=!0}get options(){const e={displayMode:this.hasAttribute('block')};return Object.assign(e,T.katexOptions)}connectedCallback(){super.connectedCallback(),T.katexAdded||T.addKatex()}renderContent(){if('undefined'!=typeof katex){const e=this.root.querySelector('#katex-container');katex.render(this.textContent,e,this.options)}}}T.katexAdded=!1,T.inlineMathRendered=!1,window.DMath=T;class ji extends HTMLElement{static get is(){return'd-front-matter'}constructor(){super();const e=new MutationObserver((e)=>{for(const t of e)if('SCRIPT'===t.target.nodeName||'characterData'===t.type){const e=u(this);this.notify(e)}});e.observe(this,{childList:!0,characterData:!0,subtree:!0})}notify(e){const t=new CustomEvent('onFrontMatterChanged',{detail:e,bubbles:!0});document.dispatchEvent(t)}}var Ri=function(e,t){const n=e.body,i=n.querySelector('d-article');if(!i)return void console.warn('No d-article tag found; skipping adding optional components!');let a=e.querySelector('d-byline');a||(t.authors?(a=e.createElement('d-byline'),n.insertBefore(a,i)):console.warn('No authors found in front matter; please add them before submission!'));let d=e.querySelector('d-title');d||(d=e.createElement('d-title'),n.insertBefore(d,a));let r=d.querySelector('h1');r||(r=e.createElement('h1'),r.textContent=t.title,d.insertBefore(r,d.firstChild));const o='undefined'!=typeof t.password;let l=n.querySelector('d-interstitial');if(o&&!l){const i='undefined'!=typeof window,a=i&&window.location.hostname.includes('localhost');i&&a||(l=e.createElement('d-interstitial'),l.password=t.password,n.insertBefore(l,n.firstChild))}else!o&&l&&l.parentElement.removeChild(this);let s=e.querySelector('d-appendix');s||(s=e.createElement('d-appendix'),e.body.appendChild(s));let c=e.querySelector('d-footnote-list');c||(c=e.createElement('d-footnote-list'),s.appendChild(c));let u=e.querySelector('d-citation-list');u||(u=e.createElement('d-citation-list'),s.appendChild(u))};const qi=new Ci,Hi={frontMatter:qi,waitingOn:{bibliography:[],citations:[]},listeners:{onCiteKeyCreated(e){const[t,n]=e.detail;if(!qi.citationsCollected)return void Hi.waitingOn.citations.push(()=>Hi.listeners.onCiteKeyCreated(e));if(!qi.bibliographyParsed)return void Hi.waitingOn.bibliography.push(()=>Hi.listeners.onCiteKeyCreated(e));const i=n.map((e)=>qi.citations.indexOf(e));t.numbers=i;const a=n.map((e)=>qi.bibliography.get(e));t.entries=a},onCiteKeyChanged(){qi.citations=t(),qi.citationsCollected=!0;for(const e of Hi.waitingOn.citations.slice())e();const e=document.querySelector('d-citation-list'),n=new Map(qi.citations.map((e)=>{return[e,qi.bibliography.get(e)]}));e.citations=n;const i=document.querySelectorAll('d-cite');for(const e of i){console.log(e);const t=e.keys,n=t.map((e)=>qi.citations.indexOf(e));e.numbers=n;const i=t.map((e)=>qi.bibliography.get(e));e.entries=i}},onCiteKeyRemoved(e){Hi.listeners.onCiteKeyChanged(e)},onBibliographyChanged(e){const t=document.querySelector('d-citation-list'),n=e.detail;qi.bibliography=n,qi.bibliographyParsed=!0;for(const t of Hi.waitingOn.bibliography.slice())t();if(!qi.citationsCollected)return void Hi.waitingOn.citations.push(function(){Hi.listeners.onBibliographyChanged({target:e.target,detail:e.detail})});if(t.hasAttribute('distill-prerendered'))console.debug('Citation list was prerendered; not updating it.');else{const e=new Map(qi.citations.map((e)=>{return[e,qi.bibliography.get(e)]}));t.citations=e}},onFootnoteChanged(){const e=document.querySelector('d-footnote-list');if(e){const t=document.querySelectorAll('d-footnote');e.footnotes=t}},onFrontMatterChanged(t){const n=t.detail;e(qi,n);const i=document.querySelector('d-interstitial');i&&('undefined'==typeof qi.password?i.parentElement.removeChild(i):i.password=qi.password);const a=document.body.hasAttribute('distill-prerendered');if(!a&&s()){Ri(document,qi);const e=document.querySelector('distill-appendix');e&&(e.frontMatter=qi);const t=document.querySelector('d-byline');t&&(t.frontMatter=qi),n.katex&&(T.katexOptions=n.katex)}},DOMContentLoaded(){if(Hi.loaded)return void console.warn('Controller received DOMContentLoaded but was already loaded!');if(!s())return void console.warn('Controller received DOMContentLoaded at document.readyState: '+document.readyState+'!');Hi.loaded=!0,console.debug('Runlevel 4: Controller running DOMContentLoaded');const e=document.querySelector('d-front-matter');if(e){const t=u(e);Hi.listeners.onFrontMatterChanged({detail:t})}qi.citations=t(),qi.citationsCollected=!0;for(const e of Hi.waitingOn.citations.slice())e();if(qi.bibliographyParsed)for(const e of Hi.waitingOn.bibliography.slice())e();const n=document.querySelector('d-footnote-list');if(n){const e=document.querySelectorAll('d-footnote');n.footnotes=e}}}};const Pi='/*\n * Copyright 2018 The Distill Template Authors\n *\n * Licensed under the Apache License, Version 2.0 (the "License");\n * you may not use this file except in compliance with the License.\n * You may obtain a copy of the License at\n *\n *      http://www.apache.org/licenses/LICENSE-2.0\n *\n * Unless required by applicable law or agreed to in writing, software\n * distributed under the License is distributed on an "AS IS" BASIS,\n * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.\n * See the License for the specific language governing permissions and\n * limitations under the License.\n */\n\nhtml {\n  font-size: 14px;\n\tline-height: 1.6em;\n  /* font-family: "Libre Franklin", "Helvetica Neue", sans-serif; */\n  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Fira Sans", "Droid Sans", "Helvetica Neue", Arial, sans-serif;\n  /*, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";*/\n  text-size-adjust: 100%;\n  -ms-text-size-adjust: 100%;\n  -webkit-text-size-adjust: 100%;\n}\n\n@media(min-width: 768px) {\n  html {\n    font-size: 16px;\n  }\n}\n\nbody {\n  margin: 0;\n}\n\na {\n  color: #004276;\n}\n\nfigure {\n  margin: 0;\n}\n\ntable {\n\tborder-collapse: collapse;\n\tborder-spacing: 0;\n}\n\ntable th {\n\ttext-align: left;\n}\n\ntable thead {\n  border-bottom: 1px solid rgba(0, 0, 0, 0.05);\n}\n\ntable thead th {\n  padding-bottom: 0.5em;\n}\n\ntable tbody :first-child td {\n  padding-top: 0.5em;\n}\n\npre {\n  overflow: auto;\n  max-width: 100%;\n}\n\np {\n  margin-top: 0;\n  margin-bottom: 1em;\n}\n\nsup, sub {\n  vertical-align: baseline;\n  position: relative;\n  top: -0.4em;\n  line-height: 1em;\n}\n\nsub {\n  top: 0.4em;\n}\n\n.kicker,\n.marker {\n  font-size: 15px;\n  font-weight: 600;\n  color: rgba(0, 0, 0, 0.5);\n}\n\n\n/* Headline */\n\n@media(min-width: 1024px) {\n  d-title h1 span {\n    display: block;\n  }\n}\n\n/* Figure */\n\nfigure {\n  position: relative;\n  margin-bottom: 2.5em;\n  margin-top: 1.5em;\n}\n\nfigcaption+figure {\n\n}\n\nfigure img {\n  width: 100%;\n}\n\nfigure svg text,\nfigure svg tspan {\n}\n\nfigcaption,\n.figcaption {\n  color: rgba(0, 0, 0, 0.6);\n  font-size: 12px;\n  line-height: 1.5em;\n}\n\n@media(min-width: 1024px) {\nfigcaption,\n.figcaption {\n    font-size: 13px;\n  }\n}\n\nfigure.external img {\n  background: white;\n  border: 1px solid rgba(0, 0, 0, 0.1);\n  box-shadow: 0 1px 8px rgba(0, 0, 0, 0.1);\n  padding: 18px;\n  box-sizing: border-box;\n}\n\nfigcaption a {\n  color: rgba(0, 0, 0, 0.6);\n}\n\nfigcaption b,\nfigcaption strong, {\n  font-weight: 600;\n  color: rgba(0, 0, 0, 1.0);\n}\n'+'/*\n * Copyright 2018 The Distill Template Authors\n *\n * Licensed under the Apache License, Version 2.0 (the "License");\n * you may not use this file except in compliance with the License.\n * You may obtain a copy of the License at\n *\n *      http://www.apache.org/licenses/LICENSE-2.0\n *\n * Unless required by applicable law or agreed to in writing, software\n * distributed under the License is distributed on an "AS IS" BASIS,\n * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.\n * See the License for the specific language governing permissions and\n * limitations under the License.\n */\n\n@supports not (display: grid) {\n  .base-grid,\n  distill-header,\n  d-title,\n  d-abstract,\n  d-article,\n  d-appendix,\n  distill-appendix,\n  d-byline,\n  d-footnote-list,\n  d-citation-list,\n  distill-footer {\n    display: block;\n    padding: 8px;\n  }\n}\n\n.base-grid,\ndistill-header,\nd-title,\nd-abstract,\nd-article,\nd-appendix,\ndistill-appendix,\nd-byline,\nd-footnote-list,\nd-citation-list,\ndistill-footer {\n  display: grid;\n  justify-items: stretch;\n  grid-template-columns: [screen-start] 8px [page-start kicker-start text-start gutter-start middle-start] 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr [text-end page-end gutter-end kicker-end middle-end] 8px [screen-end];\n  grid-column-gap: 8px;\n}\n\n.grid {\n  display: grid;\n  grid-column-gap: 8px;\n}\n\n@media(min-width: 768px) {\n  .base-grid,\n  distill-header,\n  d-title,\n  d-abstract,\n  d-article,\n  d-appendix,\n  distill-appendix,\n  d-byline,\n  d-footnote-list,\n  d-citation-list,\n  distill-footer {\n    grid-template-columns: [screen-start] 1fr [page-start kicker-start middle-start text-start] 45px 45px 45px 45px 45px 45px 45px 45px [ kicker-end text-end gutter-start] 45px [middle-end] 45px [page-end gutter-end] 1fr [screen-end];\n    grid-column-gap: 16px;\n  }\n\n  .grid {\n    grid-column-gap: 16px;\n  }\n}\n\n@media(min-width: 1000px) {\n  .base-grid,\n  distill-header,\n  d-title,\n  d-abstract,\n  d-article,\n  d-appendix,\n  distill-appendix,\n  d-byline,\n  d-footnote-list,\n  d-citation-list,\n  distill-footer {\n    grid-template-columns: [screen-start] 1fr [page-start kicker-start] 50px [middle-start] 50px [text-start kicker-end] 50px 50px 50px 50px 50px 50px 50px 50px [text-end gutter-start] 50px [middle-end] 50px [page-end gutter-end] 1fr [screen-end];\n    grid-column-gap: 16px;\n  }\n\n  .grid {\n    grid-column-gap: 16px;\n  }\n}\n\n@media(min-width: 1180px) {\n  .base-grid,\n  distill-header,\n  d-title,\n  d-abstract,\n  d-article,\n  d-appendix,\n  distill-appendix,\n  d-byline,\n  d-footnote-list,\n  d-citation-list,\n  distill-footer {\n    grid-template-columns: [screen-start] 1fr [page-start kicker-start] 60px [middle-start] 60px [text-start kicker-end] 60px 60px 60px 60px 60px 60px 60px 60px [text-end gutter-start] 60px [middle-end] 60px [page-end gutter-end] 1fr [screen-end];\n    grid-column-gap: 32px;\n  }\n\n  .grid {\n    grid-column-gap: 32px;\n  }\n}\n\n\n\n\n.base-grid {\n  grid-column: screen;\n}\n\n/* .l-body,\nd-article > *  {\n  grid-column: text;\n}\n\n.l-page,\nd-title > *,\nd-figure {\n  grid-column: page;\n} */\n\n.l-gutter {\n  grid-column: gutter;\n}\n\n.l-text,\n.l-body {\n  grid-column: text;\n}\n\n.l-page {\n  grid-column: page;\n}\n\n.l-body-outset {\n  grid-column: middle;\n}\n\n.l-page-outset {\n  grid-column: page;\n}\n\n.l-screen {\n  grid-column: screen;\n}\n\n.l-screen-inset {\n  grid-column: screen;\n  padding-left: 16px;\n  padding-left: 16px;\n}\n\n\n/* Aside */\n\nd-article aside {\n  grid-column: gutter;\n  font-size: 12px;\n  line-height: 1.6em;\n  color: rgba(0, 0, 0, 0.6)\n}\n\n@media(min-width: 768px) {\n  aside {\n    grid-column: gutter;\n  }\n\n  .side {\n    grid-column: gutter;\n  }\n}\n'+'/*\n * Copyright 2018 The Distill Template Authors\n *\n * Licensed under the Apache License, Version 2.0 (the "License");\n * you may not use this file except in compliance with the License.\n * You may obtain a copy of the License at\n *\n *      http://www.apache.org/licenses/LICENSE-2.0\n *\n * Unless required by applicable law or agreed to in writing, software\n * distributed under the License is distributed on an "AS IS" BASIS,\n * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.\n * See the License for the specific language governing permissions and\n * limitations under the License.\n */\n\nd-title {\n  padding: 2rem 0 1.5rem;\n  contain: layout style;\n  overflow-x: hidden;\n}\n\n@media(min-width: 768px) {\n  d-title {\n    padding: 4rem 0 1.5rem;\n  }\n}\n\nd-title h1 {\n  grid-column: text;\n  font-size: 40px;\n  font-weight: 700;\n  line-height: 1.1em;\n  margin: 0 0 0.5rem;\n}\n\n@media(min-width: 768px) {\n  d-title h1 {\n    font-size: 50px;\n  }\n}\n\nd-title p {\n  font-weight: 300;\n  font-size: 1.2rem;\n  line-height: 1.55em;\n  grid-column: text;\n}\n\nd-title .status {\n  margin-top: 0px;\n  font-size: 12px;\n  color: #009688;\n  opacity: 0.8;\n  grid-column: kicker;\n}\n\nd-title .status span {\n  line-height: 1;\n  display: inline-block;\n  padding: 6px 0;\n  border-bottom: 1px solid #80cbc4;\n  font-size: 11px;\n  text-transform: uppercase;\n}\n'+'/*\n * Copyright 2018 The Distill Template Authors\n *\n * Licensed under the Apache License, Version 2.0 (the "License");\n * you may not use this file except in compliance with the License.\n * You may obtain a copy of the License at\n *\n *      http://www.apache.org/licenses/LICENSE-2.0\n *\n * Unless required by applicable law or agreed to in writing, software\n * distributed under the License is distributed on an "AS IS" BASIS,\n * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.\n * See the License for the specific language governing permissions and\n * limitations under the License.\n */\n\nd-byline {\n  contain: style;\n  overflow: hidden;\n  border-top: 1px solid rgba(0, 0, 0, 0.1);\n  font-size: 0.8rem;\n  line-height: 1.8em;\n  padding: 1.5rem 0;\n  min-height: 1.8em;\n}\n\n\nd-byline .byline {\n  grid-template-columns: 1fr 1fr;\n  grid-column: text;\n}\n\n@media(min-width: 768px) {\n  d-byline .byline {\n    grid-template-columns: 1fr 1fr 1fr 1fr;\n  }\n}\n\nd-byline .authors-affiliations {\n  grid-column-end: span 2;\n  grid-template-columns: 1fr 1fr;\n  margin-bottom: 1em;\n}\n\n@media(min-width: 768px) {\n  d-byline .authors-affiliations {\n    margin-bottom: 0;\n  }\n}\n\nd-byline h3 {\n  font-size: 0.6rem;\n  font-weight: 400;\n  color: rgba(0, 0, 0, 0.5);\n  margin: 0;\n  text-transform: uppercase;\n}\n\nd-byline p {\n  margin: 0;\n}\n\nd-byline a,\nd-article d-byline a {\n  color: rgba(0, 0, 0, 0.8);\n  text-decoration: none;\n  border-bottom: none;\n}\n\nd-article d-byline a:hover {\n  text-decoration: underline;\n  border-bottom: none;\n}\n\nd-byline p.author {\n  font-weight: 500;\n}\n\nd-byline .affiliations {\n\n}\n'+'/*\n * Copyright 2018 The Distill Template Authors\n *\n * Licensed under the Apache License, Version 2.0 (the "License");\n * you may not use this file except in compliance with the License.\n * You may obtain a copy of the License at\n *\n *      http://www.apache.org/licenses/LICENSE-2.0\n *\n * Unless required by applicable law or agreed to in writing, software\n * distributed under the License is distributed on an "AS IS" BASIS,\n * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.\n * See the License for the specific language governing permissions and\n * limitations under the License.\n */\n\nd-article {\n  contain: layout style;\n  overflow-x: hidden;\n  border-top: 1px solid rgba(0, 0, 0, 0.1);\n  padding-top: 2rem;\n  color: rgba(0, 0, 0, 0.8);\n}\n\nd-article > * {\n  grid-column: text;\n}\n\n@media(min-width: 768px) {\n  d-article {\n    font-size: 16px;\n  }\n}\n\n@media(min-width: 1024px) {\n  d-article {\n    font-size: 1.06rem;\n    line-height: 1.7em;\n  }\n}\n\n\n/* H2 */\n\n\nd-article .marker {\n  text-decoration: none;\n  border: none;\n  counter-reset: section;\n  grid-column: kicker;\n  line-height: 1.7em;\n}\n\nd-article .marker:hover {\n  border: none;\n}\n\nd-article .marker span {\n  padding: 0 3px 4px;\n  border-bottom: 1px solid rgba(0, 0, 0, 0.2);\n  position: relative;\n  top: 4px;\n}\n\nd-article .marker:hover span {\n  color: rgba(0, 0, 0, 0.7);\n  border-bottom: 1px solid rgba(0, 0, 0, 0.7);\n}\n\nd-article h2 {\n  font-weight: 600;\n  font-size: 24px;\n  line-height: 1.25em;\n  margin: 2rem 0 1.5rem 0;\n  border-bottom: 1px solid rgba(0, 0, 0, 0.1);\n  padding-bottom: 1rem;\n}\n\n@media(min-width: 1024px) {\n  d-article h2 {\n    font-size: 36px;\n  }\n}\n\n/* H3 */\n\nd-article h3 {\n  font-weight: 700;\n  font-size: 18px;\n  line-height: 1.4em;\n  margin-bottom: 1em;\n  margin-top: 2em;\n}\n\n@media(min-width: 1024px) {\n  d-article h3 {\n    font-size: 20px;\n  }\n}\n\n/* H4 */\n\nd-article h4 {\n  font-weight: 600;\n  text-transform: uppercase;\n  font-size: 14px;\n  line-height: 1.4em;\n}\n\nd-article a {\n  color: inherit;\n}\n\nd-article p,\nd-article ul,\nd-article ol,\nd-article blockquote {\n  margin-top: 0;\n  margin-bottom: 1em;\n  margin-left: 0;\n  margin-right: 0;\n}\n\nd-article blockquote {\n  border-left: 2px solid rgba(0, 0, 0, 0.2);\n  padding-left: 2em;\n  font-style: italic;\n  color: rgba(0, 0, 0, 0.6);\n}\n\nd-article a {\n  border-bottom: 1px solid rgba(0, 0, 0, 0.4);\n  text-decoration: none;\n}\n\nd-article a:hover {\n  border-bottom: 1px solid rgba(0, 0, 0, 0.8);\n}\n\nd-article .link {\n  text-decoration: underline;\n  cursor: pointer;\n}\n\nd-article ul,\nd-article ol {\n  padding-left: 24px;\n}\n\nd-article li {\n  margin-bottom: 1em;\n  margin-left: 0;\n  padding-left: 0;\n}\n\nd-article li:last-child {\n  margin-bottom: 0;\n}\n\nd-article pre {\n  font-size: 14px;\n  margin-bottom: 20px;\n}\n\nd-article hr {\n  grid-column: screen;\n  width: 100%;\n  border: none;\n  border-bottom: 1px solid rgba(0, 0, 0, 0.1);\n  margin-top: 60px;\n  margin-bottom: 60px;\n}\n\nd-article section {\n  margin-top: 60px;\n  margin-bottom: 60px;\n}\n\nd-article span.equation-mimic {\n  font-family: georgia;\n  font-size: 115%;\n  font-style: italic;\n}\n\nd-article > d-code,\nd-article section > d-code  {\n  display: block;\n}\n\nd-article > d-math[block],\nd-article section > d-math[block]  {\n  display: block;\n}\n\n@media (max-width: 768px) {\n  d-article > d-code,\n  d-article section > d-code,\n  d-article > d-math[block],\n  d-article section > d-math[block] {\n      overflow-x: scroll;\n      -ms-overflow-style: none;  // IE 10+\n      overflow: -moz-scrollbars-none;  // Firefox\n  }\n\n  d-article > d-code::-webkit-scrollbar,\n  d-article section > d-code::-webkit-scrollbar,\n  d-article > d-math[block]::-webkit-scrollbar,\n  d-article section > d-math[block]::-webkit-scrollbar {\n    display: none;  // Safari and Chrome\n  }\n}\n\nd-article .citation {\n  color: #668;\n  cursor: pointer;\n}\n\nd-include {\n  width: auto;\n  display: block;\n}\n\nd-figure {\n  contain: layout style;\n}\n\n/* KaTeX */\n\n.katex, .katex-prerendered {\n  contain: style;\n  display: inline-block;\n}\n\n/* Tables */\n\nd-article table {\n  border-collapse: collapse;\n  margin-bottom: 1.5rem;\n  border-bottom: 1px solid rgba(0, 0, 0, 0.2);\n}\n\nd-article table th {\n  border-bottom: 1px solid rgba(0, 0, 0, 0.2);\n}\n\nd-article table td {\n  border-bottom: 1px solid rgba(0, 0, 0, 0.05);\n}\n\nd-article table tr:last-of-type td {\n  border-bottom: none;\n}\n\nd-article table th,\nd-article table td {\n  font-size: 15px;\n  padding: 2px 8px;\n}\n\nd-article table tbody :first-child td {\n  padding-top: 2px;\n}\n'+_i+'/*\n * Copyright 2018 The Distill Template Authors\n *\n * Licensed under the Apache License, Version 2.0 (the "License");\n * you may not use this file except in compliance with the License.\n * You may obtain a copy of the License at\n *\n *      http://www.apache.org/licenses/LICENSE-2.0\n *\n * Unless required by applicable law or agreed to in writing, software\n * distributed under the License is distributed on an "AS IS" BASIS,\n * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.\n * See the License for the specific language governing permissions and\n * limitations under the License.\n */\n\n@media print {\n\n  @page {\n    size: 8in 11in;\n    @bottom-right {\n      content: counter(page) " of " counter(pages);\n    }\n  }\n\n  html {\n    /* no general margins -- CSS Grid takes care of those */\n  }\n\n  p, code {\n    page-break-inside: avoid;\n  }\n\n  h2, h3 {\n    page-break-after: avoid;\n  }\n\n  d-header {\n    visibility: hidden;\n  }\n\n  d-footer {\n    display: none!important;\n  }\n\n}\n',Fi=[{name:'WebComponents',support:function(){return'customElements'in window&&'attachShadow'in Element.prototype&&'getRootNode'in Element.prototype&&'content'in document.createElement('template')&&'Promise'in window&&'from'in Array},url:'https://distill.pub/third-party/polyfills/webcomponents-lite.js'},{name:'IntersectionObserver',support:function(){return'IntersectionObserver'in window&&'IntersectionObserverEntry'in window},url:'https://distill.pub/third-party/polyfills/intersection-observer.js'}];class zi{static browserSupportsAllFeatures(){return Fi.every((e)=>e.support())}static load(e){const t=function(t){t.loaded=!0,console.debug('Runlevel 0: Polyfill has finished loading: '+t.name),zi.neededPolyfills.every((e)=>e.loaded)&&(console.debug('Runlevel 0: All required polyfills have finished loading.'),console.debug('Runlevel 0->1.'),window.distillRunlevel=1,e())};for(const n of zi.neededPolyfills)g(n,t)}static get neededPolyfills(){return zi._neededPolyfills||(zi._neededPolyfills=Fi.filter((e)=>!e.support())),zi._neededPolyfills}}const Yi=Ti('d-abstract',`
+`);
+
+  // DMath, not Math, because that would conflict with the JS built-in
+  class DMath extends Mutating(T(HTMLElement)) {
+
+    static set katexOptions(options) {
+      DMath._katexOptions = options;
+      if (DMath.katexOptions.delimiters) {
+        if (!DMath.katexAdded) {
+          DMath.addKatex();
+        } else {
+          DMath.katexLoadedCallback();
+        }
+      }
+    }
+
+    static get katexOptions() {
+      if (!DMath._katexOptions) {
+        DMath._katexOptions = {
+          delimiters: [ { 'left':'$$', 'right':'$$', 'display': false } ]
+        };
+      }
+      return DMath._katexOptions;
+    }
+
+    static katexLoadedCallback() {
+      // render all d-math tags
+      const mathTags = document.querySelectorAll('d-math');
+      for (const mathTag of mathTags) {
+        mathTag.renderContent();
+      }
+      // transform inline delimited math to d-math tags
+      if (DMath.katexOptions.delimiters) {
+        renderMathInElement(document.body, DMath.katexOptions);
+      }
+    }
+
+    static addKatex() {
+      // css tag can use this convenience function
+      document.head.insertAdjacentHTML('beforeend', katexCSSTag);
+      // script tag has to be created to work properly
+      const scriptTag = document.createElement('script');
+      scriptTag.src = katexJSURL;
+      scriptTag.async = true;
+      scriptTag.onload = DMath.katexLoadedCallback;
+      scriptTag.crossorigin = 'anonymous';
+      document.head.appendChild(scriptTag);
+
+      DMath.katexAdded = true;
+    }
+
+    get options() {
+      const localOptions = { displayMode: this.hasAttribute('block') };
+      return Object.assign(localOptions, DMath.katexOptions);
+    }
+
+    connectedCallback() {
+      super.connectedCallback();
+      if (!DMath.katexAdded) {
+        DMath.addKatex();
+      }
+    }
+
+    renderContent() {
+      if (typeof katex !== 'undefined') {
+        const container = this.root.querySelector('#katex-container');
+        katex.render(this.textContent, container, this.options);
+      }
+    }
+
+  }
+
+  DMath.katexAdded = false;
+  DMath.inlineMathRendered = false;
+  window.DMath = DMath; // TODO: check if this can be removed, or if we should expose a distill global
+
+  // Copyright 2018 The Distill Template Authors
+  //
+  // Licensed under the Apache License, Version 2.0 (the "License");
+  // you may not use this file except in compliance with the License.
+  // You may obtain a copy of the License at
+  //
+  //      http://www.apache.org/licenses/LICENSE-2.0
+  //
+  // Unless required by applicable law or agreed to in writing, software
+  // distributed under the License is distributed on an "AS IS" BASIS,
+  // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  // See the License for the specific language governing permissions and
+  // limitations under the License.
+
+  function collect_citations(dom = document) {
+    const citations = new Set();
+    const citeTags = dom.querySelectorAll("d-cite");
+    for (const tag of citeTags) {
+      const keyString = tag.getAttribute("key") || tag.getAttribute("bibtex-key");
+      const keys = keyString.split(",").map(k => k.trim());
+      for (const key of keys) {
+        citations.add(key);
+      }
+    }
+    return [...citations];
+  }
+
+  function author_string(ent, template, sep, finalSep) {
+    if (ent.author == null) {
+      return "";
+    }
+    var names = ent.author.split(" and ");
+    let name_strings = names.map(name => {
+      name = name.trim();
+      if (name.indexOf(",") != -1) {
+        var last = name.split(",")[0].trim();
+        var firsts = name.split(",")[1];
+      } else if (name.indexOf(" ") != -1) {
+        var last = name
+          .split(" ")
+          .slice(-1)[0]
+          .trim();
+        var firsts = name
+          .split(" ")
+          .slice(0, -1)
+          .join(" ");
+      } else {
+        var last = name.trim();
+      }
+      var initials = "";
+      if (firsts != undefined) {
+        initials = firsts
+          .trim()
+          .split(" ")
+          .map(s => s.trim()[0]);
+        initials = initials.join(".") + ".";
+      }
+      return template
+        .replace("${F}", firsts)
+        .replace("${L}", last)
+        .replace("${I}", initials)
+        .trim(); // in case one of first or last was empty
+    });
+    if (names.length > 1) {
+      var str = name_strings.slice(0, names.length - 1).join(sep);
+      str += (finalSep || sep) + name_strings[names.length - 1];
+      return str;
+    } else {
+      return name_strings[0];
+    }
+  }
+
+  function venue_string(ent) {
+    var cite = ent.journal || ent.booktitle || "";
+    if ("volume" in ent) {
+      var issue = ent.issue || ent.number;
+      issue = issue != undefined ? "(" + issue + ")" : "";
+      cite += ", Vol " + ent.volume + issue;
+    }
+    if ("pages" in ent) {
+      cite += ", pp. " + ent.pages;
+    }
+    if (cite != "") cite += ". ";
+    if ("publisher" in ent) {
+      cite += ent.publisher;
+      if (cite[cite.length - 1] != ".") cite += ".";
+    }
+    return cite;
+  }
+
+  function link_string(ent) {
+    if ("url" in ent) {
+      var url = ent.url;
+      var arxiv_match = /arxiv\.org\/abs\/([0-9\.]*)/.exec(url);
+      if (arxiv_match != null) {
+        url = `http://arxiv.org/pdf/${arxiv_match[1]}.pdf`;
+      }
+
+      if (url.slice(-4) == ".pdf") {
+        var label = "PDF";
+      } else if (url.slice(-5) == ".html") {
+        var label = "HTML";
+      }
+      return ` &ensp;<a href="${url}">[${label || "link"}]</a>`;
+    } /* else if ("doi" in ent){
+      return ` &ensp;<a href="https://doi.org/${ent.doi}" >[DOI]</a>`;
+    }*/ else {
+      return "";
+    }
+  }
+  function doi_string(ent, new_line) {
+    if ("doi" in ent) {
+      return `${new_line ? "<br>" : ""} <a href="https://doi.org/${
+      ent.doi
+    }" style="text-decoration:inherit;">DOI: ${ent.doi}</a>`;
+    } else {
+      return "";
+    }
+  }
+
+  function title_string(ent) {
+    return '<span class="title">' + ent.title + "</span> ";
+  }
+
+  function bibliography_cite(ent, fancy) {
+    if (ent) {
+      var cite = title_string(ent);
+      cite += link_string(ent) + "<br>";
+      if (ent.author) {
+        cite += author_string(ent, "${L}, ${I}", ", ", " and ");
+        if (ent.year || ent.date) {
+          cite += ", ";
+        }
+      }
+      if (ent.year || ent.date) {
+        cite += (ent.year || ent.date) + ". ";
+      } else {
+        cite += ". ";
+      }
+      cite += venue_string(ent);
+      cite += doi_string(ent);
+      return cite;
+      /*var cite =  author_string(ent, "${L}, ${I}", ", ", " and ");
+      if (ent.year || ent.date){
+        cite += ", " + (ent.year || ent.date) + ". "
+      } else {
+        cite += ". "
+      }
+      cite += "<b>" + ent.title + "</b>. ";
+      cite += venue_string(ent);
+      cite += doi_string(ent);
+      cite += link_string(ent);
+      return cite*/
+    } else {
+      return "?";
+    }
+  }
+
+  function hover_cite(ent) {
+    if (ent) {
+      var cite = "";
+      cite += "<strong>" + ent.title + "</strong>";
+      cite += link_string(ent);
+      cite += "<br>";
+
+      var a_str = author_string(ent, "${I} ${L}", ", ") + ".";
+      var v_str =
+        venue_string(ent).trim() + " " + ent.year + ". " + doi_string(ent, true);
+
+      if ((a_str + v_str).length < Math.min(40, ent.title.length)) {
+        cite += a_str + " " + v_str;
+      } else {
+        cite += a_str + "<br>" + v_str;
+      }
+      return cite;
+    } else {
+      return "?";
+    }
+  }
+
+  function domContentLoaded() {
+    return ['interactive', 'complete'].indexOf(document.readyState) !== -1;
+  }
+
+  // Copyright 2018 The Distill Template Authors
+  //
+  // Licensed under the Apache License, Version 2.0 (the "License");
+  // you may not use this file except in compliance with the License.
+  // You may obtain a copy of the License at
+  //
+  //      http://www.apache.org/licenses/LICENSE-2.0
+  //
+  // Unless required by applicable law or agreed to in writing, software
+  // distributed under the License is distributed on an "AS IS" BASIS,
+  // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  // See the License for the specific language governing permissions and
+  // limitations under the License.
+
+  function _moveLegacyAffiliationFormatIntoArray(frontMatter) {
+    // authors used to have propoerties "affiliation" and "affiliationURL".
+    // We now encourage using an array for affiliations containing objects with
+    // properties "name" and "url".
+    for (let author of frontMatter.authors) {
+      const hasOldStyle = Boolean(author.affiliation);
+      const hasNewStyle = Boolean(author.affiliations);
+      if (!hasOldStyle) continue;
+      if (hasNewStyle) {
+        console.warn(`Author ${author.author} has both old-style ("affiliation" & "affiliationURL") and new style ("affiliations") affiliation information!`);
+      } else {
+        let newAffiliation = {
+          "name": author.affiliation
+        };
+        if (author.affiliationURL) newAffiliation.url = author.affiliationURL;
+        author.affiliations = [newAffiliation];
+      }
+    }
+    return frontMatter
+  }
+
+  function parseFrontmatter(element) {
+    const scriptTag = element.firstElementChild;
+    if (scriptTag) {
+      const type = scriptTag.getAttribute('type');
+      if (type.split('/')[1] == 'json') {
+        const content = scriptTag.textContent;
+        const parsed = JSON.parse(content);
+        return _moveLegacyAffiliationFormatIntoArray(parsed);
+      } else {
+        console.error('Distill only supports JSON frontmatter tags anymore; no more YAML.');
+      }
+    } else {
+      console.error('You added a frontmatter tag but did not provide a script tag with front matter data in it. Please take a look at our templates.');
+    }
+    return {};
+  }
+
+  class FrontMatter$1 extends HTMLElement {
+
+    static get is() { return 'd-front-matter'; }
+
+    constructor() {
+      super();
+
+      const options = {childList: true, characterData: true, subtree: true};
+      const observer = new MutationObserver( (entries) => {
+        for (const entry of entries) {
+          if (entry.target.nodeName === 'SCRIPT' || entry.type === 'characterData') {
+            const data = parseFrontmatter(this);
+            this.notify(data);
+          }
+        }
+      });
+      observer.observe(this, options);
+    }
+
+    notify(data) {
+      const options = { detail: data, bubbles: true };
+      const event = new CustomEvent('onFrontMatterChanged', options);
+      document.dispatchEvent(event);
+    }
+
+  }
+
+  // Copyright 2018 The Distill Template Authors
+  //
+  // Licensed under the Apache License, Version 2.0 (the "License");
+  // you may not use this file except in compliance with the License.
+  // You may obtain a copy of the License at
+  //
+  //      http://www.apache.org/licenses/LICENSE-2.0
+  //
+  // Unless required by applicable law or agreed to in writing, software
+  // distributed under the License is distributed on an "AS IS" BASIS,
+  // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  // See the License for the specific language governing permissions and
+  // limitations under the License.
+
+  // no appendix -> add appendix
+  // title in front, no h1 -> add it
+  // no title in front, h1 -> read and put into frontMatter
+  // footnote -> footnote list
+  // break up bib
+  // if citation, no bib-list -> add citation-list
+
+  // if authors, no byline -> add byline
+
+  function optionalComponents(dom, data) {
+    const body = dom.body;
+    const article = body.querySelector('article');
+
+    // If we don't have an article tag, something weird is going on—giving up.
+    if (!article) {
+      console.warn('No article tag found; skipping adding optional components!');
+      return;
+    }
+
+    let byline = dom.querySelector('d-byline');
+    if (!byline) {
+      if (data.authors) {
+        byline = dom.createElement('d-byline');
+        body.insertBefore(byline, article);
+      } else {
+        console.warn('No authors found in front matter; please add them before submission!');
+      }
+    }
+
+    let title = dom.querySelector('d-title');
+    if (!title) {
+      title = dom.createElement('d-title');
+      body.insertBefore(title, byline);
+    }
+
+    let h1 = title.querySelector('h1');
+    if (!h1) {
+      h1 = dom.createElement('h1');
+      h1.id = "document-title";
+      h1.textContent = data.title;
+      title.insertBefore(h1, title.firstChild);
+    }
+
+    const hasPassword = typeof data.password !== 'undefined';
+    let interstitial = body.querySelector('d-interstitial');
+    if (hasPassword && !interstitial) {
+      const inBrowser = typeof window !== 'undefined';
+      const onLocalhost = inBrowser && window.location.hostname.includes('localhost');
+      if (!inBrowser || !onLocalhost) {
+        interstitial = dom.createElement('d-interstitial');
+        interstitial.password = data.password;
+        body.insertBefore(interstitial, body.firstChild);
+      }
+    } else if (!hasPassword && interstitial) {
+      interstitial.parentElement.removeChild(this);
+    }
+
+    let appendix = dom.querySelector('d-appendix');
+    if (!appendix) {
+      appendix = dom.createElement('d-appendix');
+      dom.body.appendChild(appendix);
+    }
+
+    let footnoteList = dom.querySelector('d-footnote-list');
+    if (!footnoteList) {
+      footnoteList = dom.createElement('d-footnote-list');
+      appendix.appendChild(footnoteList);
+    }
+
+    let citationList = dom.querySelector('d-citation-list');
+    if (!citationList) {
+      citationList = dom.createElement('d-citation-list');
+      appendix.appendChild(citationList);
+    }
+
+  }
+
+  // Copyright 2018 The Distill Template Authors
+
+  const frontMatter = new FrontMatter();
+
+  const Controller = {
+    frontMatter: frontMatter,
+    waitingOn: {
+      bibliography: [],
+      citations: []
+    },
+    listeners: {
+      onCiteKeyCreated(event) {
+        const [citeTag, keys] = event.detail;
+
+        // ensure we have citations
+        if (!frontMatter.citationsCollected) {
+          // console.debug('onCiteKeyCreated, but unresolved dependency ("citations"). Enqueing.');
+          Controller.waitingOn.citations.push(() =>
+            Controller.listeners.onCiteKeyCreated(event)
+          );
+          return;
+        }
+
+        // ensure we have a loaded bibliography
+        if (!frontMatter.bibliographyParsed) {
+          // console.debug('onCiteKeyCreated, but unresolved dependency ("bibliography"). Enqueing.');
+          Controller.waitingOn.bibliography.push(() =>
+            Controller.listeners.onCiteKeyCreated(event)
+          );
+          return;
+        }
+
+        const numbers = keys.map(key => frontMatter.citations.indexOf(key));
+        citeTag.numbers = numbers;
+        const entries = keys.map(key => frontMatter.bibliography.get(key));
+        citeTag.entries = entries;
+      },
+
+      onCiteKeyChanged() {
+        // const [citeTag, keys] = event.detail;
+
+        // update citations
+        frontMatter.citations = collect_citations();
+        frontMatter.citationsCollected = true;
+        for (const waitingCallback of Controller.waitingOn.citations.slice()) {
+          waitingCallback();
+        }
+
+        // update bibliography
+        const citationListTag = document.querySelector("d-citation-list");
+        const bibliographyEntries = new Map(
+          frontMatter.citations.map(citationKey => {
+            return [citationKey, frontMatter.bibliography.get(citationKey)];
+          })
+        );
+        citationListTag.citations = bibliographyEntries;
+
+        const citeTags = document.querySelectorAll("d-cite");
+        for (const citeTag of citeTags) {
+          console.log(citeTag);
+          const keys = citeTag.keys;
+          const numbers = keys.map(key => frontMatter.citations.indexOf(key));
+          citeTag.numbers = numbers;
+          const entries = keys.map(key => frontMatter.bibliography.get(key));
+          citeTag.entries = entries;
+        }
+      },
+
+      onCiteKeyRemoved(event) {
+        Controller.listeners.onCiteKeyChanged(event);
+      },
+
+      onBibliographyChanged(event) {
+        const citationListTag = document.querySelector("d-citation-list");
+
+        const bibliography = event.detail;
+
+        frontMatter.bibliography = bibliography;
+        frontMatter.bibliographyParsed = true;
+        for (const waitingCallback of Controller.waitingOn.bibliography.slice()) {
+          waitingCallback();
+        }
+
+        // ensure we have citations
+        if (!frontMatter.citationsCollected) {
+          Controller.waitingOn.citations.push(function() {
+            Controller.listeners.onBibliographyChanged({
+              target: event.target,
+              detail: event.detail
+            });
+          });
+          return;
+        }
+
+        if (citationListTag.hasAttribute("distill-prerendered")) {
+          console.debug("Citation list was prerendered; not updating it.");
+        } else {
+          const entries = new Map(
+            frontMatter.citations.map(citationKey => {
+              return [citationKey, frontMatter.bibliography.get(citationKey)];
+            })
+          );
+          citationListTag.citations = entries;
+        }
+      },
+
+      onFootnoteChanged() {
+        // const footnote = event.detail;
+        //TODO: optimize to only update current footnote
+        const footnotesList = document.querySelector("d-footnote-list");
+        if (footnotesList) {
+          const footnotes = document.querySelectorAll("d-footnote");
+          footnotesList.footnotes = footnotes;
+        }
+      },
+
+      onFrontMatterChanged(event) {
+        const data = event.detail;
+        mergeFromYMLFrontmatter(frontMatter, data);
+
+        const interstitial = document.querySelector("d-interstitial");
+        if (interstitial) {
+          if (typeof frontMatter.password !== "undefined") {
+            interstitial.password = frontMatter.password;
+          } else {
+            interstitial.parentElement.removeChild(interstitial);
+          }
+        }
+
+        const prerendered = document.body.hasAttribute("distill-prerendered");
+        if (!prerendered && domContentLoaded()) {
+          optionalComponents(document, frontMatter);
+
+          const appendix = document.querySelector("distill-appendix");
+          if (appendix) {
+            appendix.frontMatter = frontMatter;
+          }
+
+          const byline = document.querySelector("d-byline");
+          if (byline) {
+            byline.frontMatter = frontMatter;
+          }
+
+          const header = document.querySelector("d-header");
+          if (header) {
+            header.frontMatter = frontMatter;
+          }
+
+          if (data.katex) {
+            DMath.katexOptions = data.katex;
+          }
+        }
+      },
+
+      DOMContentLoaded() {
+        if (Controller.loaded) {
+          console.warn(
+            "Controller received DOMContentLoaded but was already loaded!"
+          );
+          return;
+        } else if (!domContentLoaded()) {
+          console.warn(
+            "Controller received DOMContentLoaded at document.readyState: " +
+              document.readyState +
+              "!"
+          );
+          return;
+        } else {
+          Controller.loaded = true;
+          console.debug("Runlevel 4: Controller running DOMContentLoaded");
+        }
+
+        const frontMatterTag = document.querySelector("d-front-matter");
+        if (frontMatterTag) {
+          const data = parseFrontmatter(frontMatterTag);
+          Controller.listeners.onFrontMatterChanged({ detail: data });
+        }
+
+        // Resolving "citations" dependency due to initial DOM load
+        frontMatter.citations = collect_citations();
+        frontMatter.citationsCollected = true;
+        for (const waitingCallback of Controller.waitingOn.citations.slice()) {
+          waitingCallback();
+        }
+
+        if (frontMatter.bibliographyParsed) {
+          for (const waitingCallback of Controller.waitingOn.bibliography.slice()) {
+            waitingCallback();
+          }
+        }
+
+        const footnotesList = document.querySelector("d-footnote-list");
+        if (footnotesList) {
+          const footnotes = document.querySelectorAll("d-footnote");
+          footnotesList.footnotes = footnotes;
+        }
+      }
+    } // listeners
+  }; // Controller
+
+  var base = "/*\n * Copyright 2018 The Distill Template Authors\n *\n * Licensed under the Apache License, Version 2.0 (the \"License\");\n * you may not use this file except in compliance with the License.\n * You may obtain a copy of the License at\n *\n *      http://www.apache.org/licenses/LICENSE-2.0\n *\n * Unless required by applicable law or agreed to in writing, software\n * distributed under the License is distributed on an \"AS IS\" BASIS,\n * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.\n * See the License for the specific language governing permissions and\n * limitations under the License.\n */\n\n@font-face {\n\tfont-family: 'Times New Roman SC';\n    src: url(data:application/font-woff2;charset=utf-8;base64,d09GMgABAAAAADBMAA8AAAAAeEAAAC/uAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAP0ZGVE0cGh4biDAcIAZgAIN6EQgKgcoggZxrC4NSAAE2AiQDhyAEIAWGSAeDehuyXiVj3G3sdgAqVLHnjKJkkPpRlO5RNPv/L8mNMeAGXVs7kYYLRthoRH0w19hZF9/bS40Z3KKieV/plIqlLe3H8fNGFRWKjP+IRSnjUiinLq2xazlGlKP7WCkPL5ub/cpVzVYjEunzR2jsk9zh+bn1NqK3v/01i2aMrVkyYkVUSbYgqCcKBrSCeYpiYAPaoGKcfXdGceqpZxzm2celCRBwwPP/HKL3/Z9tCdAkSI9XYC2FIvYUdA0MdbxFnZI2JZLskkPslNjriI5rz7GBc5oNeOB1Tb3A6HqtsgW/IlaP7PoG/+mbmm/kK72RisY4gA4gHcHsjq3NRXHkO6WnMqx6f9p+Spz4SGIDyhKbYXe2gF/9+C/cWKYhs8W2v3mzd3gLggRDUKJ2ahwWixRAkZ2by9HzA3hFJ1Wpaf3n177VfxbzCG3layM0qG3enZn9nHcwuyuaLg9N7rWQTEoikiH0yvzrUtevIkyBqYDLxrCMHTvpf0mW70tHOjuydefA+ULnwKH5Jf+irx+5VuASxSkABHCTfS4AwwS0ZV/asVunDuPcDcapr736Bw4ylnqp11KbEkP8euNZTMtVTOmNMUbIhTCTb2USNwNWuF9m/u2sHtp4JaLwvx8AgLgEbv+2epcHzjzb5a7fv4hblK4IwjASAsLvst0D+BIAzuhEEG8f1VUAx3QcfJLMvXlWc1xTjNE2iiPEbiGFp3Q14e9pcdxVN8z4H1sEIbKoE53cFKU1Uzmff0cxRTM4Q7N9RufkXJ0b82b+njeLW8qKVr/Rm7tLtn/XsMNtjqY7upbpO2IoBelOj5umYTR+aUIqNPKmuZI2V1pgoH5FL6ldyd1JqVtqCemJdzRuiytWynJjKZcl4qmdotN0qVE7lkMCXSsMinvkR7FARBFJthQqxWrcfpTeOXsaf7uuFvq6GTLTG3jnKISi7OfjohJP+pRmuNEWukqYRK7SNDLCXlLvU5SeT9IagxU5j0CDu0FKYnLQWkYXnVvc+I5FdXtw/cLbFctKMOgNqcD0JESh73ODrhxUC0wOWt3oWIkFI+xONSxVCsYIb1JsfT65LgYIRECAA0eF2XSDdQN9c3LL0uvR2aQEISI5v13ACBZYkIPqdiUXgd0JTYhF/BMiRa6TS4zpQMKUrvgGQuKxJFpFTKLNEzmLT7e9BpMlesW6HEnlpFSZmh8R1EMiuhu6J+x71YSjz6Vxpb37BgHqhm1DUN7Ir3eVFnPsItvQpSUdi2W86j5avHGkHOOiRbeROhboRLHBrZXK25MQVo9WRR5DNBA8Ve9iMLiAePg8eBKTkJJTUPKmoqGlo2dgYRUoSIgIkaLEiBUnQZJkKVKlu02I173Piu2moosjL5sh5jM7trPCJQAwuITHvSo8Ud0h3wHSOyDY6Wf+QSJeAEC7rX65BIjzBwBAfJlBPA8SADbDKBWC7PtcKIjmirbu+RSa244trAX2+IY8psQlJ41ZkP65MA8vcUwKk85kM/lMGVPPtFy1bCzv33+Ob38A02b7Io8xsclOY+brS52fe5cwk8SkMpmVxXVA30X3Y093qj39rtWVVVCo4H+7/+5/449PLC/N75/cbeLXG7+8tHsOYdQPcQQetSRi1gsJECNsDuzsx3T41Vf2+6/sn+AfCRabw+XxPQSeQi+RWCKVyRVKb5Vao9XpfQy+fv4BRpPZYg0MCg4JDQuPiIyKjomNi09ITEpOSU1Lz8jMys4BS9qWLu8b3LB5aMvW4W07do7s2r13z779Y5QHxg8ePnT82MTk/SpnXtHDhk8qSp7WfRe0h0A1AM/rAcCbeWB7fmFuObgMvW3+Ffh44Oy5m7fuTd++c6ROzf0G/v+++P3BXPOXR60s6ljW1d3TuXIV6I+sXzt15Xrlyk8/N25euwoUB60BWHJGGPG+B+9yWR889xVsilkKsr79FWHfkptfqrAn8wQw7ctEuvHY48ra8lokchVw7Otzcfkdc5FlEMvCfDFQttwdFWQzJDJmzwuPyOwu6ZTf/p0Jcw5Tn0VVit6Fk+Rvx0AgOrT7O56rkAYNS0gUEQKgFfoqtqGxNeGyd2tTnfJZqymhglo5xsv8+LIMNWgEyW8T8gujFv1mbfJLPCtJFyrTpe9ymy0e7KiCKiXpvU8mdieAXyVCUvirKLqvkQQ8DySd8yxFiiaio4gBJjBJGWBupbiNgAH6EobOi/gLXpey5CXuaxUjhg02kjhtE01iAANEW37r53khqfGSS3YuvxUDGKAvYegeNfE7nhay4AUupFJHUZmQFgMYINp6CxAhGyuWLa7QLdko/qNZfVTqeET3HOkhjvAZsWkUHiXMAPFoxdP/9G+GeuCuliiCcAbQmz527HOUI4KYhj3yFomzNGmQd6HY2lgtywXIkE+XJnRpyqAUkhFhQ1MZCumVdG/4Rf8DA0i8MqEG7eLi5hCxyQkF4zojI/meENiQLMlkaZi4u5r5qQZ0HRHEpuRd13VAYxJX7c/Q3TiPtIXPptHE/Q0Fa2SPdj1g6LZcBlEbblWq89i/3Amx7QpJNR8b6LkVNmhKRxt8oZ7UPCKn8joyuyiI+VWxMyDUzAADy/lzBjMtk2gjT1T9PLiQY6nygHJDhIfdDTcRUiVfGJ8ZExuX64vixORohzZmS6aJnXeLz8Xk5pWmgnF8whjKleXYxsyjjYnFXIY4GKRJN4SJpxNgZetQU3KrljdLjeiXGuILo1lLpDrZ1giqsYVNTcydjfnYoVRs7K8QCgEgIF1J20pTxEi9D4UGSkY83TsgPMXGty76tQpwP0KHgp/MWE2HW7w22lMleJ2n+IDYYDoFo1boAivBJjUnsxKTb3WlNxHW5olG+7OlOQrBky2/DFTL7lLagkHBX9trbPR3xB28SFiksCC4pECZZvdu5ntCzjpsB5dl5EOtxOVCfY2xYfAU3fS57L8XOjZ+yql2tMHpERQ55kP30ZgO0FnDGs3CCjb8diaUNm57hA70lp2e7kg1sNqI3+hbdn8hXkn3vmg2+LWAEPxeqZzKXygh2LXrQNlrrcFi7iNimrxxfYcaCmQF/87O4F8+CtjfizibhAJZr9MfwlPihCc/BSvpTKGzznfQmcPRw89GhwXLSkXI4qi0w+mx7vXQuM6WovZTj8BAxTClFjyCAgeBcSUmWzGkn/MmikOsgPom/pZdlKmhtEcD+ASpOv0eDD8EJFoyS3xCtrIQoIUkeTTLFfr+YPoptTuITRudWagMgoFUPrYfDPB8YFnHTeZqpD3FDlDjNMTyrB24lhwrDXuGios5JIb8FIXwvn2Tww/7UuVlRKUxQYGH7iiZ6yftyTwgNtQhaQ8LvJSkuWROmaOXXBVIzOf7Ifu6jiuBYso3JBSruPb0+aCTru2jgJ9XH8igjtKY3FlIVO6DtW+yflmGfyoRKkMw2bR3qwgJB+9ksolK2D20KZDpE4lKGhF6JKINYboHspG8ZtTeYxmywtZPmSNUcXlQCLktZq3l+RhyJAP6q9LhMBE1sPvFa/5tJm2sXAQrSW6jBInFDfkQ9Ez2hhNjJOGGi0ie9thcqdS/izIo+NshRUENwUf4GEswEUS0HhvtUH4JsVjqU1j8qGSFviKGPqAAqhX//bO4eMtvUfCfhYxmj+rg2MHeXkcu0DqakSwTAg6jfR98iHwnNz9VQ8BZ5/wbDcb/pyDqC45F9nsEchmxZrcD+fnYfqnyEWhj5tKKx9wSzl9uXYTFM+y7CcGRaTg8UTFkjS4LcVbucsLMQ+8yQz4PXlWLWvklTJdh1NCnPePzOkJalNoLAwrmiIDqmfwljJRPPcLHonqB2GAkBqQOZVg/dPZbGEk1/4WhsLcnVLkwBS2GPFRsmuoFYX+4gRb5BLE7c/ka6+gtnEfqdDcFiWWZrYN0/AAgGatxLguRa8dfQsOscJtPVQYSu2b58jEGakWaICljyWiUSBlczXoelnjUQP1wIhy3G716+fl25N+AZzZtqfbJx1WZ8sGqdAF+hT6m76NEtWyQnB4cQr+MCiq0A+2dVmJzoKynPP0HnKg3h+K0kBhfazUSTuflyalp95BMZV7nydzN0MD6OZD98fH5aWzm59IhS+AVNHM+7MUl4ZD80e82aHH4jlvNT/gCYdEQ1OGQsazCj8RAJrQ0XYDdVRwooMne20q0fl61sk3a372Klnd1aZdS9sDPFwO0lVJAGpc43TLhohBLQSGlZN/c41YJAL104ErhB86bRvo8jAdtBR5D0CnJg1Nlu3+Ra2cpoCJVFY7Dqz4RjEYJrjWg89643Mq8Roxr9zImVSoH+WuJIHHgPifTKNeDSnuc1cwkIv48hfSzylEl6AfvUCh4UZkmtqPd9uEXfKS77QOsaueHqi4U3rZiHiFWvcv6Wg1xuAHuI+kkjB5xvXpmYaKP64iMViRbi3Qevk6vkDPFSdP0eKwvnzNo4rSm7f1JfaDqUe9JvYUDgDISmCgpQOfNWlxtkUhfEZQDK8s+Ppvw+u6HwpWbjBGsLbspvM+f11opr0PvSCrU3AFbPBLJ5C6UXqi4nyGJkVAI5uHQYSJP3x9Hi1+AiwlfER8V71JGS9dIoOZLqeZ2tA8VnVyOZPgUB5JURmSw5yeuDeSatrhgZPkWk9K/RhJk9IjMEFZxMXmXy5liQ9W7ekE2/QJxgpq+uNaNZncRmSdD0AuOV0C/gs08fYdcXVRb45RZXZNW3k0eD8nJB3NTBPuua3ocUsfvwcwEJNkzvUL6En3JnQs/R3VUvYyph2R2knTKIJrhup2yjUNvrvom7I5JI/njW3OaUlahUtiYwYO4Qys4o8NKbhavFGLb2keXM3Qt2hjy4uZQNxfqDvB2JbHeT48LsOXFc2bQLGWzGhg4tOyE805wWcEaPiAJY0hoK9HlhTwEyQ88dz2ldq2Gcyw4ljTXeEbs1MGGkpz6AjK+1GkmhVj+mH5Ijw8Jtjb4UiEUi0Hs3XxKxZzh4bXS1SHiLZoVMP66cT1pevAJqLf5vZqSRqvKEtwnrCBJtdz+9YlZWJOsBwooeQfUUYs9jaZ4zPtNxeIQoogeoWwSxSmqXZayQQ/qVyZcTqXkwMHvhn+UkhHflAVvFLluFCPC4RSIrLTzPO7WjD91Dn7ssKNDvQ7K1P3zyrPRK3EIuzfxdEmmhxVyKTWtHQxKkMLIzrLiqYtmS8mLSzMN+EHspyKaxyFVdbNX4kdNHsxSmd9omJBWh2XzSKBa/CnXSazEZlFWbWfj56SJy4DePnGEFL9KyQ4SeQK0bAH/H/W90HR4pP8Qhw2sf38ge4IvNa+QNdNUqWzwYWDT3MWQcJN4MviQLPCWjNFkslXZZgp9QN7XfEQCG+rrMkFNWMvKCkWHrl5wIC8axf3gkMuiQs+j0JOPT5LpUVe4fkYjd7s0aWpRJ2jWWuscX54PatNVsAjwOidJ/Ep73TTaNtPqT3LKgvQD2UH+Vsunol5Rj9A+RuQc4Q0WNe7wvEA59uKzAs+7dh7SmQ/x8IBonPR+ZkVl47C/UmA/+X9IlWqFWh4zwRzP0N01kINfXjj7PiPN+hwfT6ibp1CVnQr5krwXdZxIpnYks473enTK5BLDkt9h55aHpWY2mbNW+9xfDDmtE1doKDQ5XnqvtiWQ7fjJFs3lA3Ga7DhoVq6lLlgoI7wxdwRJ4KtYw1P9rYtb6OMkIpG+nOWD7tDW8+BYlgh14PfHg0IFHe0/qTh/M/uNH9E6/KUUgk2u8dRk3YVGPhuaMfK47I95xaiD7SOusTsO4h+rAWjEYeqfFZBAUSUjawpUB1qmPzv5DQJ2h98b3AZoJj2ZDwDBC55CKFhzxKculR9nd+NMVU3KT9o+EO50ZUzHRGUGT4TLNyV+nUnXZHbjl11ZrMslon4qU00IibJ5zF9kFOTZ79CBUQdS/jAC6l1aMart5CkrGHmEJIqSRywPVCTRQD5oD9/Hv8/hHu+dLSwFmKy8UYJEa40EDlhpQKcNrHShAlaAORj+U8DujN8bmiuhEQw2KX+sZZI5QebFCEabkhIGyqYApdC3NrvrCVXvJoE3hRGwiXCcjb9tl0XDqoUsJDZAEhebpk4+FIBpgF4wwSiqZFQpgDAu058p5wFCXpB4IrIKU/5SCkTIhADfQqDu6PHspPLh7XYsKatlTKmAqmBLVcZ2TFRiOrQfWolNJNwNrlQDwW6d7RWapdrwF8RdSh/6mlc4NQSWvXy788JyU3IWsOgbUck6VBryLUcDyLVUFlHCYgUYM8ZETE4dke0ihKgCapqmqq+YQ8s9j6+ni0iyzg4iRjiJWe+FA4NUNXZ9EpJVKk1iCQ3lRJY/5zctBmlL3K/a3deWmF36NjbCe847EvN9m5w36OVZnWfSraDDq0051YCk5nBNUayziFoGRg6hGRqUFRsCs2Uyg3GUOcyZ3PESN5ZSN0ZmnIoTFFFf9XHfY04V+eXfUprxua5vj1J8EvWEzMkJhnOTN2ErjUa/6B+uLZkJMXzDUVCpM4tPdcPQ3JRB8+HUoBnrj1pv7f7bnFVIB45WXTtIjyBN5x6Stqftyd8uiQ2s/BvwdUdLfhxRoylIPUyQr0pk+siNqZwTdSL9RgVjPDthj/1dJ50oC7GzRr76/y2IZIRx3iP6hDOiR4fPZG4rcUG9HtLhyeOgquH7WIMvtOfLMTTrY/RycRL9Juz9dSLQODWY8j/Z7Xu/iFPL7f0X4F+er6/ypaaJuyCkDNRMpKxEIb1As/Zel9q7hkpF2hJHYuv6p53axnW/XHHo3L9Qjm4cO0to0lM0SZUG7mfodljuahu9zF4aJPBlj/KDZEKRIsbOQYxMaPGAtNH+r7NZrCcZ2rNJR+utnOw7qim5/2me3O/mWOrO/p8c721yq1NoYBKF+I5A/BYmZCDch2fsp8IDGGgApl7cX2gE7qA05fS7+tiznXlX71WqqcO1VWga6Jf0sWcb7ZL+b6ocTTHcxmtrw7W1g5FPaMK8eW5fE6ZilO83DBJXTZGT2EnF0YpWNHPNCsoO9JZdHJ/kpGQ7f7Z/PWrb2Ssv8JfhJFeubfKAE2fkSDWX8qf5GRisKa/QSRsy43VGXYRPbNvqdAZ7ghODC8aGB/hmrQniLQyK/m5Ull6Ocdd4Li/EayS1OUm+wlCzJbp1Qzxh5uiIs8rDSLwT35FtmNObAHdot9tLs0dMoYAk8vGIqTPE8X5lsY/v3YfH4HYF9n0/uuSP3xPMUk5R2ivkqtb/A+mxSanTXVlsjbsoi2mUNG1ISaAnsh1dDDHZQbrIAA3nSGoDSlcbkpLa4IeF62PwRV/0YbGqgPCAoMSo1T0Hd8aDPGZ+RQP84Z67dJWFGkKYG8K0s4s6Sor0ms871ZaS8qZT0JL93aJ7gDda/gCwLCCcW2XCbdmeMdV2G2cX8b8rPKmucxOTwjAePIyTmzMliUaZs4/AhlyrYEKN0oqzrdv0IW8YhzGh4aCn63Id9O4R9lAIFmXBOjLyTfYpEu4GMYSxBbO0B6YH9033X+5VILazdSIVRqEQ1TFOpER3moHg0jBOokljUgAffPX/Cnqc+T4U0nsJgkgG9OGnY5ZnY+DPt+ltg5XFS9tTM9vaSqpbV2W7e0dVzEv2a7HyLZQAF6tnc1g5uJLmLbY9AKGhA5/F3kKEqIfhrxgRFhxrFbYWOc8Jt5qPCyzekjPKJGk+HzFxOP5yqJgWGROhM5jSrJpQd+QJ7vmnICAEGykU2NsoKxiGNIshMi3gWExiiK80M1qT4a7UdpN5ntjOMKY0OkKfVRCaB6VQgmPTHyrZLbMvAccYjXxucdEcPlJoKhiLHiMGasZB19ppz+RVIZhofjs3QR0VWz9PbVGbWVSB2H0PNK3YLl8Vs6jKThuVHXSUz6v9dJZb2ArmnkowlpnCpvflx0W0eKsCYsxW6B1d/SemIoR1u4sVr8mZtywhq6V3ZVbg+vrsLiXgh1v8VtZPD/n/kPhAMAaK5xFfvxr8b405Vpet94/VGrIimKyNtGjPukF8YmVabGp+hsUnNsvVO8LgafU250RHhxdb/Klyy+870UHqcInUpJfyvwjjQb0uxbfRjxHkPtyyy9xqqvJdDbWQlq8SNGNS6gxzytK0gsLMkIDixq4V2UGbaues0IB1aaLTuYv/TgxKRP5s/BTk3fHO6L9RfGlUEvpBjRSij+Wf536xM8vIFMAvMs2a/rxAITDxzpP462cNfBrGBNOspx4RkmhKTZiadZDkmgajdbDC31oQavBMZPOD3/A5kuRTBwTh0IwK+heIT7cxMaM8zktA5QZVtzw90axNCFsojLf4JFKShJtuXVrTMTmyQOVZkhSh9XoOkOMBkjjUDrxVQCOFiyKj1FL8b139A9aA/5x89Di+r4mWJhZ5pFkjK+WmxqEDQ1XDOxYY4ongNBb+NolaYzCwlyDLXlxXhxFa4PPwB06Sov7nV7hZTf3/F17/XosFUCtMonz6W31zLY8pW7+9nYvczl4G5f7gmEHzj4SvYTSTGsZS3az7Q8lET14eXVLh+iIToBb9S+i1zBFB20iuU7YEUHqGCMdW5o8+iI3eNtA5UDSvMA+Dxc9sSSd7+9fwcyJ1y1JjdG1ZcY1io2ou04ZfhQcQXPNBNal5uApGHbs9stULjlenxJmXC5MzQv4lL+QS3ltdOAHCDmqmoSc9riaPnYJRtZBB/IhohAqz/TWTWrEShpHdZGdje/xSt8090K/r/BOWEWeIHTnX1iJmGamVmWlqZhj49QWxZWioF3FfI8uBSXDNU7+xdvf8ZfAVwq99hoFGIjiXgzXC5QsolxyDWXNpipgBJWGfR2lG24lLa3yqmA72NlEigsMN4uhpUgRdwXhkFMnNzOqQpV0b69WxTMoW/d+1WADD44cMY5q3S2ACvPix6oz0TD5gUvnbYg9rxlnpT7v7CMDC11iaSY30BuwJb67QTWorN8MAL6jR0KPy8sfRmqJkItSLI67Nmnb1MP2sRh+AGfAwCmxohe1hm2DoxMTMX90/ZsNyuEqmSnbEJZcsKy5aNaH60A9T4P5PfmMayRyYqr6kmh/3bYiKIcM7AW8Azs3UTtO8TOIPF6D5V6+RpXsptLxlgerjIKwUayc1/myYBPfb+J1G/qdFzbKQPeEx1fBreDgjclDrtwU+/2L2wSw4MwCfGbzX54XCHOEg2yvP3bGzCia8e8FjZGRMyWIYfHYjHZ/YEKdpT4+r8VoQfekvz7gNm1cfblq7fuP8wX1wk29cD9CtsGP1qpTUyIu/DDIUh9XyPpgEDy8xjKl+bpXYjjN3r+k7Sf4bTG7EXmO9Lml6URwiDg4TzQvfcvpImz+8/3qJVHwXFZkk3pq2/N94k+NT2r75g5vWNa093LR23SbQj4U3v1VW/+D9sR/Gwyu3GsbU7+JhnGeoawJTGarm3/e/dKfux38NKzVfueOh6AlPz2V7PMrByWH8LbKbJbcgxHNU5Gmx5qhzDJZUXVBFeZ4on+WE/uRGoN0ktl9NrTXR+Fp/k0iqtxQaYiQh0ZaY0uQQdjbLkRYDzmJhLvzxtuGzOu4kOppkt9PbbicJHb0vXv3NtWBqAN4mirAjozaS8yLjCarZb9rL/ythd3j4vSqABmONDoEMea0ssiAHFVGZC4OjA7Ack/xQhv7CpRnzjLAzfP0KERKkDsb0Vwhc4bxVVTDQmwZh1eze1Ws0R9AeDXOla7ejI99Ue5HN4bXwF1h+FUbv6ZlbQmbGNIt6YRc4gm8fkDmpXxzfEvsXHZtXFwODIwPwh1kBue/QKcyl3XNgT7h1pB1NUARndjSs9Mehq4a/g1/CNVt8wzZMlW2Sh/gaxVhYAj/uF6Hd4xvXVS2vxrrsrYcADE4OwBgVd0HbyidnNEYjgBXwtcC09WT3fa2ngoqjTDAJHq0Ru2EdVz7sfnIbzbLCwHc/kbjfG30w+6HSCLsN5VDgXSj0/myE9Knfb0DYkoo3SlyGvOWJ5JuKm8Bx2PxszAJYrT+lpAksB8sMeG+3dDPBp5bPis/gA12wNvsMyZbyTavzDBAyMEYPIyNbaNAqCB47sXuvy4lNjx5SoIsQNcnF4caanV6ro06DnGiN8hcRNH12vmgqBDkS7qdn1776l/EGEl9IuHAQP4/bkK0INJoEU9tiIvma7FbcTnDqOWYA0qcG+sTELi4Z7s8LIgISfeP+il7cXdmyuKa+fUWzKJzm4PocZJijecIcaIYb6BLJ2sJP1FYua1/+Eer9mnQ3t7wwj+GGa3Et9EwurgJzE0chz3557CT2ktJsxX99hWMs3ggpl2mEvHYO1GVfK2M0RqtmUMOxii4BINyGVjtUYoezkv5wgQrU9rYduF2Q7wV9ggQ8QSA9YhuIQlyC3lvxgx/KeOEck2sQJ4mdaRAyY/2CikUmYby7HbnDzb4PepRl1etiApkZyqK8+VGqGfdG2XWwaebFat7rIegNNPov18T9d/TZYOg1b+mLpXnQVBUDbrczVEv+OP3gycDXkR4PGQkTj0F/CT3k4vomGIYMLLcOTUMAcASFC7Y+4+v72rRnZ9eCbXicJzQF+UYENVYd/kH9Pht6BmE+HHGyJYQErW/6VpYaUzIsw6yvEugdJD4PphcIF6yFpmaYocOdto/QqIEbSv/DJ8EqWAsWDUXxXk9B4Ry85oWy7BdBe3rSutN2Q6I7xETkjjERuWuH244h8CqlWdjwXMRbA3OhZYpoG87saegktPkudw1w+lrZ23MjrlRZ0td5zSOnWOoSyDDeSL9BqS6B0uKApn3wsxTsf7pC9pUNfYGy4ypayFpPihB6T92wJ9hDtiAEL9JR7/a6Z/M8z2rKaghFAjDRLKuQzU+6FTVDCJOV9HYWF/V1lqiZyfOeeSbnmxwDbKFxfs0x/sxLSfFQob2gBzF5Bqs8wHdXbd+4WwPUMPKUvkI+K4b+gLycEhaN0mQmhag2VwLiUhBr3716TmfOpZNdLR4WiSxM6pNi0TIFI44xciWSg/hAHf5ADow2ibgEJsfRIrB4yUxCndnHxHRycjuLAleKs33purDCNIxj/YhjPSatMExH981W13pDbyBFLcA9/wDRnC9zSC98/SxGXYi8h3tOMfgVmoD4A8pzcXkFaXe2v5A++g2Qb0PnIJLaDbtrLqUIdRPjJnSHuqHxvJ+3bYP2LK93A24tufdpQSe+MqCbkIqCoQRkviy3vw5TZNCg23jDyOG9Li2KFQrUzm2T+begKegaCXMCfPsM5WbUWVI7r0V9IkB3IOz7e04Y35imxHr2yaQsJ1gCbYVYsznlXS0Hs+z6oHsQReOKcQosCirIcsNeh4Dv7U7WX6PQH9DoX6C9/7mkF3oAUakEtDFzdeaqXBgnggYheN/PFPBqOuLYFUsg0YxxX3En+Ycx2exRLLxoABwVjClYNCpLMR4XqUl08WpUj+i1ZchSrX5E3ejlkhipASa3cdM44Ltf2sJU2vvnukmu/55K85y6oVIyg+SihGiPIEbuVfsi2BH2EIAestf7D1o8mUz4FoXviBQS6DdJ2v/aT4GbMPgdE3lsF5LELOFe4Eanx/kTZmXL2YoBk1dUMbamrTUR/uzVvPNxjamIrIiPTikFSXXiec4uWdiccHYIg7MsztXOZXIpyqJJNNjGxxHcF9C5AiG8ROBIxX1fJi7No9dVzI03WDU80lWc+2mWt5a+ESRgFc4pndkMZ5R9KizlQ3PATYZXgOxUUOnHFG6U5PsU5uWnbPxJCvktlb3TZwjqi5irSuP4hvDQXXs+DKqyOgJJRyCjtGnKiOOZg3V65sHmncwTAsVDg7CZy/sw7jtnvr9XkrcQ5GLhzzDziMFvn2BfePkOQW/mHp7llAz+BAcABu5C/YPK+9NYTNQYfBa2ukoz0o70C7aXh+8V7A1Rs4HJDWfCGb/HmXDAStaFBh3GiFHnmT6xfj6KULWQ9L0iDY1ycEOi2CxBBdGLuqwqOSRKbQn5AePTIvAOCbH4RGu9yK544nI0DrJ1+MlA5k/zGOryuJzQpmOUIZbwYWyskjbA9FrRDDDZmF4C7iEO/wBH7DmPKZwbMH+459wl5rkLPX3nLzDPX+r1bNpxsHneyIHG+rzAs6l520FaK4S2uqyOVmbU5eQFVzYWS1qtqECMt1JttqSDMBAbmBsSD76fjkilsgnJ3NSl1RjsCbpH6YSEtoWJ/Vfx9d9wupADPXS0kyKcGVSkq/tS76LsWhcnodkOBTx/exUXGBU5YetMWDiyzxCy7wHk4mLDejuIuet/Cvz+LQE3S28dNs0SwC+z6DGZSSzmH/bSRq6lOAagN+uyI2VzWMfN6C1o83HWB/bx8BEva1pEUDoFx3n29XSlNG87OBdTb+DcolFrwIYdiYaA5Iguhw/nNsbGbo8V0E2zJmraRtPG+6b7Q6Yh+P0DHrnc+P+IOSXRqWL3GLaeau2CTcFKH+8gvdwcF50Q3yQL7gUZV1yzqN6ECRrB+tPNRV6Zydo6qtfRBHqSZE58ntsBAQHFg1ANGIEjmY8aA0vogv6VBXgUmmJHug72ni4wMvFXHKsu0LhILjIxSMqP5loxImYbMyY9hk5cxOhMVgjHRJyj26LA24WUdYTxQwZZblZhTl52UpWD88/FPSvCOkpzcsonlTkr3ScG9Jz3OK/tnFxBLocUcAPlcY7FnjLIFv56haUXc8SUleBPHukUiYl0QyGoDo4GYr36RhLue7Bh2BgT7KuNSgvzi47Sp3cUMQFMZhsTl/obg0Tf6uUjDAeXHgrzg/hjv06TGph6UH7ZSYoMHEUu2T8OnR6TnxsrmY9EJGm4ZH3DplB4gyuUQ3XY+7vC6rALPI+cVI9sfOWi4uMOJJs2AElMIzbg6ebYcXZTQWMBu3m73+FjzDZfmnlpY507g1iSivb4j1ZokDBYzb9i8Uvau6r/Vzqx2S5Qi3wcu0LouSt2p6fQcyuDQiA6M6j56kSgRDoRHaxWdlGS46KNbi8qo/4Mxr/Ce6awyhl973j+8vDoUKlnDMlrx/8w4tAJ5ZrRtL0ch+WHcGMIBHwBNgdNgc9PFzlyUnHeASWbdDYgd9jxcdJh11yjlQvp8cjjprTniKOiJAui4xGM0wpFE7yJwLgrEBAzgjHQS3lTg/G1q/WFHDaPSRQF/4SneTk4RBBiDnT7n0Zrfr3bsCsxI5okujVFhKnRoyfdT3GiuDOah3iCqP9twqgDnJ+mKVyRJtaN9QRGW2Zwab0+OECwyzrQq+jss3499dI3k+MwwFJJffnv2bPfps5t4W/T+5Lfpo/1G2h35Vm1MSmtae361uYYvojagPik+YMbW//DJS2qzxndcHyiMy9cHlkrz1xRl7V/2DnUPydSFlQSBWmjZTTTlkW9Wqqz3AaP0p/prSubebRknCJpu378ugc2WdZ9HoyHz31BmKPru7Pik2nAO8I5kkI7kntPYm90+X1Tc8PK1gyiLx1ctytiU+SwiyXW6+vndgmTwfWkR8UramkmhkFXdyVvrqxvXehemtbrMSFhL6Tv4ZRMoY4ppGtKHf+DeVgMd0k/pCwR5awSp/5HJoigbsgtBd/1ENGN+Q8i+UD7G6CDt4IjRU/KEk63um1R+zOUnW1ICmtXgs+gNeq0eBlZjsWLilJbDBNWRawLImbYDXQTomYIdPEFkTO8dodwEp15oqt4Qwhp5tVASpJgDvQ3IahSXLszdaCU8H/ZeTKa+BVtbk5JUQarC7uh8wknmBs8SFHFQDOSFHyqTJtjrl6xrNwV6v1KjXs5CzAq1iNiRdZeelivD8YJ5lgHulMvtRhcO4LXtPW27ng3wLTw92dNszMN5yPXMfFdzEDSLxFhpv7fclBfpyNgH4+lOK9Sjwy0JqxWlLw0O3hBdWdnYejCkCphwuKMwCWlvZ3l/nG1osJgGrNpA/4m6MwG6EeCac3m2tXSFexiE30r+rF1pMmUlFD3L8vhNIYgVWw9+58A9yIB38HrNd7vF65nTPTXl53HexNEx7BKVZaAU5HnAQuP0oEB55Z8DUjYe24tc1eitzxR9dgyx5TTb9Pavy5Tvi7j75Nw+cAnm7fYuidC7Ydj1w0Xpkh4KdJtEez/L9AIvHOdiA4WMyddKQpGvxm66BREeEXQ6Ao8TFVf6D2MZkSfRc4PI3ntyJSccZZfc2vYsmvgwP59fW5bEpHYwEFsp7TJx5SUyGmN9zqlrwNxlRzWXoYxur4sN7ApzEPshBtFRVQESw4QKkjhEfgv/8CMxTKCMo6UOb+7uLZtRYVrrA1M/sO+DocszGDwhaR03DqTyiPzLNkzssP1lu1+zdvZjQVNBe7JRKy7kBjbVs5Qdhr9yamJ8l8ekSoqPLH2UfUP5f7BjY3pqEaXxFzyiujlVu4OOukpGsPBuMzYusFW1F7Ubsd8twh65cZSTOh91wtcHZ03TcIfgzFqF6cLtm4EEafBuREYfYKJjT/0/RrhJ2ioDd/5REWBcBo6O8s9o28HqM8mxIUpw414k3sW7C8L82Wt9SAwfCVjHGwCigHEm1Vjmyk/ZmJVduFFBv7+LP8MWv56J38Hfhv+lxuXxaM/b7BOZ+t6c2fnlG0h7ajDSy226qDOy8JuFR7MAwmUTdfWdf8WTMdhakn4NggOZr33xhhxWHgCxsZyHIe83x/PEgy14Um1GFww/bfude9IQ0ng2KnPb2gI7cJgZ9RdbCwYWpjgL3B1dCIhYKFLs+1sLg9esLN14eBpQNVaFRkZQ1oHtxedFhz9H6jJelD//voL1Kf33pS2tmN+ivbn4feqsDGZA0FOtfITIXxr9ZJIPDcZxxblvp3E0/cwVeFtZk6NPXHtX1RS0JWLtRKRtChvmR8mvHO3ILLhu2h3Kpceggkk0K+QhcZw92SOWGpyr+EW+KWtdytwe7hXQ9OW1x94u0jNm4zD7cbFTfLUciVkxiWnJOMgs6Jx0So58j5Hj8Qtxn3Uc/5qSyPgmtZ6b/IuxL1von5rAXbl7OHNIFcrdXwYPN+YnIRtb43JYNJtN6qNSec4rQmNVDJ9XJ/ffrU2C23oHPeOLjYzl1Zt8k1YYH/bVu9zBInBl7wQApSwAqToqHBUM+PvJwcPIaNlsjVrRFw2ESZv0Rr5rjMQOkgmC6CINAjreKNroaVHjsAQegfiDCsRHhADBTb4wMI7qCGISZPR442a6fDJTLLsWnVzA3rWwwCpfDA0c7iOiCuZcDucCNi0cYbMxndsk1z350SgpXETU1gjpswoidUdZWfgTIJEJ1Sy3eEI7NxGImDCLQY2JRaAmyJkEjGZIyT9Nig6lpmAn5z1kCTLGeUYKgUqbdyRFBn4Sco6A5Ap0rX8jY/lucicb28dGkEiJGipSnTVF2o+dyk391lgubfNLH5wbEFCv2x/NIJLeulWI4JIRB+ZUS/c/NBXkVRAb2lSFzX7EM07vARGQWcS3eunwdo2Af7X3j+aDFqAi7DxtOnJadEbf/smFGRCTGvrDNx9eHrSjdeKweGEOUIf/qecD9HVkbTeP3Fqnli19v/RqkEbUx2llZTwiuM2odvKwuhmXyft6+GYQ7k2BRkNMCOggzjVrwlg8838krW4IWrfJC/Q7b0An9Ank4eGlWhy8L9TZkeT9xZ69Qt5DiA/IO4oIsQ7dF8p+/YiyXXzfIDRt1wNsoE4cAIAcQtsuwiGcLtIzsnu2ihJSddWcG517aCG2rVHGWH3IsJYupfIJrV7meOsmLnCfvpPTW/b71ojI7NKVZrUKFaoSB0mgTk8McnpaKmI4FDNFl3lIbvdKE+lXPkwHKdJrTqWTzcyhagwpzJfo6qnnN7ePJKaxbKwzBSrr9o95mfmK481NBhfYzlbT8Vz5njVSSlPhznspZgTCwzC91WoLE2q5IOCGKxASU2YSKMVterlEotlFVdVrPMETcUpNFZpRlUhzhTlkac4pQ1lDGyZj1VJfr1CYIw8m9i78pulUL0aEdeTh2ENLTXlXgX1S7P6uC3KcEpOQvao4KviPOOASYLnKvCqeO009PlANVJXQtWreJWIaTXrbaZ9UkGFKVnDS+V7VdnoVI6FhuNUq1ds5R4r+7Z0rRqeOjr+7a4Gs7c3+GM8PsKEog0MYWDBcPAIiEjIKNxR0dAxMLGwcS6ATAFdEfIiuhDyq7LmCXWTPvRhX378BTAyMV8cmcF0JVSY8IskH4tuMp5OPGlik2n0P8uQKUu2HMOWaHPCoBntunX43k5brfCLxVb66JMuqy1z1q8+2GiXLz77aou9Lrlgn1xz9MpzRb6LLvvZVT/6yUsFbrrmuv0KvdfnjltuK/LaW8uVKFaqXJkKQypVq1Lz3vi36zSY65VG8zRpNl+LozZbaIHvLPLGO8fd9ZunRo155rkJL/xuu3ueuO+Bhx6b9si4Aw474pyDDvlBqzOW2u28k06Z1OmPkMadvr6iWOECzQ==) format('woff2');\n}\n/* @import url('https://fonts.googleapis.com/css2?family=Tinos:ital,wght@0,400;0,700;1,400&display=swap'); */\n\n/* Page Layout */\n\nbody {\n  /* font-family: 'Latin Modern Roman', serif; */\n  font-family: 'Times New Roman', Times, Baskerville, Georgia, serif;\n  background-color: white;\n  counter-reset: theorem;\n  counter-reset: definition;\n}\n\nhtml {\n  font-size: 16px;\n  line-height: 1.6em;\n  text-size-adjust: 100%;\n  -ms-text-size-adjust: 100%;\n  -webkit-text-size-adjust: 100%;\n}\n\n@media(min-width: 768px) {\n  html {\n    font-size: 18px;\n  }\n}\n\nbody {\n  margin: 0;\n  text-align: justify;\n  -moz-hyphens: auto;\n  -webkit-hyphens: auto;\n  hyphens: auto;\n}\n\na {\n  color: #004276;\n}\n\nfigure {\n  margin: 0;\n}\n\ntable {\n\tborder-collapse: collapse;\n\tborder-spacing: 0;\n}\n\ntable th {\n\ttext-align: left;\n}\n\ntable thead {\n  border-bottom: 1px solid rgba(0, 0, 0, 0.05);\n}\n\ntable thead th {\n  padding-bottom: 0.5em;\n}\n\ntable tbody :first-child td {\n  padding-top: 0.5em;\n}\n\npre {\n  overflow: auto;\n  max-width: 100%;\n}\n\np {\n  margin-top: 0;\n  margin-bottom: 1em;\n}\n\nsup, sub {\n  vertical-align: baseline;\n  position: relative;\n  top: -0.4em;\n  line-height: 1em;\n}\n\nsub {\n  top: 0.4em;\n}\n\n.kicker,\n.marker {\n  font-size: 15px;\n  font-weight: 600;\n  color: rgba(0, 0, 0, 0.5);\n}\n\n\n/* Headline */\n\n@media(min-width: 1024px) {\n  d-title h1 span {\n    display: block;\n  }\n}\n\n/* Figure */\n\nfigure {\n  position: relative;\n  margin-bottom: 2.5em;\n  margin-top: 1.5em;\n}\n\nfigcaption+figure {\n\n}\n\nfigure img {\n  width: 100%;\n}\n\nfigure svg text,\nfigure svg tspan {\n}\n\nfigcaption,\n.figcaption {\n  color: rgba(0, 0, 0, 0.6);\n  font-size: 12px;\n  line-height: 1.5em;\n}\n\n@media(min-width: 1024px) {\nfigcaption,\n.figcaption {\n    font-size: 13px;\n  }\n}\n\nfigure.external img {\n  background: white;\n  border: 1px solid rgba(0, 0, 0, 0.1);\n  box-shadow: 0 1px 8px rgba(0, 0, 0, 0.1);\n  padding: 18px;\n  box-sizing: border-box;\n}\n\nfigcaption a {\n  color: rgba(0, 0, 0, 0.6);\n}\n\nfigcaption b,\nfigcaption strong, {\n  font-weight: 600;\n  color: rgba(0, 0, 0, 1.0);\n}\n";
+
+  var layout = "/*\n * Copyright 2018 The Distill Template Authors\n *\n * Licensed under the Apache License, Version 2.0 (the \"License\");\n * you may not use this file except in compliance with the License.\n * You may obtain a copy of the License at\n *\n *      http://www.apache.org/licenses/LICENSE-2.0\n *\n * Unless required by applicable law or agreed to in writing, software\n * distributed under the License is distributed on an \"AS IS\" BASIS,\n * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.\n * See the License for the specific language governing permissions and\n * limitations under the License.\n */\n\n@supports not (display: grid) {\n  .base-grid,\n  distill-header,\n  d-title,\n  d-abstract,\n  article,\n  d-appendix,\n  distill-appendix,\n  d-byline,\n  d-header,\n  d-footnote-list,\n  d-citation-list,\n  distill-footer {\n    display: block;\n    padding: 8px;\n  }\n}\n\n.base-grid,\ndistill-header,\nd-title,\nd-abstract,\narticle,\nd-appendix,\ndistill-appendix,\nd-byline,\nd-header,\nd-footnote-list,\nd-citation-list,\ndistill-footer {\n  display: grid;\n  justify-items: stretch;\n  grid-template-columns: [screen-start] 8px [page-start kicker-start text-start gutter-start middle-start] 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr [text-end page-end gutter-end kicker-end middle-end] 8px [screen-end];\n  grid-column-gap: 8px;\n}\n\n.grid {\n  display: grid;\n  grid-column-gap: 8px;\n}\n\n@media(min-width: 768px) {\n  .base-grid,\n  distill-header,\n  d-title,\n  d-abstract,\n  article,\n  d-appendix,\n  distill-appendix,\n  d-byline,\n  d-header,\n  d-footnote-list,\n  d-citation-list,\n  distill-footer {\n    grid-template-columns: [screen-start] 1fr [page-start kicker-start middle-start text-start] 45px 45px 45px 45px 45px 45px 45px 45px [ kicker-end text-end gutter-start] 45px [middle-end] 45px [page-end gutter-end] 1fr [screen-end];\n    grid-column-gap: 16px;\n  }\n\n  .grid {\n    grid-column-gap: 16px;\n  }\n}\n\n@media(min-width: 1000px) {\n  .base-grid,\n  distill-header,\n  d-title,\n  d-abstract,\n  article,\n  d-appendix,\n  distill-appendix,\n  d-byline,\n  d-header,\n  d-footnote-list,\n  d-citation-list,\n  distill-footer {\n    grid-template-columns: [screen-start] 1fr [page-start kicker-start] 50px [middle-start] 50px [text-start kicker-end] 50px 50px 50px 50px 50px 50px 50px 50px [text-end gutter-start] 50px [middle-end] 50px [page-end gutter-end] 1fr [screen-end];\n    grid-column-gap: 16px;\n  }\n\n  .grid {\n    grid-column-gap: 16px;\n  }\n}\n\n@media(min-width: 1180px) {\n  .base-grid,\n  distill-header,\n  d-title,\n  d-abstract,\n  article,\n  d-appendix,\n  distill-appendix,\n  d-byline,\n  d-header,\n  d-footnote-list,\n  d-citation-list,\n  distill-footer {\n    grid-template-columns: [screen-start] 1fr [page-start kicker-start] 60px [middle-start] 60px [text-start kicker-end] 60px 60px 60px 60px 60px 60px 60px 60px [text-end gutter-start] 60px [middle-end] 60px [page-end gutter-end] 1fr [screen-end];\n    grid-column-gap: 32px;\n  }\n\n  .grid {\n    grid-column-gap: 32px;\n  }\n}\n\n\n\n\n.base-grid {\n  grid-column: screen;\n}\n\n/* .l-body,\narticle > *  {\n  grid-column: text;\n}\n\n.l-page,\nd-title > *,\nd-figure {\n  grid-column: page;\n} */\n\n.l-gutter {\n  grid-column: gutter;\n}\n\n.l-text,\n.l-body {\n  grid-column: text;\n}\n\n.l-page {\n  grid-column: page;\n}\n\n.l-body-outset {\n  grid-column: middle;\n}\n\n.l-page-outset {\n  grid-column: page;\n}\n\n.l-screen {\n  grid-column: screen;\n}\n\n.l-screen-inset {\n  grid-column: screen;\n  padding-left: 16px;\n  padding-left: 16px;\n}\n\n\n/* Aside */\n\narticle aside {\n  grid-column: gutter;\n  font-size: 12px;\n  line-height: 1.6em;\n  color: rgba(0, 0, 0, 0.6)\n}\n\n@media(min-width: 768px) {\n  aside {\n    grid-column: gutter;\n  }\n\n  .side {\n    grid-column: gutter;\n  }\n}\n";
+
+  var print = "/*\n * Copyright 2018 The Distill Template Authors\n *\n * Licensed under the Apache License, Version 2.0 (the \"License\");\n * you may not use this file except in compliance with the License.\n * You may obtain a copy of the License at\n *\n *      http://www.apache.org/licenses/LICENSE-2.0\n *\n * Unless required by applicable law or agreed to in writing, software\n * distributed under the License is distributed on an \"AS IS\" BASIS,\n * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.\n * See the License for the specific language governing permissions and\n * limitations under the License.\n */\n\n@media print {\n\n  @page {\n    size: 8in 11in;\n    @bottom-right {\n      content: counter(page) \" of \" counter(pages);\n    }\n  }\n\n  html {\n    /* no general margins -- CSS Grid takes care of those */\n  }\n\n  p, code {\n    page-break-inside: avoid;\n  }\n\n  h2, h3 {\n    page-break-after: avoid;\n  }\n\n  d-header {\n    visibility: hidden;\n  }\n\n  d-footer {\n    display: none!important;\n  }\n\n}\n";
+
+  var byline = "/*\n * Copyright 2018 The Distill Template Authors\n *\n * Licensed under the Apache License, Version 2.0 (the \"License\");\n * you may not use this file except in compliance with the License.\n * You may obtain a copy of the License at\n *\n *      http://www.apache.org/licenses/LICENSE-2.0\n *\n * Unless required by applicable law or agreed to in writing, software\n * distributed under the License is distributed on an \"AS IS\" BASIS,\n * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.\n * See the License for the specific language governing permissions and\n * limitations under the License.\n */\n\nd-byline {\n  contain: style;\n  overflow: hidden;\n  /* border-top: 1px solid rgba(0, 0, 0, 0.1); */\n  font-size: 1.2rem;\n  line-height: 1.8em;\n  padding: 1.5rem 0;\n  min-height: 1.8em;\n}\n\n\nd-byline .byline {\n  /* grid-template-columns: 1fr 1fr; */\n  grid-column: text;\n}\n\n@media(min-width: 768px) {\n  d-byline .byline {\n    /* grid-template-columns: 1fr 1fr 1fr 1fr; */\n  }\n}\n\nd-byline .authors-affiliations {\n  grid-column-end: span 2;\n  grid-template-columns: 1fr 1fr;\n  margin-bottom: 1em;\n}\n\n/*\n@media(min-width: 768px) {\n  d-byline .authors-affiliations {\n    grid-template-columns: 1fr 1fr 1fr;\n    margin-bottom: 0;\n  }\n}\n*/\n\nd-byline h3 {\n  font-size: 0.6rem;\n  font-weight: 400;\n  color: rgba(0, 0, 0, 0.5);\n  margin: 0;\n  text-transform: uppercase;\n}\n\nd-byline p {\n  margin: 0;\n}\n\nd-byline a,\narticle d-byline a {\n  color: rgba(0, 0, 0, 0.8);\n  text-decoration: none;\n  border-bottom: none;\n}\n\nd-byline a:hover,\narticle d-byline a:hover {\n  text-decoration: underline;\n  border-bottom: none;\n}\n\nd-byline p.author-name {\n  font-weight: bold;\n}\n\nd-byline .affiliations {\n\n}\n";
+
+  var header = "d-header {\n  contain: layout style;\n}\n\nd-header > * {\n  grid-column: middle;\n}\n\nd-header .header {\n  text-align: left;\n  border-bottom: 1px solid black;\n  margin-top: 1rem;\n  margin-bottom: 2rem;\n  font-size: 1.2rem;\n}\n\nd-header .header p {\n  margin: 0;\n  padding: 0;\n}\n";
+
+  var article = "/*\n * Copyright 2018 The Distill Template Authors\n *\n * Licensed under the Apache License, Version 2.0 (the \"License\");\n * you may not use this file except in compliance with the License.\n * You may obtain a copy of the License at\n *\n *      http://www.apache.org/licenses/LICENSE-2.0\n *\n * Unless required by applicable law or agreed to in writing, software\n * distributed under the License is distributed on an \"AS IS\" BASIS,\n * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.\n * See the License for the specific language governing permissions and\n * limitations under the License.\n */\n\narticle {\n  contain: layout style;\n  overflow-x: hidden;\n  font-size: 1.2rem;\n  line-height: 1.8rem;\n  /* border-top: 1px solid rgba(0, 0, 0, 0.1); */\n  /* padding-top: 2rem; */\n  /* color: rgba(0, 0, 0, 0.8); */\n}\n\narticle > * {\n  grid-column: text;\n}\n\n/*\n@media(min-width: 768px) {\n  article {\n    font-size: 1.3rem;\n  }\n}\n\n@media(min-width: 1024px) {\n  article {\n    font-size: 1.2rem;\n    line-height: 1.7em;\n  }\n}\n*/\n\n\n/* h1 */\n\n\narticle .marker {\n  text-decoration: none;\n  border: none;\n  counter-reset: section;\n  grid-column: kicker;\n  line-height: 1.7em;\n}\n\narticle .marker:hover {\n  border: none;\n}\n\narticle .marker span {\n  padding: 0 3px 4px;\n  border-bottom: 1px solid rgba(0, 0, 0, 0.2);\n  position: relative;\n  top: 4px;\n}\n\narticle .marker:hover span {\n  color: rgba(0, 0, 0, 0.7);\n  border-bottom: 1px solid rgba(0, 0, 0, 0.7);\n}\n\narticle h1 {\n  counter-increment: h-one;\n  counter-reset: h-two;\n  font-weight: normal;\n  font-size: 1.8rem;\n  font-family: 'Times New Roman SC', serif;\n  line-height: 1.25em;\n  margin: 2rem 0 0.1rem 0;\n  /* border-bottom: 1px solid rgba(0, 0, 0, 0.1); */\n  padding-bottom: 1rem;\n  text-align: left;\n  -moz-hyphens: none;\n  -webkit-hyphens: none;\n  hyphens: none;\n}\n\narticle h1::before {\n  content: counter(h-one) \"\\0000a0\\0000a0\\0000a0\\0000a0\";\n  font-family: 'Times New Roman', serif;\n}\n\n/* h2 */\n\narticle h2 {\n  counter-increment: h-two;\n  font-weight: normal;\n  font-size: 1.4rem;\n  font-family: 'Times New Roman SC', serif;\n  line-height: 1.4em;\n  margin-bottom: 0.5rem;\n  margin-top: 1rem;\n}\n\narticle h2::before {\n  content: counter(h-one) \".\" counter(h-two) \"\\0000a0\\0000a0\\0000a0\";\n  font-family: 'Times New Roman', serif;\n}\n\n/* H4 */\n\narticle h4 {\n  font-weight: 600;\n  text-transform: uppercase;\n  font-size: 14px;\n  line-height: 1.4em;\n}\n\narticle a {\n  color: inherit;\n}\n\narticle p,\narticle ul,\narticle ol,\narticle blockquote {\n  margin-top: 0;\n  margin-bottom: 0.5rem;\n  margin-left: 0;\n  margin-right: 0;\n}\n\n/* p's that follow p's are indented */\narticle p + p {\n  text-indent: 1.5rem;\n}\n\narticle blockquote {\n  border-left: 2px solid rgba(0, 0, 0, 0.2);\n  padding-left: 2rem;\n  font-style: italic;\n  color: rgba(0, 0, 0, 0.6);\n}\n\narticle a {\n  border-bottom: 1px solid rgba(0, 0, 0, 0.4);\n  text-decoration: none;\n}\n\narticle a:hover {\n  border-bottom: 1px solid rgba(0, 0, 0, 0.8);\n}\n\narticle .link {\n  text-decoration: underline;\n  cursor: pointer;\n}\n\narticle ul,\narticle ol {\n  padding-left: 24px;\n}\n\narticle li {\n  margin-bottom: 0.0rem;\n  margin-left: 0;\n  padding-left: 0;\n}\n\narticle li:last-child {\n  margin-bottom: 0;\n}\n\narticle pre {\n  font-size: 14px;\n  margin-bottom: 20px;\n}\n\narticle hr {\n  grid-column: screen;\n  width: 100%;\n  border: none;\n  border-bottom: 1px solid rgba(0, 0, 0, 0.1);\n  margin-top: 60px;\n  margin-bottom: 60px;\n}\n\narticle section {\n  margin-top: 60px;\n  margin-bottom: 60px;\n}\n\narticle span.equation-mimic {\n  font-family: georgia;\n  font-size: 115%;\n  font-style: italic;\n}\n\narticle > d-code,\narticle section > d-code  {\n  display: block;\n}\n\narticle > d-math[block],\narticle section > d-math[block]  {\n  display: block;\n}\n\n@media (max-width: 768px) {\n  article > d-code,\n  article section > d-code,\n  article > d-math[block],\n  article section > d-math[block] {\n      overflow-x: scroll;\n      -ms-overflow-style: none;  // IE 10+\n      overflow: -moz-scrollbars-none;  // Firefox\n  }\n\n  article > d-code::-webkit-scrollbar,\n  article section > d-code::-webkit-scrollbar,\n  article > d-math[block]::-webkit-scrollbar,\n  article section > d-math[block]::-webkit-scrollbar {\n    display: none;  // Safari and Chrome\n  }\n}\n\narticle .citation {\n  color: #668;\n  cursor: pointer;\n}\n\nd-include {\n  width: auto;\n  display: block;\n}\n\nd-figure {\n  contain: layout style;\n}\n\n/* KaTeX */\n\n.katex, .katex-prerendered {\n  contain: style;\n  display: inline-block;\n}\n\n/* Tables */\n\narticle table {\n  border-collapse: collapse;\n  margin-bottom: 1.5rem;\n  border-bottom: 1px solid rgba(0, 0, 0, 0.2);\n}\n\narticle table th {\n  border-bottom: 1px solid rgba(0, 0, 0, 0.2);\n}\n\narticle table td {\n  border-bottom: 1px solid rgba(0, 0, 0, 0.05);\n}\n\narticle table tr:last-of-type td {\n  border-bottom: none;\n}\n\narticle table th,\narticle table td {\n  font-size: 15px;\n  padding: 2px 8px;\n}\n\narticle table tbody :first-child td {\n  padding-top: 2px;\n}\n";
+
+  var title = "/*\n * Copyright 2018 The Distill Template Authors\n *\n * Licensed under the Apache License, Version 2.0 (the \"License\");\n * you may not use this file except in compliance with the License.\n * You may obtain a copy of the License at\n *\n *      http://www.apache.org/licenses/LICENSE-2.0\n *\n * Unless required by applicable law or agreed to in writing, software\n * distributed under the License is distributed on an \"AS IS\" BASIS,\n * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.\n * See the License for the specific language governing permissions and\n * limitations under the License.\n */\n\nd-title {\n  padding: 2rem 0 1.5rem;\n  contain: layout style;\n  overflow-x: hidden;\n}\n\n@media(min-width: 768px) {\n  d-title {\n    padding: 4rem 0 1.5rem;\n  }\n}\n\nd-title h1 {\n  grid-column: text;\n  font-size: 1.7rem;\n  font-family: 'Times New Roman SC', serif;\n  font-weight: normal;\n  line-height: 1.1em;\n  margin: 0 0 0.5rem;\n  text-align: center;\n  -moz-hyphens: none;\n  -webkit-hyphens: none;\n  hyphens: none;\n}\n\n@media(min-width: 768px) {\n  d-title h1 {\n    font-size: 2.7rem;\n  }\n}\n\nd-title p {\n  font-weight: 300;\n  font-size: 1.2rem;\n  line-height: 1.55em;\n  grid-column: text;\n}\n\nd-title .status {\n  margin-top: 0px;\n  font-size: 12px;\n  color: #009688;\n  opacity: 0.8;\n  grid-column: kicker;\n}\n\nd-title .status span {\n  line-height: 1;\n  display: inline-block;\n  padding: 6px 0;\n  border-bottom: 1px solid #80cbc4;\n  font-size: 11px;\n  text-transform: uppercase;\n}\n";
+
+  // Copyright 2018 The Distill Template Authors
+
+  const styles = base + layout + title + byline + header + article + math + print;
+
+  function makeStyleTag(dom) {
+
+    const styleTagId = 'distill-prerendered-styles';
+    const prerenderedTag = dom.getElementById(styleTagId);
+    if (!prerenderedTag) {
+      const styleTag = dom.createElement('style');
+      styleTag.id = styleTagId;
+      styleTag.type = 'text/css';
+      const cssTextTag = dom.createTextNode(styles);
+      styleTag.appendChild(cssTextTag);
+      const firstScriptTag = dom.head.querySelector('script');
+      dom.head.insertBefore(styleTag, firstScriptTag);
+    }
+
+  }
+
+  // Copyright 2018 The Distill Template Authors
+  //
+  // Licensed under the Apache License, Version 2.0 (the "License");
+  // you may not use this file except in compliance with the License.
+  // You may obtain a copy of the License at
+  //
+  //      http://www.apache.org/licenses/LICENSE-2.0
+  //
+  // Unless required by applicable law or agreed to in writing, software
+  // distributed under the License is distributed on an "AS IS" BASIS,
+  // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  // See the License for the specific language governing permissions and
+  // limitations under the License.
+
+  function addPolyfill(polyfill, polyfillLoadedCallback) {
+    console.debug('Runlevel 0: Polyfill required: ' + polyfill.name);
+    const script = document.createElement('script');
+    script.src = polyfill.url;
+    script.async = false;
+    if (polyfillLoadedCallback) {
+      script.onload = function() { polyfillLoadedCallback(polyfill); };
+    }
+    script.onerror = function() {
+      new Error('Runlevel 0: Polyfills failed to load script ' + polyfill.name);
+    };
+    document.head.appendChild(script);
+  }
+
+  const polyfills = [
+    {
+      name: 'WebComponents',
+      support: function() {
+        return 'customElements' in window &&
+               'attachShadow' in Element.prototype &&
+               'getRootNode' in Element.prototype &&
+               'content' in document.createElement('template') &&
+               'Promise' in window &&
+               'from' in Array;
+      },
+      url: 'https://distill.pub/third-party/polyfills/webcomponents-lite.js'
+    }, {
+      name: 'IntersectionObserver',
+      support: function() {
+        return 'IntersectionObserver' in window &&
+               'IntersectionObserverEntry' in window;
+      },
+      url: 'https://distill.pub/third-party/polyfills/intersection-observer.js'
+    },
+  ];
+
+  class Polyfills {
+
+    static browserSupportsAllFeatures() {
+      return polyfills.every((poly) => poly.support());
+    }
+
+    static load(callback) {
+      // Define an intermediate callback that checks if all is loaded.
+      const polyfillLoaded = function(polyfill) {
+        polyfill.loaded = true;
+        console.debug('Runlevel 0: Polyfill has finished loading: ' + polyfill.name);
+        // console.debug(window[polyfill.name]);
+        if (Polyfills.neededPolyfills.every((poly) => poly.loaded)) {
+          console.debug('Runlevel 0: All required polyfills have finished loading.');
+          console.debug('Runlevel 0->1.');
+          window.distillRunlevel = 1;
+          callback();
+        }
+      };
+      // Add polyfill script tags
+      for (const polyfill of Polyfills.neededPolyfills) {
+        addPolyfill(polyfill, polyfillLoaded);
+      }
+    }
+
+    static get neededPolyfills() {
+      if (!Polyfills._neededPolyfills) {
+        Polyfills._neededPolyfills = polyfills.filter((poly) => !poly.support());
+      }
+      return Polyfills._neededPolyfills;
+    }
+  }
+
+  // Copyright 2018 The Distill Template Authors
+  //
+  // Licensed under the Apache License, Version 2.0 (the "License");
+  // you may not use this file except in compliance with the License.
+  // You may obtain a copy of the License at
+  //
+  //      http://www.apache.org/licenses/LICENSE-2.0
+  //
+  // Unless required by applicable law or agreed to in writing, software
+  // distributed under the License is distributed on an "AS IS" BASIS,
+  // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  // See the License for the specific language governing permissions and
+  // limitations under the License.
+
+  // const marginSmall = 16;
+  // const marginLarge = 3 * marginSmall;
+  // const margin = marginSmall + marginLarge;
+  // const gutter = marginSmall;
+  // const outsetAmount = margin / 2;
+  // const numCols = 4;
+  // const numGutters = numCols - 1;
+  // const columnWidth = (768 - 2 * marginLarge - numGutters * gutter) / numCols;
+  //
+  // const screenwidth = 768;
+  // const pageWidth = screenwidth - 2 * marginLarge;
+  // const bodyWidth = pageWidth - columnWidth - gutter;
+
+  function body(selector) {
+    return `${selector} {
+      grid-column: left / text;
+    }
+  `;
+  }
+
+  // Copyright 2018 The Distill Template Authors
+
+  const T$1 = Template('d-abstract', `
 <style>
   :host {
-    font-size: 1.25rem;
-    line-height: 1.6em;
-    color: rgba(0, 0, 0, 0.7);
-    -webkit-font-smoothing: antialiased;
+    font-size: 1.2rem;
+    line-height: 1.8rem;
+    /* color: rgba(0, 0, 0, 0.7); */
+    /* -webkit-font-smoothing: antialiased; */
+  }
+
+  :host h3 {
+    grid-column: text;
+    text-align: center;
+    margin-bottom: 0.5rem;
+    font-family: 'Times New Roman SC', serif;
+    font-weight: normal;
   }
 
   ::slotted(p) {
     margin-top: 0;
     margin-bottom: 1em;
-    grid-column: text-start / middle-end;
+    grid-column: text;
+    padding-left: 4rem;
+    padding-right: 4rem;
   }
-  ${function(e){return`${e} {
-      grid-column: left / text;
-    }
-  `}('d-abstract')}
+  ${body('d-abstract')}
 </style>
 
+<h3 class="abstract">Abstract</h3>
 <slot></slot>
-`);class Bi extends Yi(HTMLElement){}const Wi=Ti('d-appendix',`
+`);
+
+  class Abstract extends T$1(HTMLElement) {
+
+  }
+
+  // Copyright 2018 The Distill Template Authors
+
+  const T$2 = Template('d-appendix', `
 <style>
 
 d-appendix {
   contain: layout style;
-  font-size: 0.8em;
+  font-size: 1rem;
   line-height: 1.7em;
   margin-top: 60px;
   margin-bottom: 0;
   border-top: 1px solid rgba(0, 0, 0, 0.1);
-  color: rgba(0,0,0,0.5);
+  color: rgba(0,0,0,0.7);
   padding-top: 60px;
   padding-bottom: 48px;
 }
 
 d-appendix h3 {
   grid-column: page-start / text-start;
-  font-size: 15px;
+  font-size: 1rem;
   font-weight: 500;
   margin-top: 1em;
   margin-bottom: 0;
@@ -167,7 +1618,542 @@ d-appendix > distill-appendix {
 
 </style>
 
-`,!1);class Vi extends Wi(HTMLElement){}const Ki=/^\s*$/;class $i extends HTMLElement{static get is(){return'd-article'}constructor(){super(),new MutationObserver((e)=>{for(const t of e)for(const e of t.addedNodes)switch(e.nodeName){case'#text':{const t=e.nodeValue;if(!Ki.test(t)){console.warn('Use of unwrapped text in distill articles is discouraged as it breaks layout! Please wrap any text in a <span> or <p> tag. We found the following text: '+t);const n=document.createElement('span');n.innerHTML=e.nodeValue,e.parentNode.insertBefore(n,e),e.parentNode.removeChild(e)}}}}).observe(this,{childList:!0})}}var Qi='undefined'==typeof window?'undefined'==typeof global?'undefined'==typeof self?{}:self:global:window,Xi=f(function(e,t){(function(e){function t(){this.months=['jan','feb','mar','apr','may','jun','jul','aug','sep','oct','nov','dec'],this.notKey=[',','{','}',' ','='],this.pos=0,this.input='',this.entries=[],this.currentEntry='',this.setInput=function(e){this.input=e},this.getEntries=function(){return this.entries},this.isWhitespace=function(e){return' '==e||'\r'==e||'\t'==e||'\n'==e},this.match=function(e,t){if((void 0==t||null==t)&&(t=!0),this.skipWhitespace(t),this.input.substring(this.pos,this.pos+e.length)==e)this.pos+=e.length;else throw'Token mismatch, expected '+e+', found '+this.input.substring(this.pos);this.skipWhitespace(t)},this.tryMatch=function(e,t){return(void 0==t||null==t)&&(t=!0),this.skipWhitespace(t),this.input.substring(this.pos,this.pos+e.length)==e},this.matchAt=function(){for(;this.input.length>this.pos&&'@'!=this.input[this.pos];)this.pos++;return!('@'!=this.input[this.pos])},this.skipWhitespace=function(e){for(;this.isWhitespace(this.input[this.pos]);)this.pos++;if('%'==this.input[this.pos]&&!0==e){for(;'\n'!=this.input[this.pos];)this.pos++;this.skipWhitespace(e)}},this.value_braces=function(){var e=0;this.match('{',!1);for(var t=this.pos,n=!1;;){if(!n)if('}'==this.input[this.pos]){if(0<e)e--;else{var i=this.pos;return this.match('}',!1),this.input.substring(t,i)}}else if('{'==this.input[this.pos])e++;else if(this.pos>=this.input.length-1)throw'Unterminated value';n='\\'==this.input[this.pos]&&!1==n,this.pos++}},this.value_comment=function(){for(var e='',t=0;!(this.tryMatch('}',!1)&&0==t);){if(e+=this.input[this.pos],'{'==this.input[this.pos]&&t++,'}'==this.input[this.pos]&&t--,this.pos>=this.input.length-1)throw'Unterminated value:'+this.input.substring(start);this.pos++}return e},this.value_quotes=function(){this.match('"',!1);for(var e=this.pos,t=!1;;){if(!t){if('"'==this.input[this.pos]){var n=this.pos;return this.match('"',!1),this.input.substring(e,n)}if(this.pos>=this.input.length-1)throw'Unterminated value:'+this.input.substring(e)}t='\\'==this.input[this.pos]&&!1==t,this.pos++}},this.single_value=function(){var e=this.pos;if(this.tryMatch('{'))return this.value_braces();if(this.tryMatch('"'))return this.value_quotes();var t=this.key();if(t.match('^[0-9]+$'))return t;if(0<=this.months.indexOf(t.toLowerCase()))return t.toLowerCase();throw'Value expected:'+this.input.substring(e)+' for key: '+t},this.value=function(){for(var e=[this.single_value()];this.tryMatch('#');)this.match('#'),e.push(this.single_value());return e.join('')},this.key=function(){for(var e=this.pos;;){if(this.pos>=this.input.length)throw'Runaway key';if(0<=this.notKey.indexOf(this.input[this.pos]))return this.input.substring(e,this.pos);this.pos++}},this.key_equals_value=function(){var e=this.key();if(this.tryMatch('=')){this.match('=');var t=this.value();return[e,t]}throw'... = value expected, equals sign missing:'+this.input.substring(this.pos)},this.key_value_list=function(){var e=this.key_equals_value();for(this.currentEntry.entryTags={},this.currentEntry.entryTags[e[0]]=e[1];this.tryMatch(',')&&(this.match(','),!this.tryMatch('}'));)e=this.key_equals_value(),this.currentEntry.entryTags[e[0]]=e[1]},this.entry_body=function(e){this.currentEntry={},this.currentEntry.citationKey=this.key(),this.currentEntry.entryType=e.substring(1),this.match(','),this.key_value_list(),this.entries.push(this.currentEntry)},this.directive=function(){return this.match('@'),'@'+this.key()},this.preamble=function(){this.currentEntry={},this.currentEntry.entryType='PREAMBLE',this.currentEntry.entry=this.value_comment(),this.entries.push(this.currentEntry)},this.comment=function(){this.currentEntry={},this.currentEntry.entryType='COMMENT',this.currentEntry.entry=this.value_comment(),this.entries.push(this.currentEntry)},this.entry=function(e){this.entry_body(e)},this.bibtex=function(){for(;this.matchAt();){var e=this.directive();this.match('{'),'@STRING'==e?this.string():'@PREAMBLE'==e?this.preamble():'@COMMENT'==e?this.comment():this.entry(e),this.match('}')}}}e.toJSON=function(e){var n=new t;return n.setInput(e),n.bibtex(),n.entries},e.toBibtex=function(e){var t='';for(var n in e){if(t+='@'+e[n].entryType,t+='{',e[n].citationKey&&(t+=e[n].citationKey+', '),e[n].entry&&(t+=e[n].entry),e[n].entryTags){var i='';for(var a in e[n].entryTags)0!=i.length&&(i+=', '),i+=a+'= {'+e[n].entryTags[a]+'}';t+=i}t+='}\n\n'}return t}})(t)});class Zi extends HTMLElement{static get is(){return'd-bibliography'}constructor(){super();const e=new MutationObserver((e)=>{for(const t of e)('SCRIPT'===t.target.nodeName||'characterData'===t.type)&&this.parseIfPossible()});e.observe(this,{childList:!0,characterData:!0,subtree:!0})}connectedCallback(){requestAnimationFrame(()=>{this.parseIfPossible()})}parseIfPossible(){const e=this.querySelector('script');if(e)if('text/bibtex'==e.type){const t=e.textContent;if(this.bibtex!==t){this.bibtex=t;const e=b(this.bibtex);this.notify(e)}}else if('text/json'==e.type){const t=new Map(JSON.parse(e.textContent));this.notify(t)}else console.warn('Unsupported bibliography script tag type: '+e.type)}notify(e){const t=new CustomEvent('onBibliographyChanged',{detail:e,bubbles:!0});this.dispatchEvent(t)}static get observedAttributes(){return['src']}receivedBibtex(e){const t=b(e.target.response);this.notify(t)}attributeChangedCallback(e,t,n){var i=new XMLHttpRequest;i.onload=(t)=>this.receivedBibtex(t),i.onerror=()=>console.warn(`Could not load Bibtex! (tried ${n})`),i.responseType='text',i.open('GET',n,!0),i.send()}}class Ji extends HTMLElement{static get is(){return'd-byline'}set frontMatter(e){this.innerHTML=y(e)}}const Gi=Ti('d-cite',`
+`, false);
+
+  class Appendix extends T$2(HTMLElement) {
+
+  }
+
+  // Copyright 2018 The Distill Template Authors
+  //
+  // Licensed under the Apache License, Version 2.0 (the "License");
+  // you may not use this file except in compliance with the License.
+  // You may obtain a copy of the License at
+  //
+  //      http://www.apache.org/licenses/LICENSE-2.0
+  //
+  // Unless required by applicable law or agreed to in writing, software
+  // distributed under the License is distributed on an "AS IS" BASIS,
+  // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  // See the License for the specific language governing permissions and
+  // limitations under the License.
+
+  // import { Template } from '../mixins/template';
+  // import { Controller } from '../controller';
+
+  const isOnlyWhitespace = /^\s*$/;
+
+  class Article extends HTMLElement {
+    static get is() { return 'd-article'; }
+
+    constructor() {
+      super();
+
+      new MutationObserver( (mutations) => {
+        for (const mutation of mutations) {
+          for (const addedNode of mutation.addedNodes) {
+            switch (addedNode.nodeName) {
+            case '#text': { // usually text nodes are only linebreaks.
+              const text = addedNode.nodeValue;
+              if (!isOnlyWhitespace.test(text)) {
+                console.warn('Use of unwrapped text in distill articles is discouraged as it breaks layout! Please wrap any text in a <span> or <p> tag. We found the following text: ' + text);
+                const wrapper = document.createElement('span');
+                wrapper.innerHTML = addedNode.nodeValue;
+                addedNode.parentNode.insertBefore(wrapper, addedNode);
+                addedNode.parentNode.removeChild(addedNode);
+              }
+            } break;
+            }
+          }
+        }
+      }).observe(this, {childList: true});
+    }
+
+  }
+
+  var commonjsGlobal = typeof globalThis !== 'undefined' ? globalThis : typeof window !== 'undefined' ? window : typeof global !== 'undefined' ? global : typeof self !== 'undefined' ? self : {};
+
+  function createCommonjsModule(fn, module) {
+  	return module = { exports: {} }, fn(module, module.exports), module.exports;
+  }
+
+  var bibtexParse = createCommonjsModule(function (module, exports) {
+  /* start bibtexParse 0.0.22 */
+
+  //Original work by Henrik Muehe (c) 2010
+  //
+  //CommonJS port by Mikola Lysenko 2013
+  //
+  //Port to Browser lib by ORCID / RCPETERS
+  //
+  //Issues:
+  //no comment handling within strings
+  //no string concatenation
+  //no variable values yet
+  //Grammar implemented here:
+  //bibtex -> (string | preamble | comment | entry)*;
+  //string -> '@STRING' '{' key_equals_value '}';
+  //preamble -> '@PREAMBLE' '{' value '}';
+  //comment -> '@COMMENT' '{' value '}';
+  //entry -> '@' key '{' key ',' key_value_list '}';
+  //key_value_list -> key_equals_value (',' key_equals_value)*;
+  //key_equals_value -> key '=' value;
+  //value -> value_quotes | value_braces | key;
+  //value_quotes -> '"' .*? '"'; // not quite
+  //value_braces -> '{' .*? '"'; // not quite
+  (function(exports) {
+
+      function BibtexParser() {
+          
+          this.months = ["jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"];
+          this.notKey = [',','{','}',' ','='];
+          this.pos = 0;
+          this.input = "";
+          this.entries = new Array();
+
+          this.currentEntry = "";
+
+          this.setInput = function(t) {
+              this.input = t;
+          };
+
+          this.getEntries = function() {
+              return this.entries;
+          };
+
+          this.isWhitespace = function(s) {
+              return (s == ' ' || s == '\r' || s == '\t' || s == '\n');
+          };
+
+          this.match = function(s, canCommentOut) {
+              if (canCommentOut == undefined || canCommentOut == null)
+                  canCommentOut = true;
+              this.skipWhitespace(canCommentOut);
+              if (this.input.substring(this.pos, this.pos + s.length) == s) {
+                  this.pos += s.length;
+              } else {
+                  throw "Token mismatch, expected " + s + ", found "
+                          + this.input.substring(this.pos);
+              }            this.skipWhitespace(canCommentOut);
+          };
+
+          this.tryMatch = function(s, canCommentOut) {
+              if (canCommentOut == undefined || canCommentOut == null)
+                  canCommentOut = true;
+              this.skipWhitespace(canCommentOut);
+              if (this.input.substring(this.pos, this.pos + s.length) == s) {
+                  return true;
+              } else {
+                  return false;
+              }        };
+
+          /* when search for a match all text can be ignored, not just white space */
+          this.matchAt = function() {
+              while (this.input.length > this.pos && this.input[this.pos] != '@') {
+                  this.pos++;
+              }
+              if (this.input[this.pos] == '@') {
+                  return true;
+              }            return false;
+          };
+
+          this.skipWhitespace = function(canCommentOut) {
+              while (this.isWhitespace(this.input[this.pos])) {
+                  this.pos++;
+              }            if (this.input[this.pos] == "%" && canCommentOut == true) {
+                  while (this.input[this.pos] != "\n") {
+                      this.pos++;
+                  }                this.skipWhitespace(canCommentOut);
+              }        };
+
+          this.value_braces = function() {
+              var bracecount = 0;
+              this.match("{", false);
+              var start = this.pos;
+              var escaped = false;
+              while (true) {
+                  if (!escaped) {
+                      if (this.input[this.pos] == '}') {
+                          if (bracecount > 0) {
+                              bracecount--;
+                          } else {
+                              var end = this.pos;
+                              this.match("}", false);
+                              return this.input.substring(start, end);
+                          }                    } else if (this.input[this.pos] == '{') {
+                          bracecount++;
+                      } else if (this.pos >= this.input.length - 1) {
+                          throw "Unterminated value";
+                      }                }                if (this.input[this.pos] == '\\' && escaped == false)
+                      escaped = true;
+                  else
+                      escaped = false;
+                  this.pos++;
+              }        };
+
+          this.value_comment = function() {
+              var str = '';
+              var brcktCnt = 0;
+              while (!(this.tryMatch("}", false) && brcktCnt == 0)) {
+                  str = str + this.input[this.pos];
+                  if (this.input[this.pos] == '{')
+                      brcktCnt++;
+                  if (this.input[this.pos] == '}')
+                      brcktCnt--;
+                  if (this.pos >= this.input.length - 1) {
+                      throw "Unterminated value:" + this.input.substring(start);
+                  }                this.pos++;
+              }            return str;
+          };
+
+          this.value_quotes = function() {
+              this.match('"', false);
+              var start = this.pos;
+              var escaped = false;
+              while (true) {
+                  if (!escaped) {
+                      if (this.input[this.pos] == '"') {
+                          var end = this.pos;
+                          this.match('"', false);
+                          return this.input.substring(start, end);
+                      } else if (this.pos >= this.input.length - 1) {
+                          throw "Unterminated value:" + this.input.substring(start);
+                      }                }
+                  if (this.input[this.pos] == '\\' && escaped == false)
+                      escaped = true;
+                  else
+                      escaped = false;
+                  this.pos++;
+              }        };
+
+          this.single_value = function() {
+              var start = this.pos;
+              if (this.tryMatch("{")) {
+                  return this.value_braces();
+              } else if (this.tryMatch('"')) {
+                  return this.value_quotes();
+              } else {
+                  var k = this.key();
+                  if (k.match("^[0-9]+$"))
+                      return k;
+                  else if (this.months.indexOf(k.toLowerCase()) >= 0)
+                      return k.toLowerCase();
+                  else
+                      throw "Value expected:" + this.input.substring(start) + ' for key: ' + k;
+              
+              }        };
+
+          this.value = function() {
+              var values = [];
+              values.push(this.single_value());
+              while (this.tryMatch("#")) {
+                  this.match("#");
+                  values.push(this.single_value());
+              }            return values.join("");
+          };
+
+          this.key = function() {
+              var start = this.pos;
+              while (true) {
+                  if (this.pos >= this.input.length) {
+                      throw "Runaway key";
+                  }                                // а-яА-Я is Cyrillic
+                  //console.log(this.input[this.pos]);
+                  if (this.notKey.indexOf(this.input[this.pos]) >= 0) {
+                      return this.input.substring(start, this.pos);
+                  } else {
+                      this.pos++;
+                      
+                  }            }        };
+
+          this.key_equals_value = function() {
+              var key = this.key();
+              if (this.tryMatch("=")) {
+                  this.match("=");
+                  var val = this.value();
+                  return [ key, val ];
+              } else {
+                  throw "... = value expected, equals sign missing:"
+                          + this.input.substring(this.pos);
+              }        };
+
+          this.key_value_list = function() {
+              var kv = this.key_equals_value();
+              this.currentEntry['entryTags'] = {};
+              this.currentEntry['entryTags'][kv[0]] = kv[1];
+              while (this.tryMatch(",")) {
+                  this.match(",");
+                  // fixes problems with commas at the end of a list
+                  if (this.tryMatch("}")) {
+                      break;
+                  }
+                  kv = this.key_equals_value();
+                  this.currentEntry['entryTags'][kv[0]] = kv[1];
+              }        };
+
+          this.entry_body = function(d) {
+              this.currentEntry = {};
+              this.currentEntry['citationKey'] = this.key();
+              this.currentEntry['entryType'] = d.substring(1);
+              this.match(",");
+              this.key_value_list();
+              this.entries.push(this.currentEntry);
+          };
+
+          this.directive = function() {
+              this.match("@");
+              return "@" + this.key();
+          };
+
+          this.preamble = function() {
+              this.currentEntry = {};
+              this.currentEntry['entryType'] = 'PREAMBLE';
+              this.currentEntry['entry'] = this.value_comment();
+              this.entries.push(this.currentEntry);
+          };
+
+          this.comment = function() {
+              this.currentEntry = {};
+              this.currentEntry['entryType'] = 'COMMENT';
+              this.currentEntry['entry'] = this.value_comment();
+              this.entries.push(this.currentEntry);
+          };
+
+          this.entry = function(d) {
+              this.entry_body(d);
+          };
+
+          this.bibtex = function() {
+              while (this.matchAt()) {
+                  var d = this.directive();
+                  this.match("{");
+                  if (d == "@STRING") {
+                      this.string();
+                  } else if (d == "@PREAMBLE") {
+                      this.preamble();
+                  } else if (d == "@COMMENT") {
+                      this.comment();
+                  } else {
+                      this.entry(d);
+                  }
+                  this.match("}");
+              }        };
+      }    
+      exports.toJSON = function(bibtex) {
+          var b = new BibtexParser();
+          b.setInput(bibtex);
+          b.bibtex();
+          return b.entries;
+      };
+
+      /* added during hackathon don't hate on me */
+      exports.toBibtex = function(json) {
+          var out = '';
+          for ( var i in json) {
+              out += "@" + json[i].entryType;
+              out += '{';
+              if (json[i].citationKey)
+                  out += json[i].citationKey + ', ';
+              if (json[i].entry)
+                  out += json[i].entry ;
+              if (json[i].entryTags) {
+                  var tags = '';
+                  for (var jdx in json[i].entryTags) {
+                      if (tags.length != 0)
+                          tags += ', ';
+                      tags += jdx + '= {' + json[i].entryTags[jdx] + '}';
+                  }
+                  out += tags;
+              }
+              out += '}\n\n';
+          }
+          return out;
+          
+      };
+
+  })( exports);
+
+  /* end bibtexParse */
+  });
+
+  // Copyright 2018 The Distill Template Authors
+
+  function normalizeTag(string) {
+    return string
+      .replace(/[\t\n ]+/g, ' ')
+      .replace(/{\\["^`.'acu~Hvs]( )?([a-zA-Z])}/g, (full, x, char) => char)
+      .replace(/{\\([a-zA-Z])}/g, (full, char) => char)
+      .replace(/[{}]/gi,'');  // Replace curly braces forcing plaintext in latex.
+  }
+
+  function parseBibtex(bibtex) {
+    const bibliography = new Map();
+    const parsedEntries = bibtexParse.toJSON(bibtex);
+    for (const entry of parsedEntries) {
+      // normalize tags; note entryTags is an object, not Map
+      for (const [key, value] of Object.entries(entry.entryTags)) {
+        entry.entryTags[key.toLowerCase()] = normalizeTag(value);
+      }
+      entry.entryTags.type = entry.entryType;
+      // add to bibliography
+      bibliography.set(entry.citationKey, entry.entryTags);
+    }
+    return bibliography;
+  }
+
+  function serializeFrontmatterToBibtex(frontMatter) {
+    return `@article{${frontMatter.slug},
+  author = {${frontMatter.bibtexAuthors}},
+  title = {${frontMatter.title}},
+  journal = {${frontMatter.journal.title}},
+  year = {${frontMatter.publishedYear}},
+  note = {${frontMatter.url}},
+  doi = {${frontMatter.doi}}
+}`;
+  }
+
+  // Copyright 2018 The Distill Template Authors
+
+  class Bibliography extends HTMLElement {
+
+    static get is() { return 'd-bibliography'; }
+
+    constructor() {
+      super();
+
+      // set up mutation observer
+      const options = {childList: true, characterData: true, subtree: true};
+      const observer = new MutationObserver( (entries) => {
+        for (const entry of entries) {
+          if (entry.target.nodeName === 'SCRIPT' || entry.type === 'characterData') {
+            this.parseIfPossible();
+          }
+        }
+      });
+      observer.observe(this, options);
+    }
+
+    connectedCallback() {
+      requestAnimationFrame(() => {
+        this.parseIfPossible();
+      });
+    }
+
+    parseIfPossible() {
+      const scriptTag = this.querySelector('script');
+      if (!scriptTag) return;
+      if (scriptTag.type == 'text/bibtex') {
+        const newBibtex = scriptTag.textContent;
+        if (this.bibtex !== newBibtex) {
+          this.bibtex = newBibtex;
+          const bibliography = parseBibtex(this.bibtex);
+          this.notify(bibliography);
+        }
+      } else if (scriptTag.type == 'text/json') {
+        const bibliography = new Map(JSON.parse(scriptTag.textContent));
+        this.notify(bibliography);
+      } else {
+        console.warn('Unsupported bibliography script tag type: ' + scriptTag.type);
+      }
+    }
+
+    notify(bibliography) {
+      const options = { detail: bibliography, bubbles: true };
+      const event = new CustomEvent('onBibliographyChanged', options);
+      this.dispatchEvent(event);
+    }
+
+    /* observe 'src' attribute */
+
+    static get observedAttributes() {
+      return ['src'];
+    }
+
+    receivedBibtex(event) {
+      const bibliography = parseBibtex(event.target.response);
+      this.notify(bibliography);
+    }
+
+    attributeChangedCallback(name, oldValue, newValue) {
+      var oReq = new XMLHttpRequest();
+      oReq.onload = (e) => this.receivedBibtex(e);
+      oReq.onerror = () => console.warn(`Could not load Bibtex! (tried ${newValue})`);
+      oReq.responseType = 'text';
+      oReq.open('GET', newValue, true);
+      oReq.send();
+    }
+
+
+  }
+
+  // Copyright 2018 The Distill Template Authors
+  //
+  // Licensed under the Apache License, Version 2.0 (the "License");
+  // you may not use this file except in compliance with the License.
+  // You may obtain a copy of the License at
+  //
+  //      http://www.apache.org/licenses/LICENSE-2.0
+  //
+  // Unless required by applicable law or agreed to in writing, software
+  // distributed under the License is distributed on an "AS IS" BASIS,
+  // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  // See the License for the specific language governing permissions and
+  // limitations under the License.
+
+  // import style from '../styles/d-byline.css';
+
+  function bylineTemplate(frontMatter) {
+    return `
+  <div class="byline">
+    <div class="authors-affiliations grid">
+      ${frontMatter.authors.map(author => `
+        <div class="author">
+        <p class="author-name">
+          ${author.personalURL ? `
+            <a class="name" href="${author.personalURL}">${author.name}</a>` : `
+            <span class="name">${author.name}</span>`}
+        </p>
+        <p class="affiliation">
+        ${author.affiliations.map(affiliation =>
+          affiliation.url ? `<a class="affiliation" href="${affiliation.url}">${affiliation.name}</a>` : `<span class="affiliation">${affiliation.name}</span>`
+        ).join(', ')}
+        </p>
+        </div>
+      `).join('')}
+    </div>
+    <!--
+    <div>
+      <h3>Published</h3>
+      ${frontMatter.publishedDate ? `
+        <p>${frontMatter.publishedMonth} ${frontMatter.publishedDay}, ${frontMatter.publishedYear}</p> ` : `
+        <p><em>Not published yet.</em></p>`}
+    </div>
+    <div>
+      <h3>DOI</h3>
+      ${frontMatter.doi ? `
+        <p><a href="https://doi.org/${frontMatter.doi}">${frontMatter.doi}</a></p>` : `
+        <p><em>No DOI yet.</em></p>`}
+    </div>
+    -->
+  </div>
+`;
+  }
+
+  class Byline extends HTMLElement {
+
+    static get is() { return 'd-byline'; }
+
+    set frontMatter(frontMatter) {
+      this.innerHTML = bylineTemplate(frontMatter);
+    }
+
+  }
+
+  // Copyright 2018 The Distill Template Authors
+
+  const T$3 = Template(
+    "d-cite",
+    `
 <style>
 
 :host {
@@ -176,20 +2162,23 @@ d-appendix > distill-appendix {
 
 .citation {
   color: hsla(206, 90%, 20%, 0.7);
+  text-indent: 0;
 }
 
 .citation-number {
   cursor: default;
   white-space: nowrap;
-  font-family: -apple-system, BlinkMacSystemFont, "Roboto", Helvetica, sans-serif;
-  font-size: 75%;
+  /*font-family: -apple-system, BlinkMacSystemFont, "Roboto", Helvetica, sans-serif;*/
+  /*font-size: 75%;/*
+  /*line-height: 1.1em;*/
   color: hsla(206, 90%, 20%, 0.7);
+  /*
   display: inline-block;
-  line-height: 1.1em;
   text-align: center;
+  */
   position: relative;
-  top: -2px;
-  margin: 0 2px;
+  /*top: -2px;*/
+  /*margin: 0 2px;*/
 }
 
 figcaption .citation-number {
@@ -221,9 +2210,112 @@ ul li:last-of-type {
 <div id="citation-" class="citation">
   <span class="citation-number"></span>
 </div>
-`);class ea extends Gi(HTMLElement){constructor(){super(),this._numbers=[],this._entries=[]}connectedCallback(){this.outerSpan=this.root.querySelector('#citation-'),this.innerSpan=this.root.querySelector('.citation-number'),this.hoverBox=this.root.querySelector('d-hover-box'),window.customElements.whenDefined('d-hover-box').then(()=>{this.hoverBox.listen(this)}),this.numbers&&this.displayNumbers(this.numbers),this.entries&&this.displayEntries(this.entries)}static get observedAttributes(){return['key','bibtex-key']}attributeChangedCallback(e,t,n){const i=t?'onCiteKeyChanged':'onCiteKeyCreated',a=n.split(',').map((e)=>e.trim()),d={detail:[this,a],bubbles:!0},r=new CustomEvent(i,d);document.dispatchEvent(r)}set key(e){this.setAttribute('key',e)}get key(){return this.getAttribute('key')||this.getAttribute('bibtex-key')}get keys(){const e=this.key.split(',');return console.log(e),e}set numbers(e){this._numbers=e,this.displayNumbers(e)}get numbers(){return this._numbers}displayNumbers(e){if(this.innerSpan){const t=e.map((e)=>{return-1==e?'?':e+1+''}),n='['+t.join(', ')+']';this.innerSpan.textContent=n}}set entries(e){this._entries=e,this.displayEntries(e)}get entries(){return this._entries}displayEntries(e){this.hoverBox&&(this.hoverBox.innerHTML=`<ul>
-      ${e.map(l).map((e)=>`<li>${e}</li>`).join('\n')}
-    </ul>`)}}const ta=`
+`
+  );
+
+  class Cite extends T$3(HTMLElement) {
+    /* Lifecycle */
+    constructor() {
+      super();
+      this._numbers = [];
+      this._entries = [];
+    }
+
+    connectedCallback() {
+      this.outerSpan = this.root.querySelector("#citation-");
+      this.innerSpan = this.root.querySelector(".citation-number");
+      this.hoverBox = this.root.querySelector("d-hover-box");
+      window.customElements.whenDefined("d-hover-box").then(() => {
+        this.hoverBox.listen(this);
+      });
+      // in case this component got connected after values were set
+      if (this.numbers) {
+        this.displayNumbers(this.numbers);
+      }
+      if (this.entries) {
+        this.displayEntries(this.entries);
+      }
+    }
+
+    //TODO This causes an infinite loop on firefox with polyfills.
+    // This is only needed for interactive editing so no priority.
+    // disconnectedCallback() {
+    // const options = { detail: [this, this.keys], bubbles: true };
+    // const event = new CustomEvent('onCiteKeyRemoved', options);
+    // document.dispatchEvent(event);
+    // }
+
+    /* observe 'key' attribute */
+
+    static get observedAttributes() {
+      return ["key", "bibtex-key"];
+    }
+
+    attributeChangedCallback(name, oldValue, newValue) {
+      const eventName = oldValue ? "onCiteKeyChanged" : "onCiteKeyCreated";
+      const keys = newValue.split(",").map(k => k.trim());
+      const options = { detail: [this, keys], bubbles: true };
+      const event = new CustomEvent(eventName, options);
+      document.dispatchEvent(event);
+    }
+
+    set key(value) {
+      this.setAttribute("key", value);
+    }
+
+    get key() {
+      return this.getAttribute("key") || this.getAttribute("bibtex-key");
+    }
+
+    get keys() {
+      const result = this.key.split(",");
+      console.log(result);
+      return result;
+    }
+
+    /* Setters & Rendering */
+
+    set numbers(numbers) {
+      this._numbers = numbers;
+      this.displayNumbers(numbers);
+    }
+
+    get numbers() {
+      return this._numbers;
+    }
+
+    displayNumbers(numbers) {
+      if (!this.innerSpan) return;
+      const numberStrings = numbers.map(index => {
+        return index == -1 ? "?" : index + 1 + "";
+      });
+      const textContent = "[" + numberStrings.join(", ") + "]";
+      this.innerSpan.textContent = textContent;
+    }
+
+    set entries(entries) {
+      this._entries = entries;
+      this.displayEntries(entries);
+    }
+
+    get entries() {
+      return this._entries;
+    }
+
+    displayEntries(entries) {
+      if (!this.hoverBox) return;
+      this.hoverBox.innerHTML = `<ul>
+      ${entries
+        .map(hover_cite)
+        .map(html => `<li>${html}</li>`)
+        .join("\n")}
+    </ul>`;
+    }
+  }
+
+  // Copyright 2018 The Distill Template Authors
+
+  const styles$1 = `
 d-citation-list {
   contain: style;
 }
@@ -232,18 +2324,1918 @@ d-citation-list .references {
   grid-column: text;
 }
 
+d-citation-list ol.references {
+  list-style: none;
+  counter-reset: reference-counter;
+}
+
+d-citation-list ol.references li {
+  counter-increment: reference-counter;
+  position: relative;
+}
+
+d-citation-list ol.references li::before {
+  content: "[" counter(reference-counter) "]\\0000a0";
+  position: absolute;
+  left: -1.3rem;
+}
+
 d-citation-list .references .title {
   font-weight: 500;
 }
-`;class na extends HTMLElement{static get is(){return'd-citation-list'}connectedCallback(){this.hasAttribute('distill-prerendered')||(this.style.display='none')}set citations(e){x(this,e)}}var ia=f(function(e){var t='undefined'==typeof window?'undefined'!=typeof WorkerGlobalScope&&self instanceof WorkerGlobalScope?self:{}:window,n=function(e){function t(e,t,n,i,a){this.type=e,this.content=t,this.alias=n,this.length=0|(i||'').length,this.greedy=!!a}var n=/\blang(?:uage)?-([\w-]+)\b/i,i=0,a={manual:e.Prism&&e.Prism.manual,disableWorkerMessageHandler:e.Prism&&e.Prism.disableWorkerMessageHandler,util:{encode:function(e){return e instanceof t?new t(e.type,a.util.encode(e.content),e.alias):Array.isArray(e)?e.map(a.util.encode):e.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/\u00a0/g,' ')},type:function(e){return Object.prototype.toString.call(e).slice(8,-1)},objId:function(e){return e.__id||Object.defineProperty(e,'__id',{value:++i}),e.__id},clone:function e(t,n){var d,i,r=a.util.type(t);switch(n=n||{},r){case'Object':if(i=a.util.objId(t),n[i])return n[i];for(var o in d={},n[i]=d,t)t.hasOwnProperty(o)&&(d[o]=e(t[o],n));return d;case'Array':return(i=a.util.objId(t),n[i])?n[i]:(d=[],n[i]=d,t.forEach(function(t,a){d[a]=e(t,n)}),d);default:return t;}},getLanguage:function(e){for(;e&&!n.test(e.className);)e=e.parentElement;return e?(e.className.match(n)||[,'none'])[1].toLowerCase():'none'},currentScript:function(){if('undefined'==typeof document)return null;if('currentScript'in document)return document.currentScript;try{throw new Error}catch(i){var e=(/at [^(\r\n]*\((.*):.+:.+\)$/i.exec(i.stack)||[])[1];if(e){var t=document.getElementsByTagName('script');for(var n in t)if(t[n].src==e)return t[n]}return null}}},languages:{extend:function(e,t){var n=a.util.clone(a.languages[e]);for(var i in t)n[i]=t[i];return n},insertBefore:function(e,t,n,i){i=i||a.languages;var d=i[e],r={};for(var o in d)if(d.hasOwnProperty(o)){if(o==t)for(var l in n)n.hasOwnProperty(l)&&(r[l]=n[l]);n.hasOwnProperty(o)||(r[o]=d[o])}var s=i[e];return i[e]=r,a.languages.DFS(a.languages,function(t,n){n===s&&t!=e&&(this[t]=r)}),r},DFS:function e(t,n,d,r){r=r||{};var o=a.util.objId;for(var l in t)if(t.hasOwnProperty(l)){n.call(t,l,t[l],d||l);var i=t[l],s=a.util.type(i);'Object'!==s||r[o(i)]?'Array'===s&&!r[o(i)]&&(r[o(i)]=!0,e(i,n,l,r)):(r[o(i)]=!0,e(i,n,null,r))}}},plugins:{},highlightAll:function(e,t){a.highlightAllUnder(document,e,t)},highlightAllUnder:function(e,t,n){var d={callback:n,container:e,selector:'code[class*="language-"], [class*="language-"] code, code[class*="lang-"], [class*="lang-"] code'};a.hooks.run('before-highlightall',d),d.elements=Array.prototype.slice.apply(d.container.querySelectorAll(d.selector)),a.hooks.run('before-all-elements-highlight',d);for(var r,o=0;r=d.elements[o++];)a.highlightElement(r,!0===t,d.callback)},highlightElement:function(t,i,d){function r(e){u.highlightedCode=e,a.hooks.run('before-insert',u),u.element.innerHTML=u.highlightedCode,a.hooks.run('after-highlight',u),a.hooks.run('complete',u),d&&d.call(u.element)}var o=a.util.getLanguage(t),l=a.languages[o];t.className=t.className.replace(n,'').replace(/\s+/g,' ')+' language-'+o;var s=t.parentNode;s&&'pre'===s.nodeName.toLowerCase()&&(s.className=s.className.replace(n,'').replace(/\s+/g,' ')+' language-'+o);var c=t.textContent,u={element:t,language:o,grammar:l,code:c};if(a.hooks.run('before-sanity-check',u),!u.code)return a.hooks.run('complete',u),void(d&&d.call(u.element));if(a.hooks.run('before-highlight',u),!u.grammar)return void r(a.util.encode(u.code));if(i&&e.Worker){var p=new Worker(a.filename);p.onmessage=function(e){r(e.data)},p.postMessage(JSON.stringify({language:u.language,code:u.code,immediateClose:!0}))}else r(a.highlight(u.code,u.grammar,u.language))},highlight:function(e,n,i){var d={code:e,grammar:n,language:i};return a.hooks.run('before-tokenize',d),d.tokens=a.tokenize(d.code,d.grammar),a.hooks.run('after-tokenize',d),t.stringify(a.util.encode(d.tokens),d.language)},matchGrammar:function(e,n,d,r,o,l,s){for(var c in d)if(d.hasOwnProperty(c)&&d[c]){var u=d[c];u=Array.isArray(u)?u:[u];for(var g=0;g<u.length;++g){if(s&&s==c+','+g)return;var f=u[g],h=f.inside,b=!!f.lookbehind,m=!!f.greedy,y=0,x=f.alias;if(m&&!f.pattern.global){var v=f.pattern.toString().match(/[imsuy]*$/)[0];f.pattern=RegExp(f.pattern.source,v+'g')}f=f.pattern||f;for(var w,C=r,i=o;C<n.length;i+=n[C].length,++C){if(w=n[C],n.length>e.length)return;if(!(w instanceof t)){if(m&&C!=n.length-1){f.lastIndex=i;var S=f.exec(e);if(!S)break;for(var T=S.index+(b&&S[1]?S[1].length:0),_=S.index+S[0].length,L=C,k=i,p=n.length;L<p&&(k<_||!n[L].type&&!n[L-1].greedy);++L)k+=n[L].length,T>=k&&(++C,i=k);if(n[C]instanceof t)continue;A=L-C,w=e.slice(i,k),S.index-=i}else{f.lastIndex=0;var S=f.exec(w),A=1}if(!S){if(l)break;continue}b&&(y=S[1]?S[1].length:0);var T=S.index+y,S=S[0].slice(y),_=T+S.length,E=w.slice(0,T),D=w.slice(_),M=[C,A];E&&(++C,i+=E.length,M.push(E));var U=new t(c,h?a.tokenize(S,h):S,x,S,m);if(M.push(U),D&&M.push(D),Array.prototype.splice.apply(n,M),1!=A&&a.matchGrammar(e,n,d,C,i,!0,c+','+g),l)break}}}}},tokenize:function(e,t){var n=[e],i=t.rest;if(i){for(var d in i)t[d]=i[d];delete t.rest}return a.matchGrammar(e,n,t,0,0,!1),n},hooks:{all:{},add:function(e,t){var n=a.hooks.all;n[e]=n[e]||[],n[e].push(t)},run:function(e,t){var n=a.hooks.all[e];if(n&&n.length)for(var d,r=0;d=n[r++];)d(t)}},Token:t};if(e.Prism=a,t.stringify=function(e,n){if('string'==typeof e)return e;if(Array.isArray(e))return e.map(function(e){return t.stringify(e,n)}).join('');var i={type:e.type,content:t.stringify(e.content,n),tag:'span',classes:['token',e.type],attributes:{},language:n};if(e.alias){var d=Array.isArray(e.alias)?e.alias:[e.alias];Array.prototype.push.apply(i.classes,d)}a.hooks.run('wrap',i);var r=Object.keys(i.attributes).map(function(e){return e+'="'+(i.attributes[e]||'').replace(/"/g,'&quot;')+'"'}).join(' ');return'<'+i.tag+' class="'+i.classes.join(' ')+'"'+(r?' '+r:'')+'>'+i.content+'</'+i.tag+'>'},!e.document)return e.addEventListener?(a.disableWorkerMessageHandler||e.addEventListener('message',function(t){var n=JSON.parse(t.data),i=n.language,d=n.code,r=n.immediateClose;e.postMessage(a.highlight(d,a.languages[i],i)),r&&e.close()},!1),a):a;var d=a.util.currentScript();if(d&&(a.filename=d.src,d.hasAttribute('data-manual')&&(a.manual=!0)),!a.manual){function e(){a.manual||a.highlightAll()}var r=document.readyState;'loading'===r||'interactive'===r&&d&&d.defer?document.addEventListener('DOMContentLoaded',e):window.requestAnimationFrame?window.requestAnimationFrame(e):window.setTimeout(e,16)}return a}(t);e.exports&&(e.exports=n),'undefined'!=typeof Qi&&(Qi.Prism=n),n.languages.markup={comment:/<!--[\s\S]*?-->/,prolog:/<\?[\s\S]+?\?>/,doctype:{pattern:/<!DOCTYPE(?:[^>"'[\]]|"[^"]*"|'[^']*')+(?:\[(?:(?!<!--)[^"'\]]|"[^"]*"|'[^']*'|<!--[\s\S]*?-->)*\]\s*)?>/i,greedy:!0},cdata:/<!\[CDATA\[[\s\S]*?]]>/i,tag:{pattern:/<\/?(?!\d)[^\s>\/=$<%]+(?:\s(?:\s*[^\s>\/=]+(?:\s*=\s*(?:"[^"]*"|'[^']*'|[^\s'">=]+(?=[\s>]))|(?=[\s/>])))+)?\s*\/?>/i,greedy:!0,inside:{tag:{pattern:/^<\/?[^\s>\/]+/i,inside:{punctuation:/^<\/?/,namespace:/^[^\s>\/:]+:/}},"attr-value":{pattern:/=\s*(?:"[^"]*"|'[^']*'|[^\s'">=]+)/i,inside:{punctuation:[/^=/,{pattern:/^(\s*)["']|["']$/,lookbehind:!0}]}},punctuation:/\/?>/,"attr-name":{pattern:/[^\s>\/]+/,inside:{namespace:/^[^\s>\/:]+:/}}}},entity:/&#?[\da-z]{1,8};/i},n.languages.markup.tag.inside['attr-value'].inside.entity=n.languages.markup.entity,n.hooks.add('wrap',function(e){'entity'===e.type&&(e.attributes.title=e.content.replace(/&amp;/,'&'))}),Object.defineProperty(n.languages.markup.tag,'addInlined',{value:function(e,t){var i={};i['language-'+t]={pattern:/(^<!\[CDATA\[)[\s\S]+?(?=\]\]>$)/i,lookbehind:!0,inside:n.languages[t]},i.cdata=/^<!\[CDATA\[|\]\]>$/i;var a={"included-cdata":{pattern:/<!\[CDATA\[[\s\S]*?\]\]>/i,inside:i}};a['language-'+t]={pattern:/[\s\S]+/,inside:n.languages[t]};var d={};d[e]={pattern:RegExp(/(<__[\s\S]*?>)(?:<!\[CDATA\[[\s\S]*?\]\]>\s*|[\s\S])*?(?=<\/__>)/.source.replace(/__/g,e),'i'),lookbehind:!0,greedy:!0,inside:a},n.languages.insertBefore('markup','cdata',d)}}),n.languages.xml=n.languages.extend('markup',{}),n.languages.html=n.languages.markup,n.languages.mathml=n.languages.markup,n.languages.svg=n.languages.markup,function(e){var t=/("|')(?:\\(?:\r\n|[\s\S])|(?!\1)[^\\\r\n])*\1/;e.languages.css={comment:/\/\*[\s\S]*?\*\//,atrule:{pattern:/@[\w-]+[\s\S]*?(?:;|(?=\s*\{))/,inside:{rule:/@[\w-]+/}},url:{pattern:RegExp('url\\((?:'+t.source+'|[^\n\r()]*)\\)','i'),inside:{function:/^url/i,punctuation:/^\(|\)$/}},selector:RegExp('[^{}\\s](?:[^{};"\']|'+t.source+')*?(?=\\s*\\{)'),string:{pattern:t,greedy:!0},property:/[-_a-z\xA0-\uFFFF][-\w\xA0-\uFFFF]*(?=\s*:)/i,important:/!important\b/i,function:/[-a-z0-9]+(?=\()/i,punctuation:/[(){};:,]/},e.languages.css.atrule.inside.rest=e.languages.css;var n=e.languages.markup;n&&(n.tag.addInlined('style','css'),e.languages.insertBefore('inside','attr-value',{"style-attr":{pattern:/\s*style=("|')(?:\\[\s\S]|(?!\1)[^\\])*\1/i,inside:{"attr-name":{pattern:/^\s*style/i,inside:n.tag.inside},punctuation:/^\s*=\s*['"]|['"]\s*$/,"attr-value":{pattern:/.+/i,inside:e.languages.css}},alias:'language-css'}},n.tag))}(n),n.languages.clike={comment:[{pattern:/(^|[^\\])\/\*[\s\S]*?(?:\*\/|$)/,lookbehind:!0},{pattern:/(^|[^\\:])\/\/.*/,lookbehind:!0,greedy:!0}],string:{pattern:/(["'])(?:\\(?:\r\n|[\s\S])|(?!\1)[^\\\r\n])*\1/,greedy:!0},"class-name":{pattern:/(\b(?:class|interface|extends|implements|trait|instanceof|new)\s+|\bcatch\s+\()[\w.\\]+/i,lookbehind:!0,inside:{punctuation:/[.\\]/}},keyword:/\b(?:if|else|while|do|for|return|in|instanceof|function|new|try|throw|catch|finally|null|break|continue)\b/,boolean:/\b(?:true|false)\b/,function:/\w+(?=\()/,number:/\b0x[\da-f]+\b|(?:\b\d+\.?\d*|\B\.\d+)(?:e[+-]?\d+)?/i,operator:/[<>]=?|[!=]=?=?|--?|\+\+?|&&?|\|\|?|[?*/~^%]/,punctuation:/[{}[\];(),.:]/},n.languages.javascript=n.languages.extend('clike',{"class-name":[n.languages.clike['class-name'],{pattern:/(^|[^$\w\xA0-\uFFFF])[_$A-Z\xA0-\uFFFF][$\w\xA0-\uFFFF]*(?=\.(?:prototype|constructor))/,lookbehind:!0}],keyword:[{pattern:/((?:^|})\s*)(?:catch|finally)\b/,lookbehind:!0},{pattern:/(^|[^.]|\.\.\.\s*)\b(?:as|async(?=\s*(?:function\b|\(|[$\w\xA0-\uFFFF]|$))|await|break|case|class|const|continue|debugger|default|delete|do|else|enum|export|extends|for|from|function|get|if|implements|import|in|instanceof|interface|let|new|null|of|package|private|protected|public|return|set|static|super|switch|this|throw|try|typeof|undefined|var|void|while|with|yield)\b/,lookbehind:!0}],number:/\b(?:(?:0[xX](?:[\dA-Fa-f](?:_[\dA-Fa-f])?)+|0[bB](?:[01](?:_[01])?)+|0[oO](?:[0-7](?:_[0-7])?)+)n?|(?:\d(?:_\d)?)+n|NaN|Infinity)\b|(?:\b(?:\d(?:_\d)?)+\.?(?:\d(?:_\d)?)*|\B\.(?:\d(?:_\d)?)+)(?:[Ee][+-]?(?:\d(?:_\d)?)+)?/,function:/#?[_$a-zA-Z\xA0-\uFFFF][$\w\xA0-\uFFFF]*(?=\s*(?:\.\s*(?:apply|bind|call)\s*)?\()/,operator:/--|\+\+|\*\*=?|=>|&&|\|\||[!=]==|<<=?|>>>?=?|[-+*/%&|^!=<>]=?|\.{3}|\?[.?]?|[~:]/}),n.languages.javascript['class-name'][0].pattern=/(\b(?:class|interface|extends|implements|instanceof|new)\s+)[\w.\\]+/,n.languages.insertBefore('javascript','keyword',{regex:{pattern:/((?:^|[^$\w\xA0-\uFFFF."'\])\s])\s*)\/(?:\[(?:[^\]\\\r\n]|\\.)*]|\\.|[^/\\\[\r\n])+\/[gimyus]{0,6}(?=(?:\s|\/\*[\s\S]*?\*\/)*(?:$|[\r\n,.;:})\]]|\/\/))/,lookbehind:!0,greedy:!0},"function-variable":{pattern:/#?[_$a-zA-Z\xA0-\uFFFF][$\w\xA0-\uFFFF]*(?=\s*[=:]\s*(?:async\s*)?(?:\bfunction\b|(?:\((?:[^()]|\([^()]*\))*\)|[_$a-zA-Z\xA0-\uFFFF][$\w\xA0-\uFFFF]*)\s*=>))/,alias:'function'},parameter:[{pattern:/(function(?:\s+[_$A-Za-z\xA0-\uFFFF][$\w\xA0-\uFFFF]*)?\s*\(\s*)(?!\s)(?:[^()]|\([^()]*\))+?(?=\s*\))/,lookbehind:!0,inside:n.languages.javascript},{pattern:/[_$a-z\xA0-\uFFFF][$\w\xA0-\uFFFF]*(?=\s*=>)/i,inside:n.languages.javascript},{pattern:/(\(\s*)(?!\s)(?:[^()]|\([^()]*\))+?(?=\s*\)\s*=>)/,lookbehind:!0,inside:n.languages.javascript},{pattern:/((?:\b|\s|^)(?!(?:as|async|await|break|case|catch|class|const|continue|debugger|default|delete|do|else|enum|export|extends|finally|for|from|function|get|if|implements|import|in|instanceof|interface|let|new|null|of|package|private|protected|public|return|set|static|super|switch|this|throw|try|typeof|undefined|var|void|while|with|yield)(?![$\w\xA0-\uFFFF]))(?:[_$A-Za-z\xA0-\uFFFF][$\w\xA0-\uFFFF]*\s*)\(\s*)(?!\s)(?:[^()]|\([^()]*\))+?(?=\s*\)\s*\{)/,lookbehind:!0,inside:n.languages.javascript}],constant:/\b[A-Z](?:[A-Z_]|\dx?)*\b/}),n.languages.insertBefore('javascript','string',{"template-string":{pattern:/`(?:\\[\s\S]|\${(?:[^{}]|{(?:[^{}]|{[^}]*})*})+}|(?!\${)[^\\`])*`/,greedy:!0,inside:{"template-punctuation":{pattern:/^`|`$/,alias:'string'},interpolation:{pattern:/((?:^|[^\\])(?:\\{2})*)\${(?:[^{}]|{(?:[^{}]|{[^}]*})*})+}/,lookbehind:!0,inside:{"interpolation-punctuation":{pattern:/^\${|}$/,alias:'punctuation'},rest:n.languages.javascript}},string:/[\s\S]+/}}}),n.languages.markup&&n.languages.markup.tag.addInlined('script','javascript'),n.languages.js=n.languages.javascript,function(){'undefined'!=typeof self&&self.Prism&&self.document&&document.querySelector&&(self.Prism.fileHighlight=function(e){e=e||document;var t={js:'javascript',py:'python',rb:'ruby',ps1:'powershell',psm1:'powershell',sh:'bash',bat:'batch',h:'c',tex:'latex'};Array.prototype.slice.call(e.querySelectorAll('pre[data-src]')).forEach(function(e){if(!e.hasAttribute('data-src-loaded')){for(var i,a=e.getAttribute('data-src'),d=e,r=/\blang(?:uage)?-([\w-]+)\b/i;d&&!r.test(d.className);)d=d.parentNode;if(d&&(i=(e.className.match(r)||[,''])[1]),!i){var o=(a.match(/\.(\w+)$/)||[,''])[1];i=t[o]||o}var l=document.createElement('code');l.className='language-'+i,e.textContent='',l.textContent='Loading\u2026',e.appendChild(l);var s=new XMLHttpRequest;s.open('GET',a,!0),s.onreadystatechange=function(){4==s.readyState&&(400>s.status&&s.responseText?(l.textContent=s.responseText,n.highlightElement(l),e.setAttribute('data-src-loaded','')):400<=s.status?l.textContent='\u2716 Error '+s.status+' while fetching file: '+s.statusText:l.textContent='\u2716 Error: File does not exist or is empty')},s.send(null)}})},document.addEventListener('DOMContentLoaded',function(){self.Prism.fileHighlight()}))}()});Prism.languages.python={comment:{pattern:/(^|[^\\])#.*/,lookbehind:!0},"string-interpolation":{pattern:/(?:f|rf|fr)(?:("""|''')[\s\S]+?\1|("|')(?:\\.|(?!\2)[^\\\r\n])*\2)/i,greedy:!0,inside:{interpolation:{pattern:/((?:^|[^{])(?:{{)*){(?!{)(?:[^{}]|{(?!{)(?:[^{}]|{(?!{)(?:[^{}])+})+})+}/,lookbehind:!0,inside:{"format-spec":{pattern:/(:)[^:(){}]+(?=}$)/,lookbehind:!0},"conversion-option":{pattern:/![sra](?=[:}]$)/,alias:'punctuation'},rest:null}},string:/[\s\S]+/}},"triple-quoted-string":{pattern:/(?:[rub]|rb|br)?("""|''')[\s\S]+?\1/i,greedy:!0,alias:'string'},string:{pattern:/(?:[rub]|rb|br)?("|')(?:\\.|(?!\1)[^\\\r\n])*\1/i,greedy:!0},function:{pattern:/((?:^|\s)def[ \t]+)[a-zA-Z_]\w*(?=\s*\()/g,lookbehind:!0},"class-name":{pattern:/(\bclass\s+)\w+/i,lookbehind:!0},decorator:{pattern:/(^\s*)@\w+(?:\.\w+)*/im,lookbehind:!0,alias:['annotation','punctuation'],inside:{punctuation:/\./}},keyword:/\b(?:and|as|assert|async|await|break|class|continue|def|del|elif|else|except|exec|finally|for|from|global|if|import|in|is|lambda|nonlocal|not|or|pass|print|raise|return|try|while|with|yield)\b/,builtin:/\b(?:__import__|abs|all|any|apply|ascii|basestring|bin|bool|buffer|bytearray|bytes|callable|chr|classmethod|cmp|coerce|compile|complex|delattr|dict|dir|divmod|enumerate|eval|execfile|file|filter|float|format|frozenset|getattr|globals|hasattr|hash|help|hex|id|input|int|intern|isinstance|issubclass|iter|len|list|locals|long|map|max|memoryview|min|next|object|oct|open|ord|pow|property|range|raw_input|reduce|reload|repr|reversed|round|set|setattr|slice|sorted|staticmethod|str|sum|super|tuple|type|unichr|unicode|vars|xrange|zip)\b/,boolean:/\b(?:True|False|None)\b/,number:/(?:\b(?=\d)|\B(?=\.))(?:0[bo])?(?:(?:\d|0x[\da-f])[\da-f]*\.?\d*|\.\d+)(?:e[+-]?\d+)?j?\b/i,operator:/[-+%=]=?|!=|\*\*?=?|\/\/?=?|<[<=>]?|>[=>]?|[&|^~]/,punctuation:/[{}[\];(),.:]/},Prism.languages.python['string-interpolation'].inside.interpolation.inside.rest=Prism.languages.python,Prism.languages.py=Prism.languages.python,Prism.languages.clike={comment:[{pattern:/(^|[^\\])\/\*[\s\S]*?(?:\*\/|$)/,lookbehind:!0},{pattern:/(^|[^\\:])\/\/.*/,lookbehind:!0,greedy:!0}],string:{pattern:/(["'])(?:\\(?:\r\n|[\s\S])|(?!\1)[^\\\r\n])*\1/,greedy:!0},"class-name":{pattern:/(\b(?:class|interface|extends|implements|trait|instanceof|new)\s+|\bcatch\s+\()[\w.\\]+/i,lookbehind:!0,inside:{punctuation:/[.\\]/}},keyword:/\b(?:if|else|while|do|for|return|in|instanceof|function|new|try|throw|catch|finally|null|break|continue)\b/,boolean:/\b(?:true|false)\b/,function:/\w+(?=\()/,number:/\b0x[\da-f]+\b|(?:\b\d+\.?\d*|\B\.\d+)(?:e[+-]?\d+)?/i,operator:/[<>]=?|[!=]=?=?|--?|\+\+?|&&?|\|\|?|[?*/~^%]/,punctuation:/[{}[\];(),.:]/},Prism.languages.lua={comment:/^#!.+|--(?:\[(=*)\[[\s\S]*?\]\1\]|.*)/m,string:{pattern:/(["'])(?:(?!\1)[^\\\r\n]|\\z(?:\r\n|\s)|\\(?:\r\n|[\s\S]))*\1|\[(=*)\[[\s\S]*?\]\2\]/,greedy:!0},number:/\b0x[a-f\d]+\.?[a-f\d]*(?:p[+-]?\d+)?\b|\b\d+(?:\.\B|\.?\d*(?:e[+-]?\d+)?\b)|\B\.\d+(?:e[+-]?\d+)?\b/i,keyword:/\b(?:and|break|do|else|elseif|end|false|for|function|goto|if|in|local|nil|not|or|repeat|return|then|true|until|while)\b/,function:/(?!\d)\w+(?=\s*(?:[({]))/,operator:[/[-+*%^&|#]|\/\/?|<[<=]?|>[>=]?|[=~]=?/,{pattern:/(^|[^.])\.\.(?!\.)/,lookbehind:!0}],punctuation:/[\[\](){},;]|\.+|:+/},function(e){var t={environment:{pattern:/\$\b(?:BASH|BASHOPTS|BASH_ALIASES|BASH_ARGC|BASH_ARGV|BASH_CMDS|BASH_COMPLETION_COMPAT_DIR|BASH_LINENO|BASH_REMATCH|BASH_SOURCE|BASH_VERSINFO|BASH_VERSION|COLORTERM|COLUMNS|COMP_WORDBREAKS|DBUS_SESSION_BUS_ADDRESS|DEFAULTS_PATH|DESKTOP_SESSION|DIRSTACK|DISPLAY|EUID|GDMSESSION|GDM_LANG|GNOME_KEYRING_CONTROL|GNOME_KEYRING_PID|GPG_AGENT_INFO|GROUPS|HISTCONTROL|HISTFILE|HISTFILESIZE|HISTSIZE|HOME|HOSTNAME|HOSTTYPE|IFS|INSTANCE|JOB|LANG|LANGUAGE|LC_ADDRESS|LC_ALL|LC_IDENTIFICATION|LC_MEASUREMENT|LC_MONETARY|LC_NAME|LC_NUMERIC|LC_PAPER|LC_TELEPHONE|LC_TIME|LESSCLOSE|LESSOPEN|LINES|LOGNAME|LS_COLORS|MACHTYPE|MAILCHECK|MANDATORY_PATH|NO_AT_BRIDGE|OLDPWD|OPTERR|OPTIND|ORBIT_SOCKETDIR|OSTYPE|PAPERSIZE|PATH|PIPESTATUS|PPID|PS1|PS2|PS3|PS4|PWD|RANDOM|REPLY|SECONDS|SELINUX_INIT|SESSION|SESSIONTYPE|SESSION_MANAGER|SHELL|SHELLOPTS|SHLVL|SSH_AUTH_SOCK|TERM|UID|UPSTART_EVENTS|UPSTART_INSTANCE|UPSTART_JOB|UPSTART_SESSION|USER|WINDOWID|XAUTHORITY|XDG_CONFIG_DIRS|XDG_CURRENT_DESKTOP|XDG_DATA_DIRS|XDG_GREETER_DATA_DIR|XDG_MENU_PREFIX|XDG_RUNTIME_DIR|XDG_SEAT|XDG_SEAT_PATH|XDG_SESSION_DESKTOP|XDG_SESSION_ID|XDG_SESSION_PATH|XDG_SESSION_TYPE|XDG_VTNR|XMODIFIERS)\b/,alias:'constant'},variable:[{pattern:/\$?\(\([\s\S]+?\)\)/,greedy:!0,inside:{variable:[{pattern:/(^\$\(\([\s\S]+)\)\)/,lookbehind:!0},/^\$\(\(/],number:/\b0x[\dA-Fa-f]+\b|(?:\b\d+\.?\d*|\B\.\d+)(?:[Ee]-?\d+)?/,operator:/--?|-=|\+\+?|\+=|!=?|~|\*\*?|\*=|\/=?|%=?|<<=?|>>=?|<=?|>=?|==?|&&?|&=|\^=?|\|\|?|\|=|\?|:/,punctuation:/\(\(?|\)\)?|,|;/}},{pattern:/\$\((?:\([^)]+\)|[^()])+\)|`[^`]+`/,greedy:!0,inside:{variable:/^\$\(|^`|\)$|`$/}},{pattern:/\$\{[^}]+\}/,greedy:!0,inside:{operator:/:[-=?+]?|[!\/]|##?|%%?|\^\^?|,,?/,punctuation:/[\[\]]/,environment:{pattern:/(\{)\b(?:BASH|BASHOPTS|BASH_ALIASES|BASH_ARGC|BASH_ARGV|BASH_CMDS|BASH_COMPLETION_COMPAT_DIR|BASH_LINENO|BASH_REMATCH|BASH_SOURCE|BASH_VERSINFO|BASH_VERSION|COLORTERM|COLUMNS|COMP_WORDBREAKS|DBUS_SESSION_BUS_ADDRESS|DEFAULTS_PATH|DESKTOP_SESSION|DIRSTACK|DISPLAY|EUID|GDMSESSION|GDM_LANG|GNOME_KEYRING_CONTROL|GNOME_KEYRING_PID|GPG_AGENT_INFO|GROUPS|HISTCONTROL|HISTFILE|HISTFILESIZE|HISTSIZE|HOME|HOSTNAME|HOSTTYPE|IFS|INSTANCE|JOB|LANG|LANGUAGE|LC_ADDRESS|LC_ALL|LC_IDENTIFICATION|LC_MEASUREMENT|LC_MONETARY|LC_NAME|LC_NUMERIC|LC_PAPER|LC_TELEPHONE|LC_TIME|LESSCLOSE|LESSOPEN|LINES|LOGNAME|LS_COLORS|MACHTYPE|MAILCHECK|MANDATORY_PATH|NO_AT_BRIDGE|OLDPWD|OPTERR|OPTIND|ORBIT_SOCKETDIR|OSTYPE|PAPERSIZE|PATH|PIPESTATUS|PPID|PS1|PS2|PS3|PS4|PWD|RANDOM|REPLY|SECONDS|SELINUX_INIT|SESSION|SESSIONTYPE|SESSION_MANAGER|SHELL|SHELLOPTS|SHLVL|SSH_AUTH_SOCK|TERM|UID|UPSTART_EVENTS|UPSTART_INSTANCE|UPSTART_JOB|UPSTART_SESSION|USER|WINDOWID|XAUTHORITY|XDG_CONFIG_DIRS|XDG_CURRENT_DESKTOP|XDG_DATA_DIRS|XDG_GREETER_DATA_DIR|XDG_MENU_PREFIX|XDG_RUNTIME_DIR|XDG_SEAT|XDG_SEAT_PATH|XDG_SESSION_DESKTOP|XDG_SESSION_ID|XDG_SESSION_PATH|XDG_SESSION_TYPE|XDG_VTNR|XMODIFIERS)\b/,lookbehind:!0,alias:'constant'}}},/\$(?:\w+|[#?*!@$])/],entity:/\\(?:[abceEfnrtv\\"]|O?[0-7]{1,3}|x[0-9a-fA-F]{1,2}|u[0-9a-fA-F]{4}|U[0-9a-fA-F]{8})/};e.languages.bash={shebang:{pattern:/^#!\s*\/.*/,alias:'important'},comment:{pattern:/(^|[^"{\\$])#.*/,lookbehind:!0},"function-name":[{pattern:/(\bfunction\s+)\w+(?=(?:\s*\(?:\s*\))?\s*\{)/,lookbehind:!0,alias:'function'},{pattern:/\b\w+(?=\s*\(\s*\)\s*\{)/,alias:'function'}],"for-or-select":{pattern:/(\b(?:for|select)\s+)\w+(?=\s+in\s)/,alias:'variable',lookbehind:!0},"assign-left":{pattern:/(^|[\s;|&]|[<>]\()\w+(?=\+?=)/,inside:{environment:{pattern:/(^|[\s;|&]|[<>]\()\b(?:BASH|BASHOPTS|BASH_ALIASES|BASH_ARGC|BASH_ARGV|BASH_CMDS|BASH_COMPLETION_COMPAT_DIR|BASH_LINENO|BASH_REMATCH|BASH_SOURCE|BASH_VERSINFO|BASH_VERSION|COLORTERM|COLUMNS|COMP_WORDBREAKS|DBUS_SESSION_BUS_ADDRESS|DEFAULTS_PATH|DESKTOP_SESSION|DIRSTACK|DISPLAY|EUID|GDMSESSION|GDM_LANG|GNOME_KEYRING_CONTROL|GNOME_KEYRING_PID|GPG_AGENT_INFO|GROUPS|HISTCONTROL|HISTFILE|HISTFILESIZE|HISTSIZE|HOME|HOSTNAME|HOSTTYPE|IFS|INSTANCE|JOB|LANG|LANGUAGE|LC_ADDRESS|LC_ALL|LC_IDENTIFICATION|LC_MEASUREMENT|LC_MONETARY|LC_NAME|LC_NUMERIC|LC_PAPER|LC_TELEPHONE|LC_TIME|LESSCLOSE|LESSOPEN|LINES|LOGNAME|LS_COLORS|MACHTYPE|MAILCHECK|MANDATORY_PATH|NO_AT_BRIDGE|OLDPWD|OPTERR|OPTIND|ORBIT_SOCKETDIR|OSTYPE|PAPERSIZE|PATH|PIPESTATUS|PPID|PS1|PS2|PS3|PS4|PWD|RANDOM|REPLY|SECONDS|SELINUX_INIT|SESSION|SESSIONTYPE|SESSION_MANAGER|SHELL|SHELLOPTS|SHLVL|SSH_AUTH_SOCK|TERM|UID|UPSTART_EVENTS|UPSTART_INSTANCE|UPSTART_JOB|UPSTART_SESSION|USER|WINDOWID|XAUTHORITY|XDG_CONFIG_DIRS|XDG_CURRENT_DESKTOP|XDG_DATA_DIRS|XDG_GREETER_DATA_DIR|XDG_MENU_PREFIX|XDG_RUNTIME_DIR|XDG_SEAT|XDG_SEAT_PATH|XDG_SESSION_DESKTOP|XDG_SESSION_ID|XDG_SESSION_PATH|XDG_SESSION_TYPE|XDG_VTNR|XMODIFIERS)\b/,lookbehind:!0,alias:'constant'}},alias:'variable',lookbehind:!0},string:[{pattern:/((?:^|[^<])<<-?\s*)(\w+?)\s*(?:\r?\n|\r)(?:[\s\S])*?(?:\r?\n|\r)\2/,lookbehind:!0,greedy:!0,inside:t},{pattern:/((?:^|[^<])<<-?\s*)(["'])(\w+)\2\s*(?:\r?\n|\r)(?:[\s\S])*?(?:\r?\n|\r)\3/,lookbehind:!0,greedy:!0},{pattern:/(["'])(?:\\[\s\S]|\$\([^)]+\)|`[^`]+`|(?!\1)[^\\])*\1/,greedy:!0,inside:t}],environment:{pattern:/\$?\b(?:BASH|BASHOPTS|BASH_ALIASES|BASH_ARGC|BASH_ARGV|BASH_CMDS|BASH_COMPLETION_COMPAT_DIR|BASH_LINENO|BASH_REMATCH|BASH_SOURCE|BASH_VERSINFO|BASH_VERSION|COLORTERM|COLUMNS|COMP_WORDBREAKS|DBUS_SESSION_BUS_ADDRESS|DEFAULTS_PATH|DESKTOP_SESSION|DIRSTACK|DISPLAY|EUID|GDMSESSION|GDM_LANG|GNOME_KEYRING_CONTROL|GNOME_KEYRING_PID|GPG_AGENT_INFO|GROUPS|HISTCONTROL|HISTFILE|HISTFILESIZE|HISTSIZE|HOME|HOSTNAME|HOSTTYPE|IFS|INSTANCE|JOB|LANG|LANGUAGE|LC_ADDRESS|LC_ALL|LC_IDENTIFICATION|LC_MEASUREMENT|LC_MONETARY|LC_NAME|LC_NUMERIC|LC_PAPER|LC_TELEPHONE|LC_TIME|LESSCLOSE|LESSOPEN|LINES|LOGNAME|LS_COLORS|MACHTYPE|MAILCHECK|MANDATORY_PATH|NO_AT_BRIDGE|OLDPWD|OPTERR|OPTIND|ORBIT_SOCKETDIR|OSTYPE|PAPERSIZE|PATH|PIPESTATUS|PPID|PS1|PS2|PS3|PS4|PWD|RANDOM|REPLY|SECONDS|SELINUX_INIT|SESSION|SESSIONTYPE|SESSION_MANAGER|SHELL|SHELLOPTS|SHLVL|SSH_AUTH_SOCK|TERM|UID|UPSTART_EVENTS|UPSTART_INSTANCE|UPSTART_JOB|UPSTART_SESSION|USER|WINDOWID|XAUTHORITY|XDG_CONFIG_DIRS|XDG_CURRENT_DESKTOP|XDG_DATA_DIRS|XDG_GREETER_DATA_DIR|XDG_MENU_PREFIX|XDG_RUNTIME_DIR|XDG_SEAT|XDG_SEAT_PATH|XDG_SESSION_DESKTOP|XDG_SESSION_ID|XDG_SESSION_PATH|XDG_SESSION_TYPE|XDG_VTNR|XMODIFIERS)\b/,alias:'constant'},variable:t.variable,function:{pattern:/(^|[\s;|&]|[<>]\()(?:add|apropos|apt|aptitude|apt-cache|apt-get|aspell|automysqlbackup|awk|basename|bash|bc|bconsole|bg|bzip2|cal|cat|cfdisk|chgrp|chkconfig|chmod|chown|chroot|cksum|clear|cmp|column|comm|cp|cron|crontab|csplit|curl|cut|date|dc|dd|ddrescue|debootstrap|df|diff|diff3|dig|dir|dircolors|dirname|dirs|dmesg|du|egrep|eject|env|ethtool|expand|expect|expr|fdformat|fdisk|fg|fgrep|file|find|fmt|fold|format|free|fsck|ftp|fuser|gawk|git|gparted|grep|groupadd|groupdel|groupmod|groups|grub-mkconfig|gzip|halt|head|hg|history|host|hostname|htop|iconv|id|ifconfig|ifdown|ifup|import|install|ip|jobs|join|kill|killall|less|link|ln|locate|logname|logrotate|look|lpc|lpr|lprint|lprintd|lprintq|lprm|ls|lsof|lynx|make|man|mc|mdadm|mkconfig|mkdir|mke2fs|mkfifo|mkfs|mkisofs|mknod|mkswap|mmv|more|most|mount|mtools|mtr|mutt|mv|nano|nc|netstat|nice|nl|nohup|notify-send|npm|nslookup|op|open|parted|passwd|paste|pathchk|ping|pkill|pnpm|popd|pr|printcap|printenv|ps|pushd|pv|quota|quotacheck|quotactl|ram|rar|rcp|reboot|remsync|rename|renice|rev|rm|rmdir|rpm|rsync|scp|screen|sdiff|sed|sendmail|seq|service|sftp|sh|shellcheck|shuf|shutdown|sleep|slocate|sort|split|ssh|stat|strace|su|sudo|sum|suspend|swapon|sync|tac|tail|tar|tee|time|timeout|top|touch|tr|traceroute|tsort|tty|umount|uname|unexpand|uniq|units|unrar|unshar|unzip|update-grub|uptime|useradd|userdel|usermod|users|uudecode|uuencode|v|vdir|vi|vim|virsh|vmstat|wait|watch|wc|wget|whereis|which|who|whoami|write|xargs|xdg-open|yarn|yes|zenity|zip|zsh|zypper)(?=$|[)\s;|&])/,lookbehind:!0},keyword:{pattern:/(^|[\s;|&]|[<>]\()(?:if|then|else|elif|fi|for|while|in|case|esac|function|select|do|done|until)(?=$|[)\s;|&])/,lookbehind:!0},builtin:{pattern:/(^|[\s;|&]|[<>]\()(?:\.|:|break|cd|continue|eval|exec|exit|export|getopts|hash|pwd|readonly|return|shift|test|times|trap|umask|unset|alias|bind|builtin|caller|command|declare|echo|enable|help|let|local|logout|mapfile|printf|read|readarray|source|type|typeset|ulimit|unalias|set|shopt)(?=$|[)\s;|&])/,lookbehind:!0,alias:'class-name'},boolean:{pattern:/(^|[\s;|&]|[<>]\()(?:true|false)(?=$|[)\s;|&])/,lookbehind:!0},"file-descriptor":{pattern:/\B&\d\b/,alias:'important'},operator:{pattern:/\d?<>|>\||\+=|==?|!=?|=~|<<[<-]?|[&\d]?>>|\d?[<>]&?|&[>&]?|\|[&|]?|<=?|>=?/,inside:{"file-descriptor":{pattern:/^\d/,alias:'important'}}},punctuation:/\$?\(\(?|\)\)?|\.\.|[{}[\];\\]/,number:{pattern:/(^|\s)(?:[1-9]\d*|0)(?:[.,]\d+)?\b/,lookbehind:!0}};for(var n=['comment','function-name','for-or-select','assign-left','string','environment','function','keyword','builtin','boolean','file-descriptor','operator','punctuation','number'],a=t.variable[1].inside,d=0;d<n.length;d++)a[n[d]]=e.languages.bash[n[d]];e.languages.shell=e.languages.bash}(Prism),Prism.languages.go=Prism.languages.extend('clike',{keyword:/\b(?:break|case|chan|const|continue|default|defer|else|fallthrough|for|func|go(?:to)?|if|import|interface|map|package|range|return|select|struct|switch|type|var)\b/,builtin:/\b(?:bool|byte|complex(?:64|128)|error|float(?:32|64)|rune|string|u?int(?:8|16|32|64)?|uintptr|append|cap|close|complex|copy|delete|imag|len|make|new|panic|print(?:ln)?|real|recover)\b/,boolean:/\b(?:_|iota|nil|true|false)\b/,operator:/[*\/%^!=]=?|\+[=+]?|-[=-]?|\|[=|]?|&(?:=|&|\^=?)?|>(?:>=?|=)?|<(?:<=?|=|-)?|:=|\.\.\./,number:/(?:\b0x[a-f\d]+|(?:\b\d+\.?\d*|\B\.\d+)(?:e[-+]?\d+)?)i?/i,string:{pattern:/(["'`])(?:\\[\s\S]|(?!\1)[^\\])*\1/,greedy:!0}}),delete Prism.languages.go['class-name'],function(e){function t(e,t){return e=e.replace(/<inner>/g,n),t&&(e=e+'|'+e.replace(/_/g,'\\*')),RegExp(/((?:^|[^\\])(?:\\{2})*)/.source+'(?:'+e+')')}var n=/(?:\\.|[^\\\n\r]|(?:\r?\n|\r)(?!\r?\n|\r))/.source,i=/(?:\\.|``.+?``|`[^`\r\n]+`|[^\\|\r\n`])+/.source,a=/\|?__(?:\|__)+\|?(?:(?:\r?\n|\r)|$)/.source.replace(/__/g,i),d=/\|?[ \t]*:?-{3,}:?[ \t]*(?:\|[ \t]*:?-{3,}:?[ \t]*)+\|?(?:\r?\n|\r)/.source;e.languages.markdown=e.languages.extend('markup',{}),e.languages.insertBefore('markdown','prolog',{blockquote:{pattern:/^>(?:[\t ]*>)*/m,alias:'punctuation'},table:{pattern:RegExp('^'+a+d+'(?:'+a+')*','m'),inside:{"table-data-rows":{pattern:RegExp('^('+a+d+')(?:'+a+')*$'),lookbehind:!0,inside:{"table-data":{pattern:RegExp(i),inside:e.languages.markdown},punctuation:/\|/}},"table-line":{pattern:RegExp('^('+a+')'+d+'$'),lookbehind:!0,inside:{punctuation:/\||:?-{3,}:?/}},"table-header-row":{pattern:RegExp('^'+a+'$'),inside:{"table-header":{pattern:RegExp(i),alias:'important',inside:e.languages.markdown},punctuation:/\|/}}}},code:[{pattern:/(^[ \t]*(?:\r?\n|\r))(?: {4}|\t).+(?:(?:\r?\n|\r)(?: {4}|\t).+)*/m,lookbehind:!0,alias:'keyword'},{pattern:/``.+?``|`[^`\r\n]+`/,alias:'keyword'},{pattern:/^```[\s\S]*?^```$/m,greedy:!0,inside:{"code-block":{pattern:/^(```.*(?:\r?\n|\r))[\s\S]+?(?=(?:\r?\n|\r)^```$)/m,lookbehind:!0},"code-language":{pattern:/^(```).+/,lookbehind:!0},punctuation:/```/}}],title:[{pattern:/\S.*(?:\r?\n|\r)(?:==+|--+)(?=[ \t]*$)/m,alias:'important',inside:{punctuation:/==+$|--+$/}},{pattern:/(^\s*)#+.+/m,lookbehind:!0,alias:'important',inside:{punctuation:/^#+|#+$/}}],hr:{pattern:/(^\s*)([*-])(?:[\t ]*\2){2,}(?=\s*$)/m,lookbehind:!0,alias:'punctuation'},list:{pattern:/(^\s*)(?:[*+-]|\d+\.)(?=[\t ].)/m,lookbehind:!0,alias:'punctuation'},"url-reference":{pattern:/!?\[[^\]]+\]:[\t ]+(?:\S+|<(?:\\.|[^>\\])+>)(?:[\t ]+(?:"(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'|\((?:\\.|[^)\\])*\)))?/,inside:{variable:{pattern:/^(!?\[)[^\]]+/,lookbehind:!0},string:/(?:"(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'|\((?:\\.|[^)\\])*\))$/,punctuation:/^[\[\]!:]|[<>]/},alias:'url'},bold:{pattern:t(/__(?:(?!_)<inner>|_(?:(?!_)<inner>)+_)+__/.source,!0),lookbehind:!0,greedy:!0,inside:{content:{pattern:/(^..)[\s\S]+(?=..$)/,lookbehind:!0,inside:{}},punctuation:/\*\*|__/}},italic:{pattern:t(/_(?:(?!_)<inner>|__(?:(?!_)<inner>)+__)+_/.source,!0),lookbehind:!0,greedy:!0,inside:{content:{pattern:/(^.)[\s\S]+(?=.$)/,lookbehind:!0,inside:{}},punctuation:/[*_]/}},strike:{pattern:t(/(~~?)(?:(?!~)<inner>)+?\2/.source,!1),lookbehind:!0,greedy:!0,inside:{content:{pattern:/(^~~?)[\s\S]+(?=\1$)/,lookbehind:!0,inside:{}},punctuation:/~~?/}},url:{pattern:t(/!?\[(?:(?!\])<inner>)+\](?:\([^\s)]+(?:[\t ]+"(?:\\.|[^"\\])*")?\)| ?\[(?:(?!\])<inner>)+\])/.source,!1),lookbehind:!0,greedy:!0,inside:{variable:{pattern:/(\[)[^\]]+(?=\]$)/,lookbehind:!0},content:{pattern:/(^!?\[)[^\]]+(?=\])/,lookbehind:!0,inside:{}},string:{pattern:/"(?:\\.|[^"\\])*"(?=\)$)/}}}}),['url','bold','italic','strike'].forEach(function(t){['url','bold','italic','strike'].forEach(function(n){t!==n&&(e.languages.markdown[t].inside.content.inside[n]=e.languages.markdown[n])})}),e.hooks.add('after-tokenize',function(e){function t(e){if(e&&'string'!=typeof e)for(var n,a=0,i=e.length;a<i;a++){if(n=e[a],'code'!==n.type){t(n.content);continue}var d=n.content[1],r=n.content[3];if(d&&r&&'code-language'===d.type&&'code-block'===r.type&&'string'==typeof d.content){var o=d.content.replace(/\b#/g,'sharp').replace(/\b\+\+/g,'pp');o=(/[a-z][\w-]*/i.exec(o)||[''])[0].toLowerCase();var l='language-'+o;r.alias?'string'==typeof r.alias?r.alias=[r.alias,l]:r.alias.push(l):r.alias=[l]}}}'markdown'!==e.language&&'md'!==e.language||t(e.tokens)}),e.hooks.add('wrap',function(t){if('code-block'===t.type){for(var n='',a=0,i=t.classes.length;a<i;a++){var d=t.classes[a],r=/language-(.+)/.exec(d);if(r){n=r[1];break}}var o=e.languages[n];if(!!o){var l=t.content.replace(/&lt;/g,'<').replace(/&amp;/g,'&');t.content=e.highlight(l,o,n)}else if(n&&'none'!==n&&e.plugins.autoloader){var s='md-'+new Date().valueOf()+'-'+fi(1e16*Math.random());t.attributes.id=s,e.plugins.autoloader.loadLanguages(n,function(){var t=document.getElementById(s);t&&(t.innerHTML=e.highlight(t.textContent,e.languages[n],n))})}}}),e.languages.md=e.languages.markdown}(Prism),Prism.languages.julia={comment:{pattern:/(^|[^\\])#.*/,lookbehind:!0},string:/("""|''')[\s\S]+?\1|("|')(?:\\.|(?!\2)[^\\\r\n])*\2/,keyword:/\b(?:abstract|baremodule|begin|bitstype|break|catch|ccall|const|continue|do|else|elseif|end|export|finally|for|function|global|if|immutable|import|importall|in|let|local|macro|module|print|println|quote|return|struct|try|type|typealias|using|while)\b/,boolean:/\b(?:true|false)\b/,number:/(?:\b(?=\d)|\B(?=\.))(?:0[box])?(?:[\da-f]+\.?\d*|\.\d+)(?:[efp][+-]?\d+)?j?/i,operator:/[-+*^%÷&$\\]=?|\/[\/=]?|!=?=?|\|[=>]?|<(?:<=?|[=:])?|>(?:=|>>?=?)?|==?=?|[~≠≤≥]/,punctuation:/[{}[\];(),.:]/,constant:/\b(?:(?:NaN|Inf)(?:16|32|64)?)\b/};const aa=Ti('d-code',`
+`;
+
+  function renderCitationList(element, entries, dom=document) {
+    if (entries.size > 0) {
+      element.style.display = '';
+      let list = element.querySelector('.references');
+      if (list) {
+        list.innerHTML = '';
+      } else {
+        const stylesTag = dom.createElement('style');
+        stylesTag.innerHTML = styles$1;
+        element.appendChild(stylesTag);
+
+        const heading = dom.createElement('h3');
+        heading.id = 'references';
+        heading.textContent = 'References';
+        element.appendChild(heading);
+
+        list = dom.createElement('ol');
+        list.id = 'references-list';
+        list.className = 'references';
+        element.appendChild(list);
+      }
+
+      for (const [key, entry] of entries) {
+        const listItem = dom.createElement('li');
+        listItem.id = key;
+        listItem.innerHTML = bibliography_cite(entry);
+        list.appendChild(listItem);
+      }
+    } else {
+      element.style.display = 'none';
+    }
+  }
+
+  class CitationList extends HTMLElement {
+
+    static get is() { return 'd-citation-list'; }
+
+    connectedCallback() {
+      if (!this.hasAttribute('distill-prerendered')) {
+        this.style.display = 'none';
+      }
+    }
+
+    set citations(citations) {
+      renderCitationList(this, citations);
+    }
+
+  }
+
+  var prism = createCommonjsModule(function (module) {
+  /* **********************************************
+       Begin prism-core.js
+  ********************************************** */
+
+  var _self = (typeof window !== 'undefined')
+  	? window   // if in browser
+  	: (
+  		(typeof WorkerGlobalScope !== 'undefined' && self instanceof WorkerGlobalScope)
+  		? self // if in worker
+  		: {}   // if in node js
+  	);
+
+  /**
+   * Prism: Lightweight, robust, elegant syntax highlighting
+   * MIT license http://www.opensource.org/licenses/mit-license.php/
+   * @author Lea Verou http://lea.verou.me
+   */
+
+  var Prism = (function (_self){
+
+  // Private helper vars
+  var lang = /\blang(?:uage)?-([\w-]+)\b/i;
+  var uniqueId = 0;
+
+
+  var _ = {
+  	manual: _self.Prism && _self.Prism.manual,
+  	disableWorkerMessageHandler: _self.Prism && _self.Prism.disableWorkerMessageHandler,
+  	util: {
+  		encode: function encode(tokens) {
+  			if (tokens instanceof Token) {
+  				return new Token(tokens.type, encode(tokens.content), tokens.alias);
+  			} else if (Array.isArray(tokens)) {
+  				return tokens.map(encode);
+  			} else {
+  				return tokens.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/\u00a0/g, ' ');
+  			}
+  		},
+
+  		type: function (o) {
+  			return Object.prototype.toString.call(o).slice(8, -1);
+  		},
+
+  		objId: function (obj) {
+  			if (!obj['__id']) {
+  				Object.defineProperty(obj, '__id', { value: ++uniqueId });
+  			}
+  			return obj['__id'];
+  		},
+
+  		// Deep clone a language definition (e.g. to extend it)
+  		clone: function deepClone(o, visited) {
+  			var clone, id, type = _.util.type(o);
+  			visited = visited || {};
+
+  			switch (type) {
+  				case 'Object':
+  					id = _.util.objId(o);
+  					if (visited[id]) {
+  						return visited[id];
+  					}
+  					clone = {};
+  					visited[id] = clone;
+
+  					for (var key in o) {
+  						if (o.hasOwnProperty(key)) {
+  							clone[key] = deepClone(o[key], visited);
+  						}
+  					}
+
+  					return clone;
+
+  				case 'Array':
+  					id = _.util.objId(o);
+  					if (visited[id]) {
+  						return visited[id];
+  					}
+  					clone = [];
+  					visited[id] = clone;
+
+  					o.forEach(function (v, i) {
+  						clone[i] = deepClone(v, visited);
+  					});
+
+  					return clone;
+
+  				default:
+  					return o;
+  			}
+  		},
+
+  		/**
+  		 * Returns the Prism language of the given element set by a `language-xxxx` or `lang-xxxx` class.
+  		 *
+  		 * If no language is set for the element or the element is `null` or `undefined`, `none` will be returned.
+  		 *
+  		 * @param {Element} element
+  		 * @returns {string}
+  		 */
+  		getLanguage: function (element) {
+  			while (element && !lang.test(element.className)) {
+  				element = element.parentElement;
+  			}
+  			if (element) {
+  				return (element.className.match(lang) || [, 'none'])[1].toLowerCase();
+  			}
+  			return 'none';
+  		},
+
+  		/**
+  		 * Returns the script element that is currently executing.
+  		 *
+  		 * This does __not__ work for line script element.
+  		 *
+  		 * @returns {HTMLScriptElement | null}
+  		 */
+  		currentScript: function () {
+  			if (typeof document === 'undefined') {
+  				return null;
+  			}
+  			if ('currentScript' in document) {
+  				return document.currentScript;
+  			}
+
+  			// IE11 workaround
+  			// we'll get the src of the current script by parsing IE11's error stack trace
+  			// this will not work for inline scripts
+
+  			try {
+  				throw new Error();
+  			} catch (err) {
+  				// Get file src url from stack. Specifically works with the format of stack traces in IE.
+  				// A stack will look like this:
+  				//
+  				// Error
+  				//    at _.util.currentScript (http://localhost/components/prism-core.js:119:5)
+  				//    at Global code (http://localhost/components/prism-core.js:606:1)
+
+  				var src = (/at [^(\r\n]*\((.*):.+:.+\)$/i.exec(err.stack) || [])[1];
+  				if (src) {
+  					var scripts = document.getElementsByTagName('script');
+  					for (var i in scripts) {
+  						if (scripts[i].src == src) {
+  							return scripts[i];
+  						}
+  					}
+  				}
+  				return null;
+  			}
+  		}
+  	},
+
+  	languages: {
+  		extend: function (id, redef) {
+  			var lang = _.util.clone(_.languages[id]);
+
+  			for (var key in redef) {
+  				lang[key] = redef[key];
+  			}
+
+  			return lang;
+  		},
+
+  		/**
+  		 * Insert a token before another token in a language literal
+  		 * As this needs to recreate the object (we cannot actually insert before keys in object literals),
+  		 * we cannot just provide an object, we need an object and a key.
+  		 * @param inside The key (or language id) of the parent
+  		 * @param before The key to insert before.
+  		 * @param insert Object with the key/value pairs to insert
+  		 * @param root The object that contains `inside`. If equal to Prism.languages, it can be omitted.
+  		 */
+  		insertBefore: function (inside, before, insert, root) {
+  			root = root || _.languages;
+  			var grammar = root[inside];
+  			var ret = {};
+
+  			for (var token in grammar) {
+  				if (grammar.hasOwnProperty(token)) {
+
+  					if (token == before) {
+  						for (var newToken in insert) {
+  							if (insert.hasOwnProperty(newToken)) {
+  								ret[newToken] = insert[newToken];
+  							}
+  						}
+  					}
+
+  					// Do not insert token which also occur in insert. See #1525
+  					if (!insert.hasOwnProperty(token)) {
+  						ret[token] = grammar[token];
+  					}
+  				}
+  			}
+
+  			var old = root[inside];
+  			root[inside] = ret;
+
+  			// Update references in other language definitions
+  			_.languages.DFS(_.languages, function(key, value) {
+  				if (value === old && key != inside) {
+  					this[key] = ret;
+  				}
+  			});
+
+  			return ret;
+  		},
+
+  		// Traverse a language definition with Depth First Search
+  		DFS: function DFS(o, callback, type, visited) {
+  			visited = visited || {};
+
+  			var objId = _.util.objId;
+
+  			for (var i in o) {
+  				if (o.hasOwnProperty(i)) {
+  					callback.call(o, i, o[i], type || i);
+
+  					var property = o[i],
+  					    propertyType = _.util.type(property);
+
+  					if (propertyType === 'Object' && !visited[objId(property)]) {
+  						visited[objId(property)] = true;
+  						DFS(property, callback, null, visited);
+  					}
+  					else if (propertyType === 'Array' && !visited[objId(property)]) {
+  						visited[objId(property)] = true;
+  						DFS(property, callback, i, visited);
+  					}
+  				}
+  			}
+  		}
+  	},
+  	plugins: {},
+
+  	highlightAll: function(async, callback) {
+  		_.highlightAllUnder(document, async, callback);
+  	},
+
+  	highlightAllUnder: function(container, async, callback) {
+  		var env = {
+  			callback: callback,
+  			container: container,
+  			selector: 'code[class*="language-"], [class*="language-"] code, code[class*="lang-"], [class*="lang-"] code'
+  		};
+
+  		_.hooks.run('before-highlightall', env);
+
+  		env.elements = Array.prototype.slice.apply(env.container.querySelectorAll(env.selector));
+
+  		_.hooks.run('before-all-elements-highlight', env);
+
+  		for (var i = 0, element; element = env.elements[i++];) {
+  			_.highlightElement(element, async === true, env.callback);
+  		}
+  	},
+
+  	highlightElement: function(element, async, callback) {
+  		// Find language
+  		var language = _.util.getLanguage(element);
+  		var grammar = _.languages[language];
+
+  		// Set language on the element, if not present
+  		element.className = element.className.replace(lang, '').replace(/\s+/g, ' ') + ' language-' + language;
+
+  		// Set language on the parent, for styling
+  		var parent = element.parentNode;
+  		if (parent && parent.nodeName.toLowerCase() === 'pre') {
+  			parent.className = parent.className.replace(lang, '').replace(/\s+/g, ' ') + ' language-' + language;
+  		}
+
+  		var code = element.textContent;
+
+  		var env = {
+  			element: element,
+  			language: language,
+  			grammar: grammar,
+  			code: code
+  		};
+
+  		function insertHighlightedCode(highlightedCode) {
+  			env.highlightedCode = highlightedCode;
+
+  			_.hooks.run('before-insert', env);
+
+  			env.element.innerHTML = env.highlightedCode;
+
+  			_.hooks.run('after-highlight', env);
+  			_.hooks.run('complete', env);
+  			callback && callback.call(env.element);
+  		}
+
+  		_.hooks.run('before-sanity-check', env);
+
+  		if (!env.code) {
+  			_.hooks.run('complete', env);
+  			callback && callback.call(env.element);
+  			return;
+  		}
+
+  		_.hooks.run('before-highlight', env);
+
+  		if (!env.grammar) {
+  			insertHighlightedCode(_.util.encode(env.code));
+  			return;
+  		}
+
+  		if (async && _self.Worker) {
+  			var worker = new Worker(_.filename);
+
+  			worker.onmessage = function(evt) {
+  				insertHighlightedCode(evt.data);
+  			};
+
+  			worker.postMessage(JSON.stringify({
+  				language: env.language,
+  				code: env.code,
+  				immediateClose: true
+  			}));
+  		}
+  		else {
+  			insertHighlightedCode(_.highlight(env.code, env.grammar, env.language));
+  		}
+  	},
+
+  	highlight: function (text, grammar, language) {
+  		var env = {
+  			code: text,
+  			grammar: grammar,
+  			language: language
+  		};
+  		_.hooks.run('before-tokenize', env);
+  		env.tokens = _.tokenize(env.code, env.grammar);
+  		_.hooks.run('after-tokenize', env);
+  		return Token.stringify(_.util.encode(env.tokens), env.language);
+  	},
+
+  	tokenize: function(text, grammar) {
+  		var rest = grammar.rest;
+  		if (rest) {
+  			for (var token in rest) {
+  				grammar[token] = rest[token];
+  			}
+
+  			delete grammar.rest;
+  		}
+
+  		var tokenList = new LinkedList();
+  		addAfter(tokenList, tokenList.head, text);
+
+  		matchGrammar(text, tokenList, grammar, tokenList.head, 0);
+
+  		return toArray(tokenList);
+  	},
+
+  	hooks: {
+  		all: {},
+
+  		add: function (name, callback) {
+  			var hooks = _.hooks.all;
+
+  			hooks[name] = hooks[name] || [];
+
+  			hooks[name].push(callback);
+  		},
+
+  		run: function (name, env) {
+  			var callbacks = _.hooks.all[name];
+
+  			if (!callbacks || !callbacks.length) {
+  				return;
+  			}
+
+  			for (var i=0, callback; callback = callbacks[i++];) {
+  				callback(env);
+  			}
+  		}
+  	},
+
+  	Token: Token
+  };
+
+  _self.Prism = _;
+
+  function Token(type, content, alias, matchedStr, greedy) {
+  	this.type = type;
+  	this.content = content;
+  	this.alias = alias;
+  	// Copy of the full string this token was created from
+  	this.length = (matchedStr || '').length|0;
+  	this.greedy = !!greedy;
+  }
+
+  Token.stringify = function stringify(o, language) {
+  	if (typeof o == 'string') {
+  		return o;
+  	}
+  	if (Array.isArray(o)) {
+  		var s = '';
+  		o.forEach(function (e) {
+  			s += stringify(e, language);
+  		});
+  		return s;
+  	}
+
+  	var env = {
+  		type: o.type,
+  		content: stringify(o.content, language),
+  		tag: 'span',
+  		classes: ['token', o.type],
+  		attributes: {},
+  		language: language
+  	};
+
+  	var aliases = o.alias;
+  	if (aliases) {
+  		if (Array.isArray(aliases)) {
+  			Array.prototype.push.apply(env.classes, aliases);
+  		} else {
+  			env.classes.push(aliases);
+  		}
+  	}
+
+  	_.hooks.run('wrap', env);
+
+  	var attributes = '';
+  	for (var name in env.attributes) {
+  		attributes += ' ' + name + '="' + (env.attributes[name] || '').replace(/"/g, '&quot;') + '"';
+  	}
+
+  	return '<' + env.tag + ' class="' + env.classes.join(' ') + '"' + attributes + '>' + env.content + '</' + env.tag + '>';
+  };
+
+  /**
+   * @param {string} text
+   * @param {LinkedList<string | Token>} tokenList
+   * @param {any} grammar
+   * @param {LinkedListNode<string | Token>} startNode
+   * @param {number} startPos
+   * @param {boolean} [oneshot=false]
+   * @param {string} [target]
+   */
+  function matchGrammar(text, tokenList, grammar, startNode, startPos, oneshot, target) {
+  	for (var token in grammar) {
+  		if (!grammar.hasOwnProperty(token) || !grammar[token]) {
+  			continue;
+  		}
+
+  		var patterns = grammar[token];
+  		patterns = Array.isArray(patterns) ? patterns : [patterns];
+
+  		for (var j = 0; j < patterns.length; ++j) {
+  			if (target && target == token + ',' + j) {
+  				return;
+  			}
+
+  			var pattern = patterns[j],
+  				inside = pattern.inside,
+  				lookbehind = !!pattern.lookbehind,
+  				greedy = !!pattern.greedy,
+  				lookbehindLength = 0,
+  				alias = pattern.alias;
+
+  			if (greedy && !pattern.pattern.global) {
+  				// Without the global flag, lastIndex won't work
+  				var flags = pattern.pattern.toString().match(/[imsuy]*$/)[0];
+  				pattern.pattern = RegExp(pattern.pattern.source, flags + 'g');
+  			}
+
+  			pattern = pattern.pattern || pattern;
+
+  			for ( // iterate the token list and keep track of the current token/string position
+  				var currentNode = startNode.next, pos = startPos;
+  				currentNode !== tokenList.tail;
+  				pos += currentNode.value.length, currentNode = currentNode.next
+  			) {
+
+  				var str = currentNode.value;
+
+  				if (tokenList.length > text.length) {
+  					// Something went terribly wrong, ABORT, ABORT!
+  					return;
+  				}
+
+  				if (str instanceof Token) {
+  					continue;
+  				}
+
+  				var removeCount = 1; // this is the to parameter of removeBetween
+
+  				if (greedy && currentNode != tokenList.tail.prev) {
+  					pattern.lastIndex = pos;
+  					var match = pattern.exec(text);
+  					if (!match) {
+  						break;
+  					}
+
+  					var from = match.index + (lookbehind && match[1] ? match[1].length : 0);
+  					var to = match.index + match[0].length;
+  					var p = pos;
+
+  					// find the node that contains the match
+  					p += currentNode.value.length;
+  					while (from >= p) {
+  						currentNode = currentNode.next;
+  						p += currentNode.value.length;
+  					}
+  					// adjust pos (and p)
+  					p -= currentNode.value.length;
+  					pos = p;
+
+  					// the current node is a Token, then the match starts inside another Token, which is invalid
+  					if (currentNode.value instanceof Token) {
+  						continue;
+  					}
+
+  					// find the last node which is affected by this match
+  					for (
+  						var k = currentNode;
+  						k !== tokenList.tail && (p < to || (typeof k.value === 'string' && !k.prev.value.greedy));
+  						k = k.next
+  					) {
+  						removeCount++;
+  						p += k.value.length;
+  					}
+  					removeCount--;
+
+  					// replace with the new match
+  					str = text.slice(pos, p);
+  					match.index -= pos;
+  				} else {
+  					pattern.lastIndex = 0;
+
+  					var match = pattern.exec(str);
+  				}
+
+  				if (!match) {
+  					if (oneshot) {
+  						break;
+  					}
+
+  					continue;
+  				}
+
+  				if (lookbehind) {
+  					lookbehindLength = match[1] ? match[1].length : 0;
+  				}
+
+  				var from = match.index + lookbehindLength,
+  					match = match[0].slice(lookbehindLength),
+  					to = from + match.length,
+  					before = str.slice(0, from),
+  					after = str.slice(to);
+
+  				var removeFrom = currentNode.prev;
+
+  				if (before) {
+  					removeFrom = addAfter(tokenList, removeFrom, before);
+  					pos += before.length;
+  				}
+
+  				removeRange(tokenList, removeFrom, removeCount);
+
+  				var wrapped = new Token(token, inside ? _.tokenize(match, inside) : match, alias, match, greedy);
+  				currentNode = addAfter(tokenList, removeFrom, wrapped);
+
+  				if (after) {
+  					addAfter(tokenList, currentNode, after);
+  				}
+
+
+  				if (removeCount > 1)
+  					matchGrammar(text, tokenList, grammar, currentNode.prev, pos, true, token + ',' + j);
+
+  				if (oneshot)
+  					break;
+  			}
+  		}
+  	}
+  }
+
+  /**
+   * @typedef LinkedListNode
+   * @property {T} value
+   * @property {LinkedListNode<T> | null} prev The previous node.
+   * @property {LinkedListNode<T> | null} next The next node.
+   * @template T
+   */
+
+  /**
+   * @template T
+   */
+  function LinkedList() {
+  	/** @type {LinkedListNode<T>} */
+  	var head = { value: null, prev: null, next: null };
+  	/** @type {LinkedListNode<T>} */
+  	var tail = { value: null, prev: head, next: null };
+  	head.next = tail;
+
+  	/** @type {LinkedListNode<T>} */
+  	this.head = head;
+  	/** @type {LinkedListNode<T>} */
+  	this.tail = tail;
+  	this.length = 0;
+  }
+
+  /**
+   * Adds a new node with the given value to the list.
+   * @param {LinkedList<T>} list
+   * @param {LinkedListNode<T>} node
+   * @param {T} value
+   * @returns {LinkedListNode<T>} The added node.
+   * @template T
+   */
+  function addAfter(list, node, value) {
+  	// assumes that node != list.tail && values.length >= 0
+  	var next = node.next;
+
+  	var newNode = { value: value, prev: node, next: next };
+  	node.next = newNode;
+  	next.prev = newNode;
+  	list.length++;
+
+  	return newNode;
+  }
+  /**
+   * Removes `count` nodes after the given node. The given node will not be removed.
+   * @param {LinkedList<T>} list
+   * @param {LinkedListNode<T>} node
+   * @param {number} count
+   * @template T
+   */
+  function removeRange(list, node, count) {
+  	var next = node.next;
+  	for (var i = 0; i < count && next !== list.tail; i++) {
+  		next = next.next;
+  	}
+  	node.next = next;
+  	next.prev = node;
+  	list.length -= i;
+  }
+  /**
+   * @param {LinkedList<T>} list
+   * @returns {T[]}
+   * @template T
+   */
+  function toArray(list) {
+  	var array = [];
+  	var node = list.head.next;
+  	while (node !== list.tail) {
+  		array.push(node.value);
+  		node = node.next;
+  	}
+  	return array;
+  }
+
+
+  if (!_self.document) {
+  	if (!_self.addEventListener) {
+  		// in Node.js
+  		return _;
+  	}
+
+  	if (!_.disableWorkerMessageHandler) {
+  		// In worker
+  		_self.addEventListener('message', function (evt) {
+  			var message = JSON.parse(evt.data),
+  				lang = message.language,
+  				code = message.code,
+  				immediateClose = message.immediateClose;
+
+  			_self.postMessage(_.highlight(code, _.languages[lang], lang));
+  			if (immediateClose) {
+  				_self.close();
+  			}
+  		}, false);
+  	}
+
+  	return _;
+  }
+
+  //Get current script and highlight
+  var script = _.util.currentScript();
+
+  if (script) {
+  	_.filename = script.src;
+
+  	if (script.hasAttribute('data-manual')) {
+  		_.manual = true;
+  	}
+  }
+
+  function highlightAutomaticallyCallback() {
+  	if (!_.manual) {
+  		_.highlightAll();
+  	}
+  }
+
+  if (!_.manual) {
+  	// If the document state is "loading", then we'll use DOMContentLoaded.
+  	// If the document state is "interactive" and the prism.js script is deferred, then we'll also use the
+  	// DOMContentLoaded event because there might be some plugins or languages which have also been deferred and they
+  	// might take longer one animation frame to execute which can create a race condition where only some plugins have
+  	// been loaded when Prism.highlightAll() is executed, depending on how fast resources are loaded.
+  	// See https://github.com/PrismJS/prism/issues/2102
+  	var readyState = document.readyState;
+  	if (readyState === 'loading' || readyState === 'interactive' && script && script.defer) {
+  		document.addEventListener('DOMContentLoaded', highlightAutomaticallyCallback);
+  	} else {
+  		if (window.requestAnimationFrame) {
+  			window.requestAnimationFrame(highlightAutomaticallyCallback);
+  		} else {
+  			window.setTimeout(highlightAutomaticallyCallback, 16);
+  		}
+  	}
+  }
+
+  return _;
+
+  })(_self);
+
+  if ( module.exports) {
+  	module.exports = Prism;
+  }
+
+  // hack for components to work correctly in node.js
+  if (typeof commonjsGlobal !== 'undefined') {
+  	commonjsGlobal.Prism = Prism;
+  }
+
+
+  /* **********************************************
+       Begin prism-markup.js
+  ********************************************** */
+
+  Prism.languages.markup = {
+  	'comment': /<!--[\s\S]*?-->/,
+  	'prolog': /<\?[\s\S]+?\?>/,
+  	'doctype': {
+  		pattern: /<!DOCTYPE(?:[^>"'[\]]|"[^"]*"|'[^']*')+(?:\[(?:(?!<!--)[^"'\]]|"[^"]*"|'[^']*'|<!--[\s\S]*?-->)*\]\s*)?>/i,
+  		greedy: true
+  	},
+  	'cdata': /<!\[CDATA\[[\s\S]*?]]>/i,
+  	'tag': {
+  		pattern: /<\/?(?!\d)[^\s>\/=$<%]+(?:\s(?:\s*[^\s>\/=]+(?:\s*=\s*(?:"[^"]*"|'[^']*'|[^\s'">=]+(?=[\s>]))|(?=[\s/>])))+)?\s*\/?>/i,
+  		greedy: true,
+  		inside: {
+  			'tag': {
+  				pattern: /^<\/?[^\s>\/]+/i,
+  				inside: {
+  					'punctuation': /^<\/?/,
+  					'namespace': /^[^\s>\/:]+:/
+  				}
+  			},
+  			'attr-value': {
+  				pattern: /=\s*(?:"[^"]*"|'[^']*'|[^\s'">=]+)/i,
+  				inside: {
+  					'punctuation': [
+  						/^=/,
+  						{
+  							pattern: /^(\s*)["']|["']$/,
+  							lookbehind: true
+  						}
+  					]
+  				}
+  			},
+  			'punctuation': /\/?>/,
+  			'attr-name': {
+  				pattern: /[^\s>\/]+/,
+  				inside: {
+  					'namespace': /^[^\s>\/:]+:/
+  				}
+  			}
+
+  		}
+  	},
+  	'entity': /&#?[\da-z]{1,8};/i
+  };
+
+  Prism.languages.markup['tag'].inside['attr-value'].inside['entity'] =
+  	Prism.languages.markup['entity'];
+
+  // Plugin to make entity title show the real entity, idea by Roman Komarov
+  Prism.hooks.add('wrap', function(env) {
+
+  	if (env.type === 'entity') {
+  		env.attributes['title'] = env.content.replace(/&amp;/, '&');
+  	}
+  });
+
+  Object.defineProperty(Prism.languages.markup.tag, 'addInlined', {
+  	/**
+  	 * Adds an inlined language to markup.
+  	 *
+  	 * An example of an inlined language is CSS with `<style>` tags.
+  	 *
+  	 * @param {string} tagName The name of the tag that contains the inlined language. This name will be treated as
+  	 * case insensitive.
+  	 * @param {string} lang The language key.
+  	 * @example
+  	 * addInlined('style', 'css');
+  	 */
+  	value: function addInlined(tagName, lang) {
+  		var includedCdataInside = {};
+  		includedCdataInside['language-' + lang] = {
+  			pattern: /(^<!\[CDATA\[)[\s\S]+?(?=\]\]>$)/i,
+  			lookbehind: true,
+  			inside: Prism.languages[lang]
+  		};
+  		includedCdataInside['cdata'] = /^<!\[CDATA\[|\]\]>$/i;
+
+  		var inside = {
+  			'included-cdata': {
+  				pattern: /<!\[CDATA\[[\s\S]*?\]\]>/i,
+  				inside: includedCdataInside
+  			}
+  		};
+  		inside['language-' + lang] = {
+  			pattern: /[\s\S]+/,
+  			inside: Prism.languages[lang]
+  		};
+
+  		var def = {};
+  		def[tagName] = {
+  			pattern: RegExp(/(<__[\s\S]*?>)(?:<!\[CDATA\[[\s\S]*?\]\]>\s*|[\s\S])*?(?=<\/__>)/.source.replace(/__/g, function () { return tagName; }), 'i'),
+  			lookbehind: true,
+  			greedy: true,
+  			inside: inside
+  		};
+
+  		Prism.languages.insertBefore('markup', 'cdata', def);
+  	}
+  });
+
+  Prism.languages.xml = Prism.languages.extend('markup', {});
+  Prism.languages.html = Prism.languages.markup;
+  Prism.languages.mathml = Prism.languages.markup;
+  Prism.languages.svg = Prism.languages.markup;
+
+
+  /* **********************************************
+       Begin prism-css.js
+  ********************************************** */
+
+  (function (Prism) {
+
+  	var string = /("|')(?:\\(?:\r\n|[\s\S])|(?!\1)[^\\\r\n])*\1/;
+
+  	Prism.languages.css = {
+  		'comment': /\/\*[\s\S]*?\*\//,
+  		'atrule': {
+  			pattern: /@[\w-]+[\s\S]*?(?:;|(?=\s*\{))/,
+  			inside: {
+  				'rule': /^@[\w-]+/,
+  				'selector-function-argument': {
+  					pattern: /(\bselector\s*\((?!\s*\))\s*)(?:[^()]|\((?:[^()]|\([^()]*\))*\))+?(?=\s*\))/,
+  					lookbehind: true,
+  					alias: 'selector'
+  				}
+  				// See rest below
+  			}
+  		},
+  		'url': {
+  			pattern: RegExp('url\\((?:' + string.source + '|[^\n\r()]*)\\)', 'i'),
+  			greedy: true,
+  			inside: {
+  				'function': /^url/i,
+  				'punctuation': /^\(|\)$/
+  			}
+  		},
+  		'selector': RegExp('[^{}\\s](?:[^{};"\']|' + string.source + ')*?(?=\\s*\\{)'),
+  		'string': {
+  			pattern: string,
+  			greedy: true
+  		},
+  		'property': /[-_a-z\xA0-\uFFFF][-\w\xA0-\uFFFF]*(?=\s*:)/i,
+  		'important': /!important\b/i,
+  		'function': /[-a-z0-9]+(?=\()/i,
+  		'punctuation': /[(){};:,]/
+  	};
+
+  	Prism.languages.css['atrule'].inside.rest = Prism.languages.css;
+
+  	var markup = Prism.languages.markup;
+  	if (markup) {
+  		markup.tag.addInlined('style', 'css');
+
+  		Prism.languages.insertBefore('inside', 'attr-value', {
+  			'style-attr': {
+  				pattern: /\s*style=("|')(?:\\[\s\S]|(?!\1)[^\\])*\1/i,
+  				inside: {
+  					'attr-name': {
+  						pattern: /^\s*style/i,
+  						inside: markup.tag.inside
+  					},
+  					'punctuation': /^\s*=\s*['"]|['"]\s*$/,
+  					'attr-value': {
+  						pattern: /.+/i,
+  						inside: Prism.languages.css
+  					}
+  				},
+  				alias: 'language-css'
+  			}
+  		}, markup.tag);
+  	}
+
+  }(Prism));
+
+
+  /* **********************************************
+       Begin prism-clike.js
+  ********************************************** */
+
+  Prism.languages.clike = {
+  	'comment': [
+  		{
+  			pattern: /(^|[^\\])\/\*[\s\S]*?(?:\*\/|$)/,
+  			lookbehind: true
+  		},
+  		{
+  			pattern: /(^|[^\\:])\/\/.*/,
+  			lookbehind: true,
+  			greedy: true
+  		}
+  	],
+  	'string': {
+  		pattern: /(["'])(?:\\(?:\r\n|[\s\S])|(?!\1)[^\\\r\n])*\1/,
+  		greedy: true
+  	},
+  	'class-name': {
+  		pattern: /(\b(?:class|interface|extends|implements|trait|instanceof|new)\s+|\bcatch\s+\()[\w.\\]+/i,
+  		lookbehind: true,
+  		inside: {
+  			'punctuation': /[.\\]/
+  		}
+  	},
+  	'keyword': /\b(?:if|else|while|do|for|return|in|instanceof|function|new|try|throw|catch|finally|null|break|continue)\b/,
+  	'boolean': /\b(?:true|false)\b/,
+  	'function': /\w+(?=\()/,
+  	'number': /\b0x[\da-f]+\b|(?:\b\d+\.?\d*|\B\.\d+)(?:e[+-]?\d+)?/i,
+  	'operator': /[<>]=?|[!=]=?=?|--?|\+\+?|&&?|\|\|?|[?*/~^%]/,
+  	'punctuation': /[{}[\];(),.:]/
+  };
+
+
+  /* **********************************************
+       Begin prism-javascript.js
+  ********************************************** */
+
+  Prism.languages.javascript = Prism.languages.extend('clike', {
+  	'class-name': [
+  		Prism.languages.clike['class-name'],
+  		{
+  			pattern: /(^|[^$\w\xA0-\uFFFF])[_$A-Z\xA0-\uFFFF][$\w\xA0-\uFFFF]*(?=\.(?:prototype|constructor))/,
+  			lookbehind: true
+  		}
+  	],
+  	'keyword': [
+  		{
+  			pattern: /((?:^|})\s*)(?:catch|finally)\b/,
+  			lookbehind: true
+  		},
+  		{
+  			pattern: /(^|[^.]|\.\.\.\s*)\b(?:as|async(?=\s*(?:function\b|\(|[$\w\xA0-\uFFFF]|$))|await|break|case|class|const|continue|debugger|default|delete|do|else|enum|export|extends|for|from|function|get|if|implements|import|in|instanceof|interface|let|new|null|of|package|private|protected|public|return|set|static|super|switch|this|throw|try|typeof|undefined|var|void|while|with|yield)\b/,
+  			lookbehind: true
+  		},
+  	],
+  	'number': /\b(?:(?:0[xX](?:[\dA-Fa-f](?:_[\dA-Fa-f])?)+|0[bB](?:[01](?:_[01])?)+|0[oO](?:[0-7](?:_[0-7])?)+)n?|(?:\d(?:_\d)?)+n|NaN|Infinity)\b|(?:\b(?:\d(?:_\d)?)+\.?(?:\d(?:_\d)?)*|\B\.(?:\d(?:_\d)?)+)(?:[Ee][+-]?(?:\d(?:_\d)?)+)?/,
+  	// Allow for all non-ASCII characters (See http://stackoverflow.com/a/2008444)
+  	'function': /#?[_$a-zA-Z\xA0-\uFFFF][$\w\xA0-\uFFFF]*(?=\s*(?:\.\s*(?:apply|bind|call)\s*)?\()/,
+  	'operator': /--|\+\+|\*\*=?|=>|&&|\|\||[!=]==|<<=?|>>>?=?|[-+*/%&|^!=<>]=?|\.{3}|\?[.?]?|[~:]/
+  });
+
+  Prism.languages.javascript['class-name'][0].pattern = /(\b(?:class|interface|extends|implements|instanceof|new)\s+)[\w.\\]+/;
+
+  Prism.languages.insertBefore('javascript', 'keyword', {
+  	'regex': {
+  		pattern: /((?:^|[^$\w\xA0-\uFFFF."'\])\s])\s*)\/(?:\[(?:[^\]\\\r\n]|\\.)*]|\\.|[^/\\\[\r\n])+\/[gimyus]{0,6}(?=(?:\s|\/\*[\s\S]*?\*\/)*(?:$|[\r\n,.;:})\]]|\/\/))/,
+  		lookbehind: true,
+  		greedy: true
+  	},
+  	// This must be declared before keyword because we use "function" inside the look-forward
+  	'function-variable': {
+  		pattern: /#?[_$a-zA-Z\xA0-\uFFFF][$\w\xA0-\uFFFF]*(?=\s*[=:]\s*(?:async\s*)?(?:\bfunction\b|(?:\((?:[^()]|\([^()]*\))*\)|[_$a-zA-Z\xA0-\uFFFF][$\w\xA0-\uFFFF]*)\s*=>))/,
+  		alias: 'function'
+  	},
+  	'parameter': [
+  		{
+  			pattern: /(function(?:\s+[_$A-Za-z\xA0-\uFFFF][$\w\xA0-\uFFFF]*)?\s*\(\s*)(?!\s)(?:[^()]|\([^()]*\))+?(?=\s*\))/,
+  			lookbehind: true,
+  			inside: Prism.languages.javascript
+  		},
+  		{
+  			pattern: /[_$a-z\xA0-\uFFFF][$\w\xA0-\uFFFF]*(?=\s*=>)/i,
+  			inside: Prism.languages.javascript
+  		},
+  		{
+  			pattern: /(\(\s*)(?!\s)(?:[^()]|\([^()]*\))+?(?=\s*\)\s*=>)/,
+  			lookbehind: true,
+  			inside: Prism.languages.javascript
+  		},
+  		{
+  			pattern: /((?:\b|\s|^)(?!(?:as|async|await|break|case|catch|class|const|continue|debugger|default|delete|do|else|enum|export|extends|finally|for|from|function|get|if|implements|import|in|instanceof|interface|let|new|null|of|package|private|protected|public|return|set|static|super|switch|this|throw|try|typeof|undefined|var|void|while|with|yield)(?![$\w\xA0-\uFFFF]))(?:[_$A-Za-z\xA0-\uFFFF][$\w\xA0-\uFFFF]*\s*)\(\s*)(?!\s)(?:[^()]|\([^()]*\))+?(?=\s*\)\s*\{)/,
+  			lookbehind: true,
+  			inside: Prism.languages.javascript
+  		}
+  	],
+  	'constant': /\b[A-Z](?:[A-Z_]|\dx?)*\b/
+  });
+
+  Prism.languages.insertBefore('javascript', 'string', {
+  	'template-string': {
+  		pattern: /`(?:\\[\s\S]|\${(?:[^{}]|{(?:[^{}]|{[^}]*})*})+}|(?!\${)[^\\`])*`/,
+  		greedy: true,
+  		inside: {
+  			'template-punctuation': {
+  				pattern: /^`|`$/,
+  				alias: 'string'
+  			},
+  			'interpolation': {
+  				pattern: /((?:^|[^\\])(?:\\{2})*)\${(?:[^{}]|{(?:[^{}]|{[^}]*})*})+}/,
+  				lookbehind: true,
+  				inside: {
+  					'interpolation-punctuation': {
+  						pattern: /^\${|}$/,
+  						alias: 'punctuation'
+  					},
+  					rest: Prism.languages.javascript
+  				}
+  			},
+  			'string': /[\s\S]+/
+  		}
+  	}
+  });
+
+  if (Prism.languages.markup) {
+  	Prism.languages.markup.tag.addInlined('script', 'javascript');
+  }
+
+  Prism.languages.js = Prism.languages.javascript;
+
+
+  /* **********************************************
+       Begin prism-file-highlight.js
+  ********************************************** */
+
+  (function () {
+  	if (typeof self === 'undefined' || !self.Prism || !self.document || !document.querySelector) {
+  		return;
+  	}
+
+  	/**
+  	 * @param {Element} [container=document]
+  	 */
+  	self.Prism.fileHighlight = function(container) {
+  		container = container || document;
+
+  		var Extensions = {
+  			'js': 'javascript',
+  			'py': 'python',
+  			'rb': 'ruby',
+  			'ps1': 'powershell',
+  			'psm1': 'powershell',
+  			'sh': 'bash',
+  			'bat': 'batch',
+  			'h': 'c',
+  			'tex': 'latex'
+  		};
+
+  		Array.prototype.slice.call(container.querySelectorAll('pre[data-src]')).forEach(function (pre) {
+  			// ignore if already loaded
+  			if (pre.hasAttribute('data-src-loaded')) {
+  				return;
+  			}
+
+  			// load current
+  			var src = pre.getAttribute('data-src');
+
+  			var language, parent = pre;
+  			var lang = /\blang(?:uage)?-([\w-]+)\b/i;
+  			while (parent && !lang.test(parent.className)) {
+  				parent = parent.parentNode;
+  			}
+
+  			if (parent) {
+  				language = (pre.className.match(lang) || [, ''])[1];
+  			}
+
+  			if (!language) {
+  				var extension = (src.match(/\.(\w+)$/) || [, ''])[1];
+  				language = Extensions[extension] || extension;
+  			}
+
+  			var code = document.createElement('code');
+  			code.className = 'language-' + language;
+
+  			pre.textContent = '';
+
+  			code.textContent = 'Loading…';
+
+  			pre.appendChild(code);
+
+  			var xhr = new XMLHttpRequest();
+
+  			xhr.open('GET', src, true);
+
+  			xhr.onreadystatechange = function () {
+  				if (xhr.readyState == 4) {
+
+  					if (xhr.status < 400 && xhr.responseText) {
+  						code.textContent = xhr.responseText;
+
+  						Prism.highlightElement(code);
+  						// mark as loaded
+  						pre.setAttribute('data-src-loaded', '');
+  					}
+  					else if (xhr.status >= 400) {
+  						code.textContent = '✖ Error ' + xhr.status + ' while fetching file: ' + xhr.statusText;
+  					}
+  					else {
+  						code.textContent = '✖ Error: File does not exist or is empty';
+  					}
+  				}
+  			};
+
+  			xhr.send(null);
+  		});
+  	};
+
+  	document.addEventListener('DOMContentLoaded', function () {
+  		// execute inside handler, for dropping Event as argument
+  		self.Prism.fileHighlight();
+  	});
+
+  })();
+  });
+
+  Prism.languages.python = {
+  	'comment': {
+  		pattern: /(^|[^\\])#.*/,
+  		lookbehind: true
+  	},
+  	'string-interpolation': {
+  		pattern: /(?:f|rf|fr)(?:("""|''')[\s\S]+?\1|("|')(?:\\.|(?!\2)[^\\\r\n])*\2)/i,
+  		greedy: true,
+  		inside: {
+  			'interpolation': {
+  				// "{" <expression> <optional "!s", "!r", or "!a"> <optional ":" format specifier> "}"
+  				pattern: /((?:^|[^{])(?:{{)*){(?!{)(?:[^{}]|{(?!{)(?:[^{}]|{(?!{)(?:[^{}])+})+})+}/,
+  				lookbehind: true,
+  				inside: {
+  					'format-spec': {
+  						pattern: /(:)[^:(){}]+(?=}$)/,
+  						lookbehind: true
+  					},
+  					'conversion-option': {
+  						pattern: /![sra](?=[:}]$)/,
+  						alias: 'punctuation'
+  					},
+  					rest: null
+  				}
+  			},
+  			'string': /[\s\S]+/
+  		}
+  	},
+  	'triple-quoted-string': {
+  		pattern: /(?:[rub]|rb|br)?("""|''')[\s\S]+?\1/i,
+  		greedy: true,
+  		alias: 'string'
+  	},
+  	'string': {
+  		pattern: /(?:[rub]|rb|br)?("|')(?:\\.|(?!\1)[^\\\r\n])*\1/i,
+  		greedy: true
+  	},
+  	'function': {
+  		pattern: /((?:^|\s)def[ \t]+)[a-zA-Z_]\w*(?=\s*\()/g,
+  		lookbehind: true
+  	},
+  	'class-name': {
+  		pattern: /(\bclass\s+)\w+/i,
+  		lookbehind: true
+  	},
+  	'decorator': {
+  		pattern: /(^\s*)@\w+(?:\.\w+)*/im,
+  		lookbehind: true,
+  		alias: ['annotation', 'punctuation'],
+  		inside: {
+  			'punctuation': /\./
+  		}
+  	},
+  	'keyword': /\b(?:and|as|assert|async|await|break|class|continue|def|del|elif|else|except|exec|finally|for|from|global|if|import|in|is|lambda|nonlocal|not|or|pass|print|raise|return|try|while|with|yield)\b/,
+  	'builtin': /\b(?:__import__|abs|all|any|apply|ascii|basestring|bin|bool|buffer|bytearray|bytes|callable|chr|classmethod|cmp|coerce|compile|complex|delattr|dict|dir|divmod|enumerate|eval|execfile|file|filter|float|format|frozenset|getattr|globals|hasattr|hash|help|hex|id|input|int|intern|isinstance|issubclass|iter|len|list|locals|long|map|max|memoryview|min|next|object|oct|open|ord|pow|property|range|raw_input|reduce|reload|repr|reversed|round|set|setattr|slice|sorted|staticmethod|str|sum|super|tuple|type|unichr|unicode|vars|xrange|zip)\b/,
+  	'boolean': /\b(?:True|False|None)\b/,
+  	'number': /(?:\b(?=\d)|\B(?=\.))(?:0[bo])?(?:(?:\d|0x[\da-f])[\da-f]*\.?\d*|\.\d+)(?:e[+-]?\d+)?j?\b/i,
+  	'operator': /[-+%=]=?|!=|\*\*?=?|\/\/?=?|<[<=>]?|>[=>]?|[&|^~]/,
+  	'punctuation': /[{}[\];(),.:]/
+  };
+
+  Prism.languages.python['string-interpolation'].inside['interpolation'].inside.rest = Prism.languages.python;
+
+  Prism.languages.py = Prism.languages.python;
+
+  Prism.languages.clike = {
+  	'comment': [
+  		{
+  			pattern: /(^|[^\\])\/\*[\s\S]*?(?:\*\/|$)/,
+  			lookbehind: true
+  		},
+  		{
+  			pattern: /(^|[^\\:])\/\/.*/,
+  			lookbehind: true,
+  			greedy: true
+  		}
+  	],
+  	'string': {
+  		pattern: /(["'])(?:\\(?:\r\n|[\s\S])|(?!\1)[^\\\r\n])*\1/,
+  		greedy: true
+  	},
+  	'class-name': {
+  		pattern: /(\b(?:class|interface|extends|implements|trait|instanceof|new)\s+|\bcatch\s+\()[\w.\\]+/i,
+  		lookbehind: true,
+  		inside: {
+  			'punctuation': /[.\\]/
+  		}
+  	},
+  	'keyword': /\b(?:if|else|while|do|for|return|in|instanceof|function|new|try|throw|catch|finally|null|break|continue)\b/,
+  	'boolean': /\b(?:true|false)\b/,
+  	'function': /\w+(?=\()/,
+  	'number': /\b0x[\da-f]+\b|(?:\b\d+\.?\d*|\B\.\d+)(?:e[+-]?\d+)?/i,
+  	'operator': /[<>]=?|[!=]=?=?|--?|\+\+?|&&?|\|\|?|[?*/~^%]/,
+  	'punctuation': /[{}[\];(),.:]/
+  };
+
+  Prism.languages.lua = {
+  	'comment': /^#!.+|--(?:\[(=*)\[[\s\S]*?\]\1\]|.*)/m,
+  	// \z may be used to skip the following space
+  	'string': {
+  		pattern: /(["'])(?:(?!\1)[^\\\r\n]|\\z(?:\r\n|\s)|\\(?:\r\n|[\s\S]))*\1|\[(=*)\[[\s\S]*?\]\2\]/,
+  		greedy: true
+  	},
+  	'number': /\b0x[a-f\d]+\.?[a-f\d]*(?:p[+-]?\d+)?\b|\b\d+(?:\.\B|\.?\d*(?:e[+-]?\d+)?\b)|\B\.\d+(?:e[+-]?\d+)?\b/i,
+  	'keyword': /\b(?:and|break|do|else|elseif|end|false|for|function|goto|if|in|local|nil|not|or|repeat|return|then|true|until|while)\b/,
+  	'function': /(?!\d)\w+(?=\s*(?:[({]))/,
+  	'operator': [
+  		/[-+*%^&|#]|\/\/?|<[<=]?|>[>=]?|[=~]=?/,
+  		{
+  			// Match ".." but don't break "..."
+  			pattern: /(^|[^.])\.\.(?!\.)/,
+  			lookbehind: true
+  		}
+  	],
+  	'punctuation': /[\[\](){},;]|\.+|:+/
+  };
+
+  (function(Prism) {
+  	// $ set | grep '^[A-Z][^[:space:]]*=' | cut -d= -f1 | tr '\n' '|'
+  	// + LC_ALL, RANDOM, REPLY, SECONDS.
+  	// + make sure PS1..4 are here as they are not always set,
+  	// - some useless things.
+  	var envVars = '\\b(?:BASH|BASHOPTS|BASH_ALIASES|BASH_ARGC|BASH_ARGV|BASH_CMDS|BASH_COMPLETION_COMPAT_DIR|BASH_LINENO|BASH_REMATCH|BASH_SOURCE|BASH_VERSINFO|BASH_VERSION|COLORTERM|COLUMNS|COMP_WORDBREAKS|DBUS_SESSION_BUS_ADDRESS|DEFAULTS_PATH|DESKTOP_SESSION|DIRSTACK|DISPLAY|EUID|GDMSESSION|GDM_LANG|GNOME_KEYRING_CONTROL|GNOME_KEYRING_PID|GPG_AGENT_INFO|GROUPS|HISTCONTROL|HISTFILE|HISTFILESIZE|HISTSIZE|HOME|HOSTNAME|HOSTTYPE|IFS|INSTANCE|JOB|LANG|LANGUAGE|LC_ADDRESS|LC_ALL|LC_IDENTIFICATION|LC_MEASUREMENT|LC_MONETARY|LC_NAME|LC_NUMERIC|LC_PAPER|LC_TELEPHONE|LC_TIME|LESSCLOSE|LESSOPEN|LINES|LOGNAME|LS_COLORS|MACHTYPE|MAILCHECK|MANDATORY_PATH|NO_AT_BRIDGE|OLDPWD|OPTERR|OPTIND|ORBIT_SOCKETDIR|OSTYPE|PAPERSIZE|PATH|PIPESTATUS|PPID|PS1|PS2|PS3|PS4|PWD|RANDOM|REPLY|SECONDS|SELINUX_INIT|SESSION|SESSIONTYPE|SESSION_MANAGER|SHELL|SHELLOPTS|SHLVL|SSH_AUTH_SOCK|TERM|UID|UPSTART_EVENTS|UPSTART_INSTANCE|UPSTART_JOB|UPSTART_SESSION|USER|WINDOWID|XAUTHORITY|XDG_CONFIG_DIRS|XDG_CURRENT_DESKTOP|XDG_DATA_DIRS|XDG_GREETER_DATA_DIR|XDG_MENU_PREFIX|XDG_RUNTIME_DIR|XDG_SEAT|XDG_SEAT_PATH|XDG_SESSION_DESKTOP|XDG_SESSION_ID|XDG_SESSION_PATH|XDG_SESSION_TYPE|XDG_VTNR|XMODIFIERS)\\b';
+  	var insideString = {
+  		'environment': {
+  			pattern: RegExp("\\$" + envVars),
+  			alias: 'constant'
+  		},
+  		'variable': [
+  			// [0]: Arithmetic Environment
+  			{
+  				pattern: /\$?\(\([\s\S]+?\)\)/,
+  				greedy: true,
+  				inside: {
+  					// If there is a $ sign at the beginning highlight $(( and )) as variable
+  					'variable': [
+  						{
+  							pattern: /(^\$\(\([\s\S]+)\)\)/,
+  							lookbehind: true
+  						},
+  						/^\$\(\(/
+  					],
+  					'number': /\b0x[\dA-Fa-f]+\b|(?:\b\d+\.?\d*|\B\.\d+)(?:[Ee]-?\d+)?/,
+  					// Operators according to https://www.gnu.org/software/bash/manual/bashref.html#Shell-Arithmetic
+  					'operator': /--?|-=|\+\+?|\+=|!=?|~|\*\*?|\*=|\/=?|%=?|<<=?|>>=?|<=?|>=?|==?|&&?|&=|\^=?|\|\|?|\|=|\?|:/,
+  					// If there is no $ sign at the beginning highlight (( and )) as punctuation
+  					'punctuation': /\(\(?|\)\)?|,|;/
+  				}
+  			},
+  			// [1]: Command Substitution
+  			{
+  				pattern: /\$\((?:\([^)]+\)|[^()])+\)|`[^`]+`/,
+  				greedy: true,
+  				inside: {
+  					'variable': /^\$\(|^`|\)$|`$/
+  				}
+  			},
+  			// [2]: Brace expansion
+  			{
+  				pattern: /\$\{[^}]+\}/,
+  				greedy: true,
+  				inside: {
+  					'operator': /:[-=?+]?|[!\/]|##?|%%?|\^\^?|,,?/,
+  					'punctuation': /[\[\]]/,
+  					'environment': {
+  						pattern: RegExp("(\\{)" + envVars),
+  						lookbehind: true,
+  						alias: 'constant'
+  					}
+  				}
+  			},
+  			/\$(?:\w+|[#?*!@$])/
+  		],
+  		// Escape sequences from echo and printf's manuals, and escaped quotes.
+  		'entity': /\\(?:[abceEfnrtv\\"]|O?[0-7]{1,3}|x[0-9a-fA-F]{1,2}|u[0-9a-fA-F]{4}|U[0-9a-fA-F]{8})/
+  	};
+
+  	Prism.languages.bash = {
+  		'shebang': {
+  			pattern: /^#!\s*\/.*/,
+  			alias: 'important'
+  		},
+  		'comment': {
+  			pattern: /(^|[^"{\\$])#.*/,
+  			lookbehind: true
+  		},
+  		'function-name': [
+  			// a) function foo {
+  			// b) foo() {
+  			// c) function foo() {
+  			// but not “foo {”
+  			{
+  				// a) and c)
+  				pattern: /(\bfunction\s+)\w+(?=(?:\s*\(?:\s*\))?\s*\{)/,
+  				lookbehind: true,
+  				alias: 'function'
+  			},
+  			{
+  				// b)
+  				pattern: /\b\w+(?=\s*\(\s*\)\s*\{)/,
+  				alias: 'function'
+  			}
+  		],
+  		// Highlight variable names as variables in for and select beginnings.
+  		'for-or-select': {
+  			pattern: /(\b(?:for|select)\s+)\w+(?=\s+in\s)/,
+  			alias: 'variable',
+  			lookbehind: true
+  		},
+  		// Highlight variable names as variables in the left-hand part
+  		// of assignments (“=” and “+=”).
+  		'assign-left': {
+  			pattern: /(^|[\s;|&]|[<>]\()\w+(?=\+?=)/,
+  			inside: {
+  				'environment': {
+  					pattern: RegExp("(^|[\\s;|&]|[<>]\\()" + envVars),
+  					lookbehind: true,
+  					alias: 'constant'
+  				}
+  			},
+  			alias: 'variable',
+  			lookbehind: true
+  		},
+  		'string': [
+  			// Support for Here-documents https://en.wikipedia.org/wiki/Here_document
+  			{
+  				pattern: /((?:^|[^<])<<-?\s*)(\w+?)\s*(?:\r?\n|\r)[\s\S]*?(?:\r?\n|\r)\2/,
+  				lookbehind: true,
+  				greedy: true,
+  				inside: insideString
+  			},
+  			// Here-document with quotes around the tag
+  			// → No expansion (so no “inside”).
+  			{
+  				pattern: /((?:^|[^<])<<-?\s*)(["'])(\w+)\2\s*(?:\r?\n|\r)[\s\S]*?(?:\r?\n|\r)\3/,
+  				lookbehind: true,
+  				greedy: true
+  			},
+  			// “Normal” string
+  			{
+  				pattern: /(^|[^\\](?:\\\\)*)(["'])(?:\\[\s\S]|\$\([^)]+\)|`[^`]+`|(?!\2)[^\\])*\2/,
+  				lookbehind: true,
+  				greedy: true,
+  				inside: insideString
+  			}
+  		],
+  		'environment': {
+  			pattern: RegExp("\\$?" + envVars),
+  			alias: 'constant'
+  		},
+  		'variable': insideString.variable,
+  		'function': {
+  			pattern: /(^|[\s;|&]|[<>]\()(?:add|apropos|apt|aptitude|apt-cache|apt-get|aspell|automysqlbackup|awk|basename|bash|bc|bconsole|bg|bzip2|cal|cat|cfdisk|chgrp|chkconfig|chmod|chown|chroot|cksum|clear|cmp|column|comm|cp|cron|crontab|csplit|curl|cut|date|dc|dd|ddrescue|debootstrap|df|diff|diff3|dig|dir|dircolors|dirname|dirs|dmesg|du|egrep|eject|env|ethtool|expand|expect|expr|fdformat|fdisk|fg|fgrep|file|find|fmt|fold|format|free|fsck|ftp|fuser|gawk|git|gparted|grep|groupadd|groupdel|groupmod|groups|grub-mkconfig|gzip|halt|head|hg|history|host|hostname|htop|iconv|id|ifconfig|ifdown|ifup|import|install|ip|jobs|join|kill|killall|less|link|ln|locate|logname|logrotate|look|lpc|lpr|lprint|lprintd|lprintq|lprm|ls|lsof|lynx|make|man|mc|mdadm|mkconfig|mkdir|mke2fs|mkfifo|mkfs|mkisofs|mknod|mkswap|mmv|more|most|mount|mtools|mtr|mutt|mv|nano|nc|netstat|nice|nl|nohup|notify-send|npm|nslookup|op|open|parted|passwd|paste|pathchk|ping|pkill|pnpm|popd|pr|printcap|printenv|ps|pushd|pv|quota|quotacheck|quotactl|ram|rar|rcp|reboot|remsync|rename|renice|rev|rm|rmdir|rpm|rsync|scp|screen|sdiff|sed|sendmail|seq|service|sftp|sh|shellcheck|shuf|shutdown|sleep|slocate|sort|split|ssh|stat|strace|su|sudo|sum|suspend|swapon|sync|tac|tail|tar|tee|time|timeout|top|touch|tr|traceroute|tsort|tty|umount|uname|unexpand|uniq|units|unrar|unshar|unzip|update-grub|uptime|useradd|userdel|usermod|users|uudecode|uuencode|v|vdir|vi|vim|virsh|vmstat|wait|watch|wc|wget|whereis|which|who|whoami|write|xargs|xdg-open|yarn|yes|zenity|zip|zsh|zypper)(?=$|[)\s;|&])/,
+  			lookbehind: true
+  		},
+  		'keyword': {
+  			pattern: /(^|[\s;|&]|[<>]\()(?:if|then|else|elif|fi|for|while|in|case|esac|function|select|do|done|until)(?=$|[)\s;|&])/,
+  			lookbehind: true
+  		},
+  		// https://www.gnu.org/software/bash/manual/html_node/Shell-Builtin-Commands.html
+  		'builtin': {
+  			pattern: /(^|[\s;|&]|[<>]\()(?:\.|:|break|cd|continue|eval|exec|exit|export|getopts|hash|pwd|readonly|return|shift|test|times|trap|umask|unset|alias|bind|builtin|caller|command|declare|echo|enable|help|let|local|logout|mapfile|printf|read|readarray|source|type|typeset|ulimit|unalias|set|shopt)(?=$|[)\s;|&])/,
+  			lookbehind: true,
+  			// Alias added to make those easier to distinguish from strings.
+  			alias: 'class-name'
+  		},
+  		'boolean': {
+  			pattern: /(^|[\s;|&]|[<>]\()(?:true|false)(?=$|[)\s;|&])/,
+  			lookbehind: true
+  		},
+  		'file-descriptor': {
+  			pattern: /\B&\d\b/,
+  			alias: 'important'
+  		},
+  		'operator': {
+  			// Lots of redirections here, but not just that.
+  			pattern: /\d?<>|>\||\+=|==?|!=?|=~|<<[<-]?|[&\d]?>>|\d?[<>]&?|&[>&]?|\|[&|]?|<=?|>=?/,
+  			inside: {
+  				'file-descriptor': {
+  					pattern: /^\d/,
+  					alias: 'important'
+  				}
+  			}
+  		},
+  		'punctuation': /\$?\(\(?|\)\)?|\.\.|[{}[\];\\]/,
+  		'number': {
+  			pattern: /(^|\s)(?:[1-9]\d*|0)(?:[.,]\d+)?\b/,
+  			lookbehind: true
+  		}
+  	};
+
+  	/* Patterns in command substitution. */
+  	var toBeCopied = [
+  		'comment',
+  		'function-name',
+  		'for-or-select',
+  		'assign-left',
+  		'string',
+  		'environment',
+  		'function',
+  		'keyword',
+  		'builtin',
+  		'boolean',
+  		'file-descriptor',
+  		'operator',
+  		'punctuation',
+  		'number'
+  	];
+  	var inside = insideString.variable[1].inside;
+  	for(var i = 0; i < toBeCopied.length; i++) {
+  		inside[toBeCopied[i]] = Prism.languages.bash[toBeCopied[i]];
+  	}
+
+  	Prism.languages.shell = Prism.languages.bash;
+  })(Prism);
+
+  Prism.languages.go = Prism.languages.extend('clike', {
+  	'keyword': /\b(?:break|case|chan|const|continue|default|defer|else|fallthrough|for|func|go(?:to)?|if|import|interface|map|package|range|return|select|struct|switch|type|var)\b/,
+  	'builtin': /\b(?:bool|byte|complex(?:64|128)|error|float(?:32|64)|rune|string|u?int(?:8|16|32|64)?|uintptr|append|cap|close|complex|copy|delete|imag|len|make|new|panic|print(?:ln)?|real|recover)\b/,
+  	'boolean': /\b(?:_|iota|nil|true|false)\b/,
+  	'operator': /[*\/%^!=]=?|\+[=+]?|-[=-]?|\|[=|]?|&(?:=|&|\^=?)?|>(?:>=?|=)?|<(?:<=?|=|-)?|:=|\.\.\./,
+  	'number': /(?:\b0x[a-f\d]+|(?:\b\d+\.?\d*|\B\.\d+)(?:e[-+]?\d+)?)i?/i,
+  	'string': {
+  		pattern: /(["'`])(?:\\[\s\S]|(?!\1)[^\\])*\1/,
+  		greedy: true
+  	}
+  });
+  delete Prism.languages.go['class-name'];
+
+  (function (Prism) {
+
+  	// Allow only one line break
+  	var inner = /(?:\\.|[^\\\n\r]|(?:\n|\r\n?)(?!\n|\r\n?))/.source;
+
+  	/**
+  	 * This function is intended for the creation of the bold or italic pattern.
+  	 *
+  	 * This also adds a lookbehind group to the given pattern to ensure that the pattern is not backslash-escaped.
+  	 *
+  	 * _Note:_ Keep in mind that this adds a capturing group.
+  	 *
+  	 * @param {string} pattern
+  	 * @param {boolean} starAlternative Whether to also add an alternative where all `_`s are replaced with `*`s.
+  	 * @returns {RegExp}
+  	 */
+  	function createInline(pattern, starAlternative) {
+  		pattern = pattern.replace(/<inner>/g, function () { return inner; });
+  		if (starAlternative) {
+  			pattern = pattern + '|' + pattern.replace(/_/g, '\\*');
+  		}
+  		return RegExp(/((?:^|[^\\])(?:\\{2})*)/.source + '(?:' + pattern + ')');
+  	}
+
+
+  	var tableCell = /(?:\\.|``.+?``|`[^`\r\n]+`|[^\\|\r\n`])+/.source;
+  	var tableRow = /\|?__(?:\|__)+\|?(?:(?:\n|\r\n?)|$)/.source.replace(/__/g, function () { return tableCell; });
+  	var tableLine = /\|?[ \t]*:?-{3,}:?[ \t]*(?:\|[ \t]*:?-{3,}:?[ \t]*)+\|?(?:\n|\r\n?)/.source;
+
+
+  	Prism.languages.markdown = Prism.languages.extend('markup', {});
+  	Prism.languages.insertBefore('markdown', 'prolog', {
+  		'blockquote': {
+  			// > ...
+  			pattern: /^>(?:[\t ]*>)*/m,
+  			alias: 'punctuation'
+  		},
+  		'table': {
+  			pattern: RegExp('^' + tableRow + tableLine + '(?:' + tableRow + ')*', 'm'),
+  			inside: {
+  				'table-data-rows': {
+  					pattern: RegExp('^(' + tableRow + tableLine + ')(?:' + tableRow + ')*$'),
+  					lookbehind: true,
+  					inside: {
+  						'table-data': {
+  							pattern: RegExp(tableCell),
+  							inside: Prism.languages.markdown
+  						},
+  						'punctuation': /\|/
+  					}
+  				},
+  				'table-line': {
+  					pattern: RegExp('^(' + tableRow + ')' + tableLine + '$'),
+  					lookbehind: true,
+  					inside: {
+  						'punctuation': /\||:?-{3,}:?/
+  					}
+  				},
+  				'table-header-row': {
+  					pattern: RegExp('^' + tableRow + '$'),
+  					inside: {
+  						'table-header': {
+  							pattern: RegExp(tableCell),
+  							alias: 'important',
+  							inside: Prism.languages.markdown
+  						},
+  						'punctuation': /\|/
+  					}
+  				}
+  			}
+  		},
+  		'code': [
+  			{
+  				// Prefixed by 4 spaces or 1 tab and preceded by an empty line
+  				pattern: /((?:^|\n)[ \t]*\n|(?:^|\r\n?)[ \t]*\r\n?)(?: {4}|\t).+(?:(?:\n|\r\n?)(?: {4}|\t).+)*/,
+  				lookbehind: true,
+  				alias: 'keyword'
+  			},
+  			{
+  				// `code`
+  				// ``code``
+  				pattern: /``.+?``|`[^`\r\n]+`/,
+  				alias: 'keyword'
+  			},
+  			{
+  				// ```optional language
+  				// code block
+  				// ```
+  				pattern: /^```[\s\S]*?^```$/m,
+  				greedy: true,
+  				inside: {
+  					'code-block': {
+  						pattern: /^(```.*(?:\n|\r\n?))[\s\S]+?(?=(?:\n|\r\n?)^```$)/m,
+  						lookbehind: true
+  					},
+  					'code-language': {
+  						pattern: /^(```).+/,
+  						lookbehind: true
+  					},
+  					'punctuation': /```/
+  				}
+  			}
+  		],
+  		'title': [
+  			{
+  				// title 1
+  				// =======
+
+  				// title 2
+  				// -------
+  				pattern: /\S.*(?:\n|\r\n?)(?:==+|--+)(?=[ \t]*$)/m,
+  				alias: 'important',
+  				inside: {
+  					punctuation: /==+$|--+$/
+  				}
+  			},
+  			{
+  				// # title 1
+  				// ###### title 6
+  				pattern: /(^\s*)#+.+/m,
+  				lookbehind: true,
+  				alias: 'important',
+  				inside: {
+  					punctuation: /^#+|#+$/
+  				}
+  			}
+  		],
+  		'hr': {
+  			// ***
+  			// ---
+  			// * * *
+  			// -----------
+  			pattern: /(^\s*)([*-])(?:[\t ]*\2){2,}(?=\s*$)/m,
+  			lookbehind: true,
+  			alias: 'punctuation'
+  		},
+  		'list': {
+  			// * item
+  			// + item
+  			// - item
+  			// 1. item
+  			pattern: /(^\s*)(?:[*+-]|\d+\.)(?=[\t ].)/m,
+  			lookbehind: true,
+  			alias: 'punctuation'
+  		},
+  		'url-reference': {
+  			// [id]: http://example.com "Optional title"
+  			// [id]: http://example.com 'Optional title'
+  			// [id]: http://example.com (Optional title)
+  			// [id]: <http://example.com> "Optional title"
+  			pattern: /!?\[[^\]]+\]:[\t ]+(?:\S+|<(?:\\.|[^>\\])+>)(?:[\t ]+(?:"(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'|\((?:\\.|[^)\\])*\)))?/,
+  			inside: {
+  				'variable': {
+  					pattern: /^(!?\[)[^\]]+/,
+  					lookbehind: true
+  				},
+  				'string': /(?:"(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'|\((?:\\.|[^)\\])*\))$/,
+  				'punctuation': /^[\[\]!:]|[<>]/
+  			},
+  			alias: 'url'
+  		},
+  		'bold': {
+  			// **strong**
+  			// __strong__
+
+  			// allow one nested instance of italic text using the same delimiter
+  			pattern: createInline(/__(?:(?!_)<inner>|_(?:(?!_)<inner>)+_)+__/.source, true),
+  			lookbehind: true,
+  			greedy: true,
+  			inside: {
+  				'content': {
+  					pattern: /(^..)[\s\S]+(?=..$)/,
+  					lookbehind: true,
+  					inside: {} // see below
+  				},
+  				'punctuation': /\*\*|__/
+  			}
+  		},
+  		'italic': {
+  			// *em*
+  			// _em_
+
+  			// allow one nested instance of bold text using the same delimiter
+  			pattern: createInline(/_(?:(?!_)<inner>|__(?:(?!_)<inner>)+__)+_/.source, true),
+  			lookbehind: true,
+  			greedy: true,
+  			inside: {
+  				'content': {
+  					pattern: /(^.)[\s\S]+(?=.$)/,
+  					lookbehind: true,
+  					inside: {} // see below
+  				},
+  				'punctuation': /[*_]/
+  			}
+  		},
+  		'strike': {
+  			// ~~strike through~~
+  			// ~strike~
+  			pattern: createInline(/(~~?)(?:(?!~)<inner>)+?\2/.source, false),
+  			lookbehind: true,
+  			greedy: true,
+  			inside: {
+  				'content': {
+  					pattern: /(^~~?)[\s\S]+(?=\1$)/,
+  					lookbehind: true,
+  					inside: {} // see below
+  				},
+  				'punctuation': /~~?/
+  			}
+  		},
+  		'url': {
+  			// [example](http://example.com "Optional title")
+  			// [example][id]
+  			// [example] [id]
+  			pattern: createInline(/!?\[(?:(?!\])<inner>)+\](?:\([^\s)]+(?:[\t ]+"(?:\\.|[^"\\])*")?\)| ?\[(?:(?!\])<inner>)+\])/.source, false),
+  			lookbehind: true,
+  			greedy: true,
+  			inside: {
+  				'variable': {
+  					pattern: /(\[)[^\]]+(?=\]$)/,
+  					lookbehind: true
+  				},
+  				'content': {
+  					pattern: /(^!?\[)[^\]]+(?=\])/,
+  					lookbehind: true,
+  					inside: {} // see below
+  				},
+  				'string': {
+  					pattern: /"(?:\\.|[^"\\])*"(?=\)$)/
+  				}
+  			}
+  		}
+  	});
+
+  	['url', 'bold', 'italic', 'strike'].forEach(function (token) {
+  		['url', 'bold', 'italic', 'strike'].forEach(function (inside) {
+  			if (token !== inside) {
+  				Prism.languages.markdown[token].inside.content.inside[inside] = Prism.languages.markdown[inside];
+  			}
+  		});
+  	});
+
+  	Prism.hooks.add('after-tokenize', function (env) {
+  		if (env.language !== 'markdown' && env.language !== 'md') {
+  			return;
+  		}
+
+  		function walkTokens(tokens) {
+  			if (!tokens || typeof tokens === 'string') {
+  				return;
+  			}
+
+  			for (var i = 0, l = tokens.length; i < l; i++) {
+  				var token = tokens[i];
+
+  				if (token.type !== 'code') {
+  					walkTokens(token.content);
+  					continue;
+  				}
+
+  				/*
+  				 * Add the correct `language-xxxx` class to this code block. Keep in mind that the `code-language` token
+  				 * is optional. But the grammar is defined so that there is only one case we have to handle:
+  				 *
+  				 * token.content = [
+  				 *     <span class="punctuation">```</span>,
+  				 *     <span class="code-language">xxxx</span>,
+  				 *     '\n', // exactly one new lines (\r or \n or \r\n)
+  				 *     <span class="code-block">...</span>,
+  				 *     '\n', // exactly one new lines again
+  				 *     <span class="punctuation">```</span>
+  				 * ];
+  				 */
+
+  				var codeLang = token.content[1];
+  				var codeBlock = token.content[3];
+
+  				if (codeLang && codeBlock &&
+  					codeLang.type === 'code-language' && codeBlock.type === 'code-block' &&
+  					typeof codeLang.content === 'string') {
+
+  					// this might be a language that Prism does not support
+
+  					// do some replacements to support C++, C#, and F#
+  					var lang = codeLang.content.replace(/\b#/g, 'sharp').replace(/\b\+\+/g, 'pp');
+  					// only use the first word
+  					lang = (/[a-z][\w-]*/i.exec(lang) || [''])[0].toLowerCase();
+  					var alias = 'language-' + lang;
+
+  					// add alias
+  					if (!codeBlock.alias) {
+  						codeBlock.alias = [alias];
+  					} else if (typeof codeBlock.alias === 'string') {
+  						codeBlock.alias = [codeBlock.alias, alias];
+  					} else {
+  						codeBlock.alias.push(alias);
+  					}
+  				}
+  			}
+  		}
+
+  		walkTokens(env.tokens);
+  	});
+
+  	Prism.hooks.add('wrap', function (env) {
+  		if (env.type !== 'code-block') {
+  			return;
+  		}
+
+  		var codeLang = '';
+  		for (var i = 0, l = env.classes.length; i < l; i++) {
+  			var cls = env.classes[i];
+  			var match = /language-(.+)/.exec(cls);
+  			if (match) {
+  				codeLang = match[1];
+  				break;
+  			}
+  		}
+
+  		var grammar = Prism.languages[codeLang];
+
+  		if (!grammar) {
+  			if (codeLang && codeLang !== 'none' && Prism.plugins.autoloader) {
+  				var id = 'md-' + new Date().valueOf() + '-' + Math.floor(Math.random() * 1e16);
+  				env.attributes['id'] = id;
+
+  				Prism.plugins.autoloader.loadLanguages(codeLang, function () {
+  					var ele = document.getElementById(id);
+  					if (ele) {
+  						ele.innerHTML = Prism.highlight(ele.textContent, Prism.languages[codeLang], codeLang);
+  					}
+  				});
+  			}
+  		} else {
+  			// reverse Prism.util.encode
+  			var code = env.content.replace(/&lt;/g, '<').replace(/&amp;/g, '&');
+
+  			env.content = Prism.highlight(code, grammar, codeLang);
+  		}
+  	});
+
+  	Prism.languages.md = Prism.languages.markdown;
+
+  }(Prism));
+
+  Prism.languages.julia= {
+  	'comment': {
+  		pattern: /(^|[^\\])#.*/,
+  		lookbehind: true
+  	},
+  	'string': /("""|''')[\s\S]+?\1|("|')(?:\\.|(?!\2)[^\\\r\n])*\2/,
+  	'keyword' : /\b(?:abstract|baremodule|begin|bitstype|break|catch|ccall|const|continue|do|else|elseif|end|export|finally|for|function|global|if|immutable|import|importall|in|let|local|macro|module|print|println|quote|return|struct|try|type|typealias|using|while)\b/,
+  	'boolean' : /\b(?:true|false)\b/,
+  	'number' : /(?:\b(?=\d)|\B(?=\.))(?:0[box])?(?:[\da-f]+\.?\d*|\.\d+)(?:[efp][+-]?\d+)?j?/i,
+  	'operator': /[-+*^%÷&$\\]=?|\/[\/=]?|!=?=?|\|[=>]?|<(?:<=?|[=:])?|>(?:=|>>?=?)?|==?=?|[~≠≤≥]/,
+  	'punctuation' : /[{}[\];(),.:]/,
+  	'constant': /\b(?:(?:NaN|Inf)(?:16|32|64)?)\b/
+  };
+
+  var css = "/**\n * prism.js default theme for JavaScript, CSS and HTML\n * Based on dabblet (http://dabblet.com)\n * @author Lea Verou\n */\n\ncode[class*=\"language-\"],\npre[class*=\"language-\"] {\n\tcolor: black;\n\tbackground: none;\n\ttext-shadow: 0 1px white;\n\tfont-family: Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace;\n\tfont-size: 1em;\n\ttext-align: left;\n\twhite-space: pre;\n\tword-spacing: normal;\n\tword-break: normal;\n\tword-wrap: normal;\n\tline-height: 1.5;\n\n\t-moz-tab-size: 4;\n\t-o-tab-size: 4;\n\ttab-size: 4;\n\n\t-webkit-hyphens: none;\n\t-moz-hyphens: none;\n\t-ms-hyphens: none;\n\thyphens: none;\n}\n\npre[class*=\"language-\"]::-moz-selection, pre[class*=\"language-\"] ::-moz-selection,\ncode[class*=\"language-\"]::-moz-selection, code[class*=\"language-\"] ::-moz-selection {\n\ttext-shadow: none;\n\tbackground: #b3d4fc;\n}\n\npre[class*=\"language-\"]::selection, pre[class*=\"language-\"] ::selection,\ncode[class*=\"language-\"]::selection, code[class*=\"language-\"] ::selection {\n\ttext-shadow: none;\n\tbackground: #b3d4fc;\n}\n\n@media print {\n\tcode[class*=\"language-\"],\n\tpre[class*=\"language-\"] {\n\t\ttext-shadow: none;\n\t}\n}\n\n/* Code blocks */\npre[class*=\"language-\"] {\n\tpadding: 1em;\n\tmargin: .5em 0;\n\toverflow: auto;\n}\n\n:not(pre) > code[class*=\"language-\"],\npre[class*=\"language-\"] {\n\tbackground: #f5f2f0;\n}\n\n/* Inline code */\n:not(pre) > code[class*=\"language-\"] {\n\tpadding: .1em;\n\tborder-radius: .3em;\n\twhite-space: normal;\n}\n\n.token.comment,\n.token.prolog,\n.token.doctype,\n.token.cdata {\n\tcolor: slategray;\n}\n\n.token.punctuation {\n\tcolor: #999;\n}\n\n.token.namespace {\n\topacity: .7;\n}\n\n.token.property,\n.token.tag,\n.token.boolean,\n.token.number,\n.token.constant,\n.token.symbol,\n.token.deleted {\n\tcolor: #905;\n}\n\n.token.selector,\n.token.attr-name,\n.token.string,\n.token.char,\n.token.builtin,\n.token.inserted {\n\tcolor: #690;\n}\n\n.token.operator,\n.token.entity,\n.token.url,\n.language-css .token.string,\n.style .token.string {\n\tcolor: #9a6e3a;\n\tbackground: hsla(0, 0%, 100%, .5);\n}\n\n.token.atrule,\n.token.attr-value,\n.token.keyword {\n\tcolor: #07a;\n}\n\n.token.function,\n.token.class-name {\n\tcolor: #DD4A68;\n}\n\n.token.regex,\n.token.important,\n.token.variable {\n\tcolor: #e90;\n}\n\n.token.important,\n.token.bold {\n\tfont-weight: bold;\n}\n.token.italic {\n\tfont-style: italic;\n}\n\n.token.entity {\n\tcursor: help;\n}\n";
+
+  // Copyright 2018 The Distill Template Authors
+
+  const T$4 = Template('d-code', `
 <style>
+
+:host {
+  font-size: 1rem;
+}
 
 code {
   white-space: nowrap;
   background: rgba(0, 0, 0, 0.04);
   border-radius: 2px;
   padding: 4px 7px;
-  font-size: 15px;
   color: rgba(0, 0, 0, 0.6);
 }
 
@@ -253,12 +4245,57 @@ pre code {
   padding: 0 0 0 36px;
 }
 
-${'/**\n * prism.js default theme for JavaScript, CSS and HTML\n * Based on dabblet (http://dabblet.com)\n * @author Lea Verou\n */\n\ncode[class*="language-"],\npre[class*="language-"] {\n\tcolor: black;\n\tbackground: none;\n\ttext-shadow: 0 1px white;\n\tfont-family: Consolas, Monaco, \'Andale Mono\', \'Ubuntu Mono\', monospace;\n\tfont-size: 1em;\n\ttext-align: left;\n\twhite-space: pre;\n\tword-spacing: normal;\n\tword-break: normal;\n\tword-wrap: normal;\n\tline-height: 1.5;\n\n\t-moz-tab-size: 4;\n\t-o-tab-size: 4;\n\ttab-size: 4;\n\n\t-webkit-hyphens: none;\n\t-moz-hyphens: none;\n\t-ms-hyphens: none;\n\thyphens: none;\n}\n\npre[class*="language-"]::-moz-selection, pre[class*="language-"] ::-moz-selection,\ncode[class*="language-"]::-moz-selection, code[class*="language-"] ::-moz-selection {\n\ttext-shadow: none;\n\tbackground: #b3d4fc;\n}\n\npre[class*="language-"]::selection, pre[class*="language-"] ::selection,\ncode[class*="language-"]::selection, code[class*="language-"] ::selection {\n\ttext-shadow: none;\n\tbackground: #b3d4fc;\n}\n\n@media print {\n\tcode[class*="language-"],\n\tpre[class*="language-"] {\n\t\ttext-shadow: none;\n\t}\n}\n\n/* Code blocks */\npre[class*="language-"] {\n\tpadding: 1em;\n\tmargin: .5em 0;\n\toverflow: auto;\n}\n\n:not(pre) > code[class*="language-"],\npre[class*="language-"] {\n\tbackground: #f5f2f0;\n}\n\n/* Inline code */\n:not(pre) > code[class*="language-"] {\n\tpadding: .1em;\n\tborder-radius: .3em;\n\twhite-space: normal;\n}\n\n.token.comment,\n.token.prolog,\n.token.doctype,\n.token.cdata {\n\tcolor: slategray;\n}\n\n.token.punctuation {\n\tcolor: #999;\n}\n\n.token.namespace {\n\topacity: .7;\n}\n\n.token.property,\n.token.tag,\n.token.boolean,\n.token.number,\n.token.constant,\n.token.symbol,\n.token.deleted {\n\tcolor: #905;\n}\n\n.token.selector,\n.token.attr-name,\n.token.string,\n.token.char,\n.token.builtin,\n.token.inserted {\n\tcolor: #690;\n}\n\n.token.operator,\n.token.entity,\n.token.url,\n.language-css .token.string,\n.style .token.string {\n\tcolor: #9a6e3a;\n\tbackground: hsla(0, 0%, 100%, .5);\n}\n\n.token.atrule,\n.token.attr-value,\n.token.keyword {\n\tcolor: #07a;\n}\n\n.token.function,\n.token.class-name {\n\tcolor: #DD4A68;\n}\n\n.token.regex,\n.token.important,\n.token.variable {\n\tcolor: #e90;\n}\n\n.token.important,\n.token.bold {\n\tfont-weight: bold;\n}\n.token.italic {\n\tfont-style: italic;\n}\n\n.token.entity {\n\tcursor: help;\n}\n'}
+${css}
 </style>
 
 <code id="code-container"></code>
 
-`);class da extends Si(aa(HTMLElement)){renderContent(){if(this.languageName=this.getAttribute('language'),!this.languageName)return void console.warn('You need to provide a language attribute to your <d-code> block to let us know how to highlight your code; e.g.:\n <d-code language="python">zeros = np.zeros(shape)</d-code>.');const e=ia.languages[this.languageName];if(void 0==e)return void console.warn(`Distill does not yet support highlighting your code block in "${this.languageName}'.`);let t=this.textContent;const n=this.shadowRoot.querySelector('#code-container');if(this.hasAttribute('block')){t=t.replace(/\n/,'');const e=t.match(/\s*/);if(t=t.replace(new RegExp('\n'+e,'g'),'\n'),t=t.trim(),n.parentNode instanceof ShadowRoot){const e=document.createElement('pre');this.shadowRoot.removeChild(n),e.appendChild(n),this.shadowRoot.appendChild(e)}}n.className=`language-${this.languageName}`,n.innerHTML=ia.highlight(t,e)}}const ra=Ti('d-footnote',`
+`);
+
+  class Code extends Mutating(T$4(HTMLElement)) {
+
+    renderContent() {
+
+      // check if language can be highlighted
+      this.languageName = this.getAttribute('language');
+      if (!this.languageName) {
+        console.warn('You need to provide a language attribute to your <d-code> block to let us know how to highlight your code; e.g.:\n <d-code language="python">zeros = np.zeros(shape)</d-code>.');
+        return;
+      }
+      const language = prism.languages[this.languageName];
+      if (language == undefined) {
+        console.warn(`Distill does not yet support highlighting your code block in "${this.languageName}'.`);
+        return;
+      }
+
+      let content = this.textContent;
+      const codeTag = this.shadowRoot.querySelector('#code-container');
+
+      if (this.hasAttribute('block')) {
+        // normalize the tab indents
+        content = content.replace(/\n/, '');
+        const tabs = content.match(/\s*/);
+        content = content.replace(new RegExp('\n' + tabs, 'g'), '\n');
+        content = content.trim();
+        // wrap code block in pre tag if needed
+        if (codeTag.parentNode instanceof ShadowRoot) {
+          const preTag = document.createElement('pre');
+          this.shadowRoot.removeChild(codeTag);
+          preTag.appendChild(codeTag);
+          this.shadowRoot.appendChild(preTag);
+        }
+
+      }
+
+      codeTag.className = `language-${this.languageName}`;
+      codeTag.innerHTML = prism.highlight(content, language);
+    }
+
+  }
+
+  // Copyright 2018 The Distill Template Authors
+
+  const T$5 = Template('d-footnote', `
 <style>
 
 d-math[block] {
@@ -266,14 +4303,14 @@ d-math[block] {
 }
 
 :host {
-
+  font-size: 0.75rem;
 }
 
 sup {
-  line-height: 1em;
-  font-size: 0.75em;
+  line-height: 1rem;
+  font-size: 0.75rem;
   position: relative;
-  top: -.5em;
+  top: -.5rem;
   vertical-align: baseline;
 }
 
@@ -288,17 +4325,66 @@ span {
 
 </style>
 
+<sup>
+  <span id="fn-" data-hover-ref=""></span>
+</sup>
+
 <d-hover-box>
   <div class="footnote-container">
     <slot id="slot"></slot>
   </div>
 </d-hover-box>
 
-<sup>
-  <span id="fn-" data-hover-ref=""></span>
-</sup>
+`);
 
-`);class oa extends ra(HTMLElement){constructor(){super();const e=new MutationObserver(this.notify);e.observe(this,{childList:!0,characterData:!0,subtree:!0})}notify(){const e={detail:this,bubbles:!0},t=new CustomEvent('onFootnoteChanged',e);document.dispatchEvent(t)}connectedCallback(){this.hoverBox=this.root.querySelector('d-hover-box'),window.customElements.whenDefined('d-hover-box').then(()=>{this.hoverBox.listen(this)}),oa.currentFootnoteId+=1;const e=oa.currentFootnoteId.toString();this.root.host.id='d-footnote-'+e;const t='dt-fn-hover-box-'+e;this.hoverBox.id=t;const n=this.root.querySelector('#fn-');n.setAttribute('id','fn-'+e),n.setAttribute('data-hover-ref',t),n.textContent=e}}oa.currentFootnoteId=0;const la=Ti('d-footnote-list',`
+  class Footnote extends T$5(HTMLElement) {
+
+    constructor() {
+      super();
+
+      const options = {childList: true, characterData: true, subtree: true};
+      const observer = new MutationObserver(this.notify);
+      observer.observe(this, options);
+    }
+
+    notify() {
+      const options = { detail: this, bubbles: true };
+      const event = new CustomEvent('onFootnoteChanged', options);
+      document.dispatchEvent(event);
+    }
+
+    connectedCallback() {
+      // listen and notify about changes to slotted content
+      // const slot = this.shadowRoot.querySelector('#slot');
+      // console.warn(slot.textContent);
+      // slot.addEventListener('slotchange', this.notify);
+      this.hoverBox = this.root.querySelector('d-hover-box');
+      window.customElements.whenDefined('d-hover-box').then(() => {
+        this.hoverBox.listen(this);
+      });
+      // create numeric ID
+      Footnote.currentFootnoteId += 1;
+      const IdString = Footnote.currentFootnoteId.toString();
+      this.root.host.id = 'd-footnote-' + IdString;
+
+      // set up hidden hover box
+      const id = 'dt-fn-hover-box-' + IdString;
+      this.hoverBox.id = id;
+
+      // set up visible footnote marker
+      const span = this.root.querySelector('#fn-');
+      span.setAttribute('id', 'fn-' + IdString);
+      span.setAttribute('data-hover-ref', id);
+      span.textContent = IdString;
+    }
+
+  }
+
+  Footnote.currentFootnoteId = 0;
+
+  // Copyright 2018 The Distill Template Authors
+
+  const T$6 = Template('d-footnote-list', `
 <style>
 
 d-footnote-list {
@@ -318,7 +4404,54 @@ d-footnote-list a.footnote-backlink {
 
 <h3>Footnotes</h3>
 <ol></ol>
-`,!1);class sa extends la(HTMLElement){connectedCallback(){super.connectedCallback(),this.list=this.root.querySelector('ol'),this.root.style.display='none'}set footnotes(e){if(this.list.innerHTML='',e.length){this.root.style.display='';for(const t of e){const e=document.createElement('li');e.id=t.id+'-listing',e.innerHTML=t.innerHTML;const n=document.createElement('a');n.setAttribute('class','footnote-backlink'),n.textContent='[\u21A9]',n.href='#'+t.id,e.appendChild(n),this.list.appendChild(e)}}else this.root.style.display='none'}}const ca=Ti('d-hover-box',`
+`, false);
+
+  class FootnoteList extends T$6(HTMLElement) {
+
+    connectedCallback() {
+      super.connectedCallback();
+
+      this.list = this.root.querySelector('ol');
+      // footnotes list is initially hidden
+      this.root.style.display = 'none';
+      // look through document and register existing footnotes
+      // Store.subscribeTo('footnotes', (footnote) => {
+      //   this.renderFootnote(footnote);
+      // });
+    }
+
+    // TODO: could optimize this to accept individual footnotes?
+    set footnotes(footnotes) {
+      this.list.innerHTML = '';
+      if (footnotes.length) {
+        // ensure footnote list is visible
+        this.root.style.display = '';
+
+        for (const footnote of footnotes) {
+          // construct and append list item to show footnote
+          const listItem = document.createElement('li');
+          listItem.id = footnote.id + '-listing';
+          listItem.innerHTML = footnote.innerHTML;
+
+          const backlink = document.createElement('a');
+          backlink.setAttribute('class', 'footnote-backlink');
+          backlink.textContent = '[↩]';
+          backlink.href = '#' + footnote.id;
+
+          listItem.appendChild(backlink);
+          this.list.appendChild(listItem);
+        }
+      } else {
+        // ensure footnote list is invisible
+        this.root.style.display = 'none';
+      }
+    }
+
+  }
+
+  // Copyright 2018 The Distill Template Authors
+
+  const T$7 = Template('d-hover-box', `
 <style>
 
 :host {
@@ -361,13 +4494,506 @@ d-footnote-list a.footnote-backlink {
     <slot></slot>
   </div>
 </div>
-`);class ua extends ca(HTMLElement){constructor(){super()}connectedCallback(){}listen(e){this.bindDivEvents(this),this.bindTriggerEvents(e)}bindDivEvents(e){e.addEventListener('mouseover',()=>{this.visible||this.showAtNode(e),this.stopTimeout()}),e.addEventListener('mouseout',()=>{this.extendTimeout(500)}),e.addEventListener('touchstart',(e)=>{e.stopPropagation()},{passive:!0}),document.body.addEventListener('touchstart',()=>{this.hide()},{passive:!0})}bindTriggerEvents(e){e.addEventListener('mouseover',()=>{this.visible||this.showAtNode(e),this.stopTimeout()}),e.addEventListener('mouseout',()=>{this.extendTimeout(300)}),e.addEventListener('touchstart',(t)=>{this.visible?this.hide():this.showAtNode(e),t.stopPropagation()},{passive:!0})}show(e){this.visible=!0,this.style.display='block',this.style.top=gi(e[1]+10)+'px'}showAtNode(e){const t=e.getBoundingClientRect();this.show([e.offsetLeft+t.width,e.offsetTop+t.height])}hide(){this.visible=!1,this.style.display='none',this.stopTimeout()}stopTimeout(){this.timeout&&clearTimeout(this.timeout)}extendTimeout(e){this.stopTimeout(),this.timeout=setTimeout(()=>{this.hide()},e)}}class pa extends HTMLElement{static get is(){return'd-title'}}const ga=Ti('d-references',`
+`);
+
+  class HoverBox extends T$7(HTMLElement) {
+
+    constructor() {
+      super();
+    }
+
+    connectedCallback() {
+
+    }
+
+    listen(element) {
+      // console.log(element)
+      this.bindDivEvents(this);
+      this.bindTriggerEvents(element);
+      // this.style.display = "block";
+    }
+
+    bindDivEvents(element) {
+      // For mice, same behavior as hovering on links
+      element.addEventListener('mouseover', () => {
+        if (!this.visible) this.showAtNode(element);
+        this.stopTimeout();
+      });
+      element.addEventListener('mouseout', () => {
+        this.extendTimeout(500);
+      });
+      // Don't trigger body touchstart event when touching within box
+      element.addEventListener('touchstart', (event) => {
+        event.stopPropagation();
+      }, {passive: true});
+      // Close box when touching outside box
+      document.body.addEventListener('touchstart', () => {
+        this.hide();
+      }, {passive: true});
+    }
+
+    bindTriggerEvents(node) {
+      node.addEventListener('mouseover', () => {
+        if (!this.visible) {
+          this.showAtNode(node);
+        }
+        this.stopTimeout();
+      });
+
+      node.addEventListener('mouseout', () => {
+        this.extendTimeout(300);
+      });
+
+      node.addEventListener('touchstart', (event) => {
+        if (this.visible) {
+          this.hide();
+        } else {
+          this.showAtNode(node);
+        }
+        // Don't trigger body touchstart event when touching link
+        event.stopPropagation();
+      }, {passive: true});
+    }
+
+    show(position) {
+      this.visible = true;
+      this.style.display = 'block';
+      // 10px extra offset from element
+      this.style.top = Math.round(position[1] + 10) + 'px';
+    }
+
+    showAtNode(node) {
+      // https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/offsetTop
+      const bbox = node.getBoundingClientRect();
+      this.show([node.offsetLeft + bbox.width, node.offsetTop + bbox.height]);
+    }
+
+    hide() {
+      this.visible = false;
+      this.style.display = 'none';
+      this.stopTimeout();
+    }
+
+    stopTimeout() {
+      if (this.timeout) {
+        clearTimeout(this.timeout);
+      }
+    }
+
+    extendTimeout(time) {
+      this.stopTimeout();
+      this.timeout = setTimeout(() => {
+        this.hide();
+      }, time);
+    }
+
+  }
+
+  // Copyright 2018 The Distill Template Authors
+  //
+  // Licensed under the Apache License, Version 2.0 (the "License");
+  // you may not use this file except in compliance with the License.
+  // You may obtain a copy of the License at
+  //
+  //      http://www.apache.org/licenses/LICENSE-2.0
+  //
+  // Unless required by applicable law or agreed to in writing, software
+  // distributed under the License is distributed on an "AS IS" BASIS,
+  // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  // See the License for the specific language governing permissions and
+  // limitations under the License.
+
+  class Title extends HTMLElement {
+    static get is() { return 'd-title'; }
+  }
+
+  function headerTemplate(frontMatter) {
+    return `
+  <div class="header">
+      ${frontMatter.published ? frontMatter.published : ''}
+  </div>
+`;
+  }
+
+  class Header extends HTMLElement {
+
+    static get is() { return 'd-header'; }
+
+    set frontMatter(frontMatter) {
+      this.innerHTML = headerTemplate(frontMatter);
+    }
+
+  }
+
+  // Copyright 2018 The Distill Template Authors
+
+  const T$8 = Template('d-references', `
 <style>
 d-references {
   display: block;
 }
 </style>
-`,!1);class fa extends ga(HTMLElement){}class ha extends HTMLElement{static get is(){return'd-toc'}connectedCallback(){this.getAttribute('prerendered')||(window.onload=()=>{const e=document.querySelector('d-article'),t=e.querySelectorAll('h2, h3');k(this,t)})}}class ba extends HTMLElement{static get is(){return'd-figure'}static get readyQueue(){return ba._readyQueue||(ba._readyQueue=[]),ba._readyQueue}static addToReadyQueue(e){-1===ba.readyQueue.indexOf(e)&&(ba.readyQueue.push(e),ba.runReadyQueue())}static runReadyQueue(){const e=ba.readyQueue.sort((e,t)=>e._seenOnScreen-t._seenOnScreen).filter((e)=>!e._ready).pop();e&&(e.ready(),requestAnimationFrame(ba.runReadyQueue))}constructor(){super(),this._ready=!1,this._onscreen=!1,this._offscreen=!0}connectedCallback(){this.loadsWhileScrolling=this.hasAttribute('loadsWhileScrolling'),ba.marginObserver.observe(this),ba.directObserver.observe(this)}disconnectedCallback(){ba.marginObserver.unobserve(this),ba.directObserver.unobserve(this)}static get marginObserver(){if(!ba._marginObserver){const e=window.innerHeight,t=fi(2*e),n=ba.didObserveMarginIntersection,i=new IntersectionObserver(n,{rootMargin:t+'px 0px '+t+'px 0px',threshold:0.01});ba._marginObserver=i}return ba._marginObserver}static didObserveMarginIntersection(e){for(const t of e){const e=t.target;t.isIntersecting&&!e._ready&&ba.addToReadyQueue(e)}}static get directObserver(){return ba._directObserver||(ba._directObserver=new IntersectionObserver(ba.didObserveDirectIntersection,{rootMargin:'0px',threshold:[0,1]})),ba._directObserver}static didObserveDirectIntersection(e){for(const t of e){const e=t.target;t.isIntersecting?(e._seenOnScreen=new Date,e._offscreen&&e.onscreen()):e._onscreen&&e.offscreen()}}addEventListener(e,t){super.addEventListener(e,t),'ready'===e&&-1!==ba.readyQueue.indexOf(this)&&(this._ready=!1,ba.runReadyQueue()),'onscreen'===e&&this.onscreen()}ready(){this._ready=!0,ba.marginObserver.unobserve(this);const e=new CustomEvent('ready');this.dispatchEvent(e)}onscreen(){this._onscreen=!0,this._offscreen=!1;const e=new CustomEvent('onscreen');this.dispatchEvent(e)}offscreen(){this._onscreen=!1,this._offscreen=!0;const e=new CustomEvent('offscreen');this.dispatchEvent(e)}}if('undefined'!=typeof window){ba.isScrolling=!1;let e;window.addEventListener('scroll',()=>{ba.isScrolling=!0,clearTimeout(e),e=setTimeout(()=>{ba.isScrolling=!1,ba.runReadyQueue()},500)},!0)}const ma=Ti('d-interstitial',`
+`, false);
+
+  class References extends T$8(HTMLElement) {
+
+  }
+
+  // Copyright 2018 The Distill Template Authors
+  //
+  // Licensed under the Apache License, Version 2.0 (the "License");
+  // you may not use this file except in compliance with the License.
+  // You may obtain a copy of the License at
+  //
+  //      http://www.apache.org/licenses/LICENSE-2.0
+  //
+  // Unless required by applicable law or agreed to in writing, software
+  // distributed under the License is distributed on an "AS IS" BASIS,
+  // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  // See the License for the specific language governing permissions and
+  // limitations under the License.
+
+  class TOC extends HTMLElement {
+
+    static get is() { return 'd-toc'; }
+
+    connectedCallback() {
+      if (!this.getAttribute('prerendered')) {
+        window.onload = () => {
+          const article = document.querySelector('article');
+          const headings = article.querySelectorAll('h1, h2');
+          renderTOC(this, headings);
+        };
+      }
+    }
+
+  }
+
+  function renderTOC(element, headings) {
+
+    let ToC =`
+  <style>
+
+  d-toc {
+    contain: layout style;
+    display: block;
+    grid-column: text;
+    margin-top: 2rem;
+    margin-bottom: 1rem;
+  }
+
+  d-toc ol {
+    margin-top: 0.5rem;
+    list-style-type: none;
+    counter-reset: item;
+    margin: 0;
+    padding: 0;
+  }
+  
+  d-toc ol > li {
+    display: table;
+    counter-increment: item;
+    margin-bottom: 0.6em;
+  }
+  
+  d-toc ol > li::before {
+    content: counters(item, ".") " ";
+    display: table-cell;
+    padding-right: 0.6em;    
+  }
+  
+  d-toc li ol > li {
+    margin: 0;
+  }
+  
+  d-toc li ol > li::before {
+    content: counters(item, ".") " ";
+  }
+
+  d-toc a {
+    border-bottom: none;
+    text-decoration: none;
+  }
+
+  d-toc .toc-header {
+    font-size: 1.5rem;
+    font-weight: normal;
+    font-family: 'Times New Roman SC', serif;
+    padding-bottom: 1rem;
+  }
+
+  </style>
+  <nav role="navigation" class="table-of-contents">
+  <p class="toc-header">Contents</p>
+  <ol>`;
+
+    let isFirst = true;
+    for (const el of headings) {
+      // should element be included in TOC?
+      const isInTitle = el.parentElement.tagName == 'D-TITLE';
+      const isException = el.getAttribute('no-toc');
+      const tagName = el.tagName;
+      if (isInTitle || isException) continue;
+      // create TOC entry
+      const title = el.textContent;
+      const link = '#' + el.getAttribute('id');
+
+      let newLine = '<a href="' + link + '">' + title + '</a>';
+      if (tagName === 'H1') {
+        newLine = '<li><b>' + newLine + '</b><ol>';
+        if (isFirst) {
+          isFirst = false;
+        } else {
+          newLine = '</ol></li>' + newLine;
+        }
+      } else {
+        // newLine += '<br>';
+        newLine = '<li>' + newLine + '</li>';
+      }
+      ToC += newLine;
+
+    }
+
+    ToC += '</ol></nav>';
+    element.innerHTML = ToC;
+  }
+
+  // Copyright 2018 The Distill Template Authors
+  //
+  // Licensed under the Apache License, Version 2.0 (the "License");
+  // you may not use this file except in compliance with the License.
+  // You may obtain a copy of the License at
+  //
+  //      http://www.apache.org/licenses/LICENSE-2.0
+  //
+  // Unless required by applicable law or agreed to in writing, software
+  // distributed under the License is distributed on an "AS IS" BASIS,
+  // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  // See the License for the specific language governing permissions and
+  // limitations under the License.
+
+  // Figure
+  //
+  // d-figure provides a state-machine of visibility events:
+  //
+  //                         scroll out of view
+  //                         +----------------+
+  //   *do work here*        |                |
+  // +----------------+    +-+---------+    +-v---------+
+  // | ready          +----> onscreen  |    | offscreen |
+  // +----------------+    +---------^-+    +---------+-+
+  //                                 |                |
+  //                                 +----------------+
+  //                                  scroll into view
+  //
+
+  class Figure extends HTMLElement {
+
+    static get is() { return 'd-figure'; }
+
+    static get readyQueue() {
+      if (!Figure._readyQueue) {
+        Figure._readyQueue = [];
+      }
+      return Figure._readyQueue;
+    }
+
+    static addToReadyQueue(figure) {
+      if (Figure.readyQueue.indexOf(figure) === -1) {
+        Figure.readyQueue.push(figure);
+        Figure.runReadyQueue();
+      }
+    }
+
+    static runReadyQueue() {
+      // console.log("Checking to run readyQueue, length: " + Figure.readyQueue.length + ", scrolling: " + Figure.isScrolling);
+      // if (Figure.isScrolling) return;
+      // console.log("Running ready Queue");
+      const figure = Figure.readyQueue
+        .sort((a,b) => a._seenOnScreen - b._seenOnScreen )
+        .filter((figure) => !figure._ready)
+        .pop();
+      if (figure) {
+        figure.ready();
+        requestAnimationFrame(Figure.runReadyQueue);
+      }
+
+    }
+
+    constructor() {
+      super();
+      // debugger
+      this._ready = false;
+      this._onscreen = false;
+      this._offscreen = true;
+    }
+
+    connectedCallback() {
+      this.loadsWhileScrolling = this.hasAttribute('loadsWhileScrolling');
+      Figure.marginObserver.observe(this);
+      Figure.directObserver.observe(this);
+    }
+
+    disconnectedCallback() {
+      Figure.marginObserver.unobserve(this);
+      Figure.directObserver.unobserve(this);
+    }
+
+    // We use two separate observers:
+    // One with an extra 1000px margin to warn if the viewpoint gets close,
+    // And one for the actual on/off screen events
+
+    static get marginObserver() {
+      if (!Figure._marginObserver) {
+        // if (!('IntersectionObserver' in window)) {
+        //   throw new Error('no interscetionobbserver!');
+        // }
+        const viewportHeight = window.innerHeight;
+        const margin = Math.floor(2 * viewportHeight);
+        const options = {rootMargin: margin + 'px 0px ' + margin + 'px 0px', threshold: 0.01};
+        const callback = Figure.didObserveMarginIntersection;
+        const observer = new IntersectionObserver(callback, options);
+        Figure._marginObserver = observer;
+      }
+      return Figure._marginObserver;
+    }
+
+    static didObserveMarginIntersection(entries) {
+      for (const entry of entries) {
+        const figure = entry.target;
+        if (entry.isIntersecting && !figure._ready) {
+          Figure.addToReadyQueue(figure);
+        }
+      }
+    }
+
+    static get directObserver() {
+      if (!Figure._directObserver) {
+        Figure._directObserver = new IntersectionObserver(
+          Figure.didObserveDirectIntersection, {
+            rootMargin: '0px', threshold: [0, 1.0],
+          }
+        );
+      }
+      return Figure._directObserver;
+    }
+
+    static didObserveDirectIntersection(entries) {
+      for (const entry of entries) {
+        const figure = entry.target;
+        if (entry.isIntersecting) {
+          figure._seenOnScreen = new Date();
+          // if (!figure._ready) { figure.ready(); }
+          if (figure._offscreen) { figure.onscreen(); }
+        } else {
+          if (figure._onscreen) { figure.offscreen(); }
+        }
+      }
+    }
+
+    // Notify listeners that registered late, too:
+
+    addEventListener(eventName, callback) {
+      super.addEventListener(eventName, callback);
+      // if we had already dispatched something while presumingly no one was listening, we do so again
+      // debugger
+      if (eventName === 'ready') {
+        if (Figure.readyQueue.indexOf(this) !== -1) {
+          this._ready = false;
+          Figure.runReadyQueue();
+        }
+      }
+      if (eventName === 'onscreen') {
+        this.onscreen();
+      }
+    }
+
+    // Custom Events
+
+    ready() {
+      // debugger
+      this._ready = true;
+      Figure.marginObserver.unobserve(this);
+      const event = new CustomEvent('ready');
+      this.dispatchEvent(event);
+    }
+
+    onscreen() {
+      this._onscreen = true;
+      this._offscreen = false;
+      const event = new CustomEvent('onscreen');
+      this.dispatchEvent(event);
+    }
+
+    offscreen() {
+      this._onscreen = false;
+      this._offscreen = true;
+      const event = new CustomEvent('offscreen');
+      this.dispatchEvent(event);
+    }
+
+  }
+
+  if (typeof window !== 'undefined') {
+
+    Figure.isScrolling = false;
+    let timeout;
+    const resetTimer = () => {
+      Figure.isScrolling = true;
+      clearTimeout(timeout);
+      timeout = setTimeout(() => {
+        Figure.isScrolling = false;
+        Figure.runReadyQueue();
+      }, 500);
+    };
+    window.addEventListener('scroll', resetTimer, true);
+
+  }
+
+  const T$9 = Template('d-figure-caption', `
+<style>
+  :host {
+  /*
+    font-size: 1.25rem;
+    line-height: 1.6em;
+    color: rgba(0, 0, 0, 0.7);
+    */
+    /*-webkit-font-smoothing: antialiased;*/
+    display: block;
+    text-align: center;
+  }
+
+  :host .figure-caption {
+    counter-increment: figure-caption;
+  }
+
+  :host .figure-caption::after {
+    content: " " counter(figure-caption) ":";
+  }
+
+  ::slotted(p) {
+    margin-top: 0;
+    margin-bottom: 1em;
+    grid-column: text;
+  }
+  ${body('d-abstract')}
+</style>
+
+<span class="figure-caption">Figure</span>
+<slot></slot>
+`);
+
+  class FigureCaption extends T$9(HTMLElement) {
+
+  }
+
+  // Copyright 2018 The Distill Template Authors
+
+  // This overlay is not secure.
+  // It is only meant as a social deterrent.
+
+  const productionHostname = 'distill.pub';
+  const T$a = Template('d-interstitial', `
 <style>
 
 .overlay {
@@ -468,7 +5094,3659 @@ p small {
     <p><small>Enter the password we shared with you as part of the review process to view the article.</small></p>
   </div>
 </div>
-`);class ya extends ma(HTMLElement){connectedCallback(){if(this.shouldRemoveSelf())this.parentElement.removeChild(this);else{const e=this.root.querySelector('#interstitial-password-input');e.oninput=(e)=>this.passwordChanged(e)}}passwordChanged(e){const t=e.target.value;t===this.password&&(console.log('Correct password entered.'),this.parentElement.removeChild(this),'undefined'!=typeof Storage&&(console.log('Saved that correct password was entered.'),localStorage.setItem(this.localStorageIdentifier(),'true')))}shouldRemoveSelf(){return window&&window.location.hostname==='distill.pub'?(console.warn('Interstitial found on production, hiding it.'),!0):'undefined'!=typeof Storage&&'true'===localStorage.getItem(this.localStorageIdentifier())&&(console.log('Loaded that correct password was entered before; skipping interstitial.'),!0)}localStorageIdentifier(){return'distill-drafts'+(window?window.location.pathname:'-')+'interstitial-password-correct'}}var xa=function(e,t){return e<t?-1:e>t?1:e>=t?0:NaN},ka=function(e){return 1===e.length&&(e=v(e)),{left:function(t,n,i,a){for(null==i&&(i=0),null==a&&(a=t.length);i<a;){var d=i+a>>>1;0>e(t[d],n)?i=d+1:a=d}return i},right:function(t,n,i,a){for(null==i&&(i=0),null==a&&(a=t.length);i<a;){var d=i+a>>>1;0<e(t[d],n)?a=d:i=d+1}return i}}}(xa),va=ka.right,wa=function(e,t,a){e=+e,t=+t,a=2>(i=arguments.length)?(t=e,e=0,1):3>i?1:+a;for(var d=-1,i=0|ui(0,pi((t-e)/a)),n=Array(i);++d<i;)n[d]=e+d*a;return n},Ca=7.0710678118654755,Sa=3.1622776601683795,Ta=1.4142135623730951,_a=function(e,t,a){var d,r,n,o,l=-1;if(t=+t,e=+e,a=+a,e===t&&0<a)return[e];if((d=t<e)&&(r=e,e=t,t=r),0===(o=w(e,t,a))||!isFinite(o))return[];if(0<o)for(e=pi(e/o),t=fi(t/o),n=Array(r=pi(t-e+1));++l<r;)n[l]=(e+l)*o;else for(e=fi(e*o),t=pi(t*o),n=Array(r=pi(e-t+1));++l<r;)n[l]=(e-l)/o;return d&&n.reverse(),n},La=Array.prototype,Aa=La.map,Ea=La.slice,Da=function(e,t,n){e.prototype=t.prototype=n,n.constructor=e},Ma=0.7,Ua=1/Ma,Oa=/^#([0-9a-f]{3,8})$/,Na=/^rgb\(\s*([+-]?\d+)\s*,\s*([+-]?\d+)\s*,\s*([+-]?\d+)\s*\)$/,Ia=/^rgb\(\s*([+-]?\d*\.?\d+(?:[eE][+-]?\d+)?)%\s*,\s*([+-]?\d*\.?\d+(?:[eE][+-]?\d+)?)%\s*,\s*([+-]?\d*\.?\d+(?:[eE][+-]?\d+)?)%\s*\)$/,ja=/^rgba\(\s*([+-]?\d+)\s*,\s*([+-]?\d+)\s*,\s*([+-]?\d+)\s*,\s*([+-]?\d*\.?\d+(?:[eE][+-]?\d+)?)\s*\)$/,Ra=/^rgba\(\s*([+-]?\d*\.?\d+(?:[eE][+-]?\d+)?)%\s*,\s*([+-]?\d*\.?\d+(?:[eE][+-]?\d+)?)%\s*,\s*([+-]?\d*\.?\d+(?:[eE][+-]?\d+)?)%\s*,\s*([+-]?\d*\.?\d+(?:[eE][+-]?\d+)?)\s*\)$/,qa=/^hsl\(\s*([+-]?\d*\.?\d+(?:[eE][+-]?\d+)?)\s*,\s*([+-]?\d*\.?\d+(?:[eE][+-]?\d+)?)%\s*,\s*([+-]?\d*\.?\d+(?:[eE][+-]?\d+)?)%\s*\)$/,Ha=/^hsla\(\s*([+-]?\d*\.?\d+(?:[eE][+-]?\d+)?)\s*,\s*([+-]?\d*\.?\d+(?:[eE][+-]?\d+)?)%\s*,\s*([+-]?\d*\.?\d+(?:[eE][+-]?\d+)?)%\s*,\s*([+-]?\d*\.?\d+(?:[eE][+-]?\d+)?)\s*\)$/,Pa={aliceblue:15792383,antiquewhite:16444375,aqua:65535,aquamarine:8388564,azure:15794175,beige:16119260,bisque:16770244,black:0,blanchedalmond:16772045,blue:255,blueviolet:9055202,brown:10824234,burlywood:14596231,cadetblue:6266528,chartreuse:8388352,chocolate:13789470,coral:16744272,cornflowerblue:6591981,cornsilk:16775388,crimson:14423100,cyan:65535,darkblue:139,darkcyan:35723,darkgoldenrod:12092939,darkgray:11119017,darkgreen:25600,darkgrey:11119017,darkkhaki:12433259,darkmagenta:9109643,darkolivegreen:5597999,darkorange:16747520,darkorchid:10040012,darkred:9109504,darksalmon:15308410,darkseagreen:9419919,darkslateblue:4734347,darkslategray:3100495,darkslategrey:3100495,darkturquoise:52945,darkviolet:9699539,deeppink:16716947,deepskyblue:49151,dimgray:6908265,dimgrey:6908265,dodgerblue:2003199,firebrick:11674146,floralwhite:16775920,forestgreen:2263842,fuchsia:16711935,gainsboro:14474460,ghostwhite:16316671,gold:16766720,goldenrod:14329120,gray:8421504,green:32768,greenyellow:11403055,grey:8421504,honeydew:15794160,hotpink:16738740,indianred:13458524,indigo:4915330,ivory:16777200,khaki:15787660,lavender:15132410,lavenderblush:16773365,lawngreen:8190976,lemonchiffon:16775885,lightblue:11393254,lightcoral:15761536,lightcyan:14745599,lightgoldenrodyellow:16448210,lightgray:13882323,lightgreen:9498256,lightgrey:13882323,lightpink:16758465,lightsalmon:16752762,lightseagreen:2142890,lightskyblue:8900346,lightslategray:7833753,lightslategrey:7833753,lightsteelblue:11584734,lightyellow:16777184,lime:65280,limegreen:3329330,linen:16445670,magenta:16711935,maroon:8388608,mediumaquamarine:6737322,mediumblue:205,mediumorchid:12211667,mediumpurple:9662683,mediumseagreen:3978097,mediumslateblue:8087790,mediumspringgreen:64154,mediumturquoise:4772300,mediumvioletred:13047173,midnightblue:1644912,mintcream:16121850,mistyrose:16770273,moccasin:16770229,navajowhite:16768685,navy:128,oldlace:16643558,olive:8421376,olivedrab:7048739,orange:16753920,orangered:16729344,orchid:14315734,palegoldenrod:15657130,palegreen:10025880,paleturquoise:11529966,palevioletred:14381203,papayawhip:16773077,peachpuff:16767673,peru:13468991,pink:16761035,plum:14524637,powderblue:11591910,purple:8388736,rebeccapurple:6697881,red:16711680,rosybrown:12357519,royalblue:4286945,saddlebrown:9127187,salmon:16416882,sandybrown:16032864,seagreen:3050327,seashell:16774638,sienna:10506797,silver:12632256,skyblue:8900331,slateblue:6970061,slategray:7372944,slategrey:7372944,snow:16775930,springgreen:65407,steelblue:4620980,tan:13808780,teal:32896,thistle:14204888,tomato:16737095,turquoise:4251856,violet:15631086,wheat:16113331,white:16777215,whitesmoke:16119285,yellow:16776960,yellowgreen:10145074};Da(L,O,{copy:function(e){return Object.assign(new this.constructor,this,e)},displayable:function(){return this.rgb().displayable()},hex:M,formatHex:M,formatHsl:function(){return Y(this).formatHsl()},formatRgb:U,toString:U}),Da(q,R,_(L,{brighter:function(e){return e=null==e?Ua:li(Ua,e),new q(this.r*e,this.g*e,this.b*e,this.opacity)},darker:function(e){return e=null==e?Ma:li(Ma,e),new q(this.r*e,this.g*e,this.b*e,this.opacity)},rgb:function(){return this},displayable:function(){return-0.5<=this.r&&255.5>this.r&&-0.5<=this.g&&255.5>this.g&&-0.5<=this.b&&255.5>this.b&&0<=this.opacity&&1>=this.opacity},hex:H,formatHex:H,formatRgb:P,toString:P})),Da(W,function(e,t,n,i){return 1===arguments.length?Y(e):new W(e,t,n,null==i?1:i)},_(L,{brighter:function(e){return e=null==e?Ua:li(Ua,e),new W(this.h,this.s,this.l*e,this.opacity)},darker:function(e){return e=null==e?Ma:li(Ma,e),new W(this.h,this.s,this.l*e,this.opacity)},rgb:function(){var e=this.h%360+360*(0>this.h),t=isNaN(e)||isNaN(this.s)?0:this.s,n=this.l,i=n+(0.5>n?n:1-n)*t,a=2*n-i;return new q(V(240<=e?e-240:e+120,a,i),V(e,a,i),V(120>e?e+240:e-120,a,i),this.opacity)},displayable:function(){return(0<=this.s&&1>=this.s||isNaN(this.s))&&0<=this.l&&1>=this.l&&0<=this.opacity&&1>=this.opacity},formatHsl:function(){var e=this.opacity;return e=isNaN(e)?1:ui(0,hi(1,e)),(1===e?'hsl(':'hsla(')+(this.h||0)+', '+100*(this.s||0)+'%, '+100*(this.l||0)+'%'+(1===e?')':', '+e+')')}}));var Fa=ri/180,za=180/ri,Ya=18,K=0.96422,Xn=1,Yn=0.82521,Zn=4/29,Ba=6/29,Wa=3*Ba*Ba,Va=Ba*Ba*Ba;Da(Q,function(e,t,n,i){return 1===arguments.length?$(e):new Q(e,t,n,null==i?1:i)},_(L,{brighter:function(e){return new Q(this.l+Ya*(null==e?1:e),this.a,this.b,this.opacity)},darker:function(e){return new Q(this.l-Ya*(null==e?1:e),this.a,this.b,this.opacity)},rgb:function(){var e=(this.l+16)/116,t=isNaN(this.a)?e:e+this.a/500,n=isNaN(this.b)?e:e-this.b/200;return t=K*Z(t),e=Xn*Z(e),n=Yn*Z(n),new q(J(3.1338561*t-1.6168667*e-0.4906146*n),J(-0.9787684*t+1.9161415*e+0.033454*n),J(0.0719453*t-0.2289914*e+1.4052427*n),this.opacity)}})),Da(te,function(e,t,n,i){return 1===arguments.length?ee(e):new te(e,t,n,null==i?1:i)},_(L,{brighter:function(e){return new te(this.h,this.c,this.l+Ya*(null==e?1:e),this.opacity)},darker:function(e){return new te(this.h,this.c,this.l-Ya*(null==e?1:e),this.opacity)},rgb:function(){return ne(this).rgb()}}));var Ka=-0.14861,A=+1.78277,B=-0.29227,C=-0.90649,D=+1.97294,E=D*C,$a=D*A,Qa=A*B-C*Ka;Da(de,ae,_(L,{brighter:function(e){return e=null==e?Ua:li(Ua,e),new de(this.h,this.s,this.l*e,this.opacity)},darker:function(e){return e=null==e?Ma:li(Ma,e),new de(this.h,this.s,this.l*e,this.opacity)},rgb:function(){var e=isNaN(this.h)?0:(this.h+120)*Fa,t=+this.l,n=isNaN(this.s)?0:this.s*t*(1-t),i=ii(e),a=ni(e);return new q(255*(t+n*(Ka*i+A*a)),255*(t+n*(B*i+C*a)),255*(t+n*(D*i)),this.opacity)}}));var Xa=function(e){return function(){return e}},Za=function e(t){function n(e,t){var n=i((e=R(e)).r,(t=R(t)).r),a=i(e.g,t.g),d=i(e.b,t.b),r=ce(e.opacity,t.opacity);return function(i){return e.r=n(i),e.g=a(i),e.b=d(i),e.opacity=r(i),e+''}}var i=se(t);return n.gamma=e,n}(1),Ja=function(e,a){a||(a=[]);var d,i=e?hi(a.length,e.length):0,n=a.slice();return function(r){for(d=0;d<i;++d)n[d]=e[d]*(1-r)+a[d]*r;return n}},Ga=function(e,n){var i=new Date;return e=+e,n=+n,function(a){return i.setTime(e*(1-a)+n*a),i}},ed=function(e,n){return e=+e,n=+n,function(i){return e*(1-i)+n*i}},td=function(e,t){var n,d={},i={};for(n in(null===e||'object'!=typeof e)&&(e={}),(null===t||'object'!=typeof t)&&(t={}),t)n in e?d[n]=dd(e[n],t[n]):i[n]=t[n];return function(e){for(n in d)i[n]=d[n](e);return i}},nd=/[-+]?(?:\d+\.?\d*|\.?\d+)(?:[eE][-+]?\d+)?/g,id=new RegExp(nd.source,'g'),ad=function(e,n){var t,a,d,r=nd.lastIndex=id.lastIndex=0,o=-1,l=[],s=[];for(e+='',n+='';(t=nd.exec(e))&&(a=id.exec(n));)(d=a.index)>r&&(d=n.slice(r,d),l[o]?l[o]+=d:l[++o]=d),(t=t[0])===(a=a[0])?l[o]?l[o]+=a:l[++o]=a:(l[++o]=null,s.push({i:o,x:ed(t,a)})),r=id.lastIndex;return r<n.length&&(d=n.slice(r),l[o]?l[o]+=d:l[++o]=d),2>l.length?s[0]?fe(s[0].x):ge(n):(n=s.length,function(e){for(var t,a=0;a<n;++a)l[(t=s[a]).i]=t.x(e);return l.join('')})},dd=function(e,n){var i,a=typeof n;return null==n||'boolean'==a?Xa(n):('number'==a?ed:'string'==a?(i=O(n))?(n=i,R):ad:n instanceof O?Za:n instanceof Date?Ga:ue(n)?Ja:Array.isArray(n)?pe:'function'!=typeof n.valueOf&&'function'!=typeof n.toString||isNaN(n)?td:ed)(e,n)},rd=function(e,n){return e=+e,n=+n,function(i){return gi(e*(1-i)+n*i)}};he(function(e,t){var n=t-e;return n?oe(e,180<n||-180>n?n-360*gi(n/360):n):Xa(isNaN(e)?t:e)});var od=he(ce),ld=function(e){return function(){return e}},sd=[0,1],cd=function(e,t){if(0>(n=(e=t?e.toExponential(t-1):e.toExponential()).indexOf('e')))return null;var n,i=e.slice(0,n);return[1<i.length?i[0]+i.slice(2):i,+e.slice(n+1)]},ud=function(e){return e=cd(oi(e)),e?e[1]:NaN},pd=function(e,n){return function(a,d){for(var r=a.length,i=[],t=0,o=e[0],l=0;0<r&&0<o&&(l+o+1>d&&(o=ui(1,d-l)),i.push(a.substring(r-=o,r+o)),!((l+=o+1)>d));)o=e[t=(t+1)%e.length];return i.reverse().join(n)}},gd=function(e){return function(t){return t.replace(/[0-9]/g,function(t){return e[+t]})}},fd=/^(?:(.)?([<>=^]))?([+\-( ])?([$#])?(0)?(\d+)?(,)?(\.\d+)?(~)?([a-z%])?$/i;Ce.prototype=Se.prototype,Se.prototype.toString=function(){return this.fill+this.align+this.sign+this.symbol+(this.zero?'0':'')+(this.width===void 0?'':ui(1,0|this.width))+(this.comma?',':'')+(this.precision===void 0?'':'.'+ui(0,0|this.precision))+(this.trim?'~':'')+this.type};var re,hd,bd,md,yd=function(e){out:for(var t,a=e.length,n=1,i=-1;n<a;++n)switch(e[n]){case'.':i=t=n;break;case'0':0===i&&(i=n),t=n;break;default:if(!+e[n])break out;0<i&&(i=0);}return 0<i?e.slice(0,i)+e.slice(t+1):e},xd=function(e,t){var n=cd(e,t);if(!n)return e+'';var i=n[0],a=n[1];return 0>a?'0.'+Array(-a).join('0')+i:i.length>a+1?i.slice(0,a+1)+'.'+i.slice(a+1):i+Array(a-i.length+2).join('0')},kd={"%":function(e,t){return(100*e).toFixed(t)},b:function(e){return gi(e).toString(2)},c:function(e){return e+''},d:function(e){return gi(e).toString(10)},e:function(e,t){return e.toExponential(t)},f:function(e,t){return e.toFixed(t)},g:function(e,t){return e.toPrecision(t)},o:function(e){return gi(e).toString(8)},p:function(e,t){return xd(100*e,t)},r:xd,s:function(e,t){var a=cd(e,t);if(!a)return e+'';var r=a[0],o=a[1],l=o-(re=3*ui(-8,hi(8,fi(o/3))))+1,i=r.length;return l===i?r:l>i?r+Array(l-i+1).join('0'):0<l?r.slice(0,l)+'.'+r.slice(l):'0.'+Array(1-l).join('0')+cd(e,ui(0,t+l-1))[0]},X:function(e){return gi(e).toString(16).toUpperCase()},x:function(e){return gi(e).toString(16)}},vd=function(e){return e},wd=Array.prototype.map,Cd=['y','z','a','f','p','n','\xB5','m','','k','M','G','T','P','E','Z','Y'],Sd=function(e){function t(e){function t(e){var t,i,n,o=k,g=v;if('c'===x)g=w(e)+g,e='';else{e=+e;var S=0>e;if(e=isNaN(e)?s:w(oi(e),m),y&&(e=yd(e)),S&&0==+e&&(S=!1),o=(S?'('===p?p:l:'-'===p||'('===p?'':p)+o,g=('s'===x?Cd[8+re/3]:'')+g+(S&&'('===p?')':''),C)for(t=-1,i=e.length;++t<i;)if(n=e.charCodeAt(t),48>n||57<n){g=(46===n?d+e.slice(t+1):e.slice(t))+g,e=e.slice(0,t);break}}b&&!f&&(e=a(e,Infinity));var T=o.length+e.length+g.length,_=T<h?Array(h-T+1).join(u):'';switch(b&&f&&(e=a(_+e,_.length?h-g.length:Infinity),_=''),c){case'<':e=o+e+g+_;break;case'=':e=o+_+e+g;break;case'^':e=_.slice(0,T=_.length>>1)+o+e+g+_.slice(T);break;default:e=_+o+e+g;}return r(e)}e=Ce(e);var u=e.fill,c=e.align,p=e.sign,g=e.symbol,f=e.zero,h=e.width,b=e.comma,m=e.precision,y=e.trim,x=e.type;'n'===x?(b=!0,x='g'):!kd[x]&&(void 0===m&&(m=12),y=!0,x='g'),(f||'0'===u&&'='===c)&&(f=!0,u='0',c='=');var k='$'===g?n:'#'===g&&/[boxX]/.test(x)?'0'+x.toLowerCase():'',v='$'===g?i:/[%p]/.test(x)?o:'',w=kd[x],C=/[defgprs%]/.test(x);return m=void 0===m?6:/[gprs]/.test(x)?ui(1,hi(21,m)):ui(0,hi(20,m)),t.toString=function(){return e+''},t}var a=e.grouping===void 0||e.thousands===void 0?vd:pd(wd.call(e.grouping,Number),e.thousands+''),n=e.currency===void 0?'':e.currency[0]+'',i=e.currency===void 0?'':e.currency[1]+'',d=e.decimal===void 0?'.':e.decimal+'',r=e.numerals===void 0?vd:gd(wd.call(e.numerals,String)),o=e.percent===void 0?'%':e.percent+'',l=e.minus===void 0?'-':e.minus+'',s=e.nan===void 0?'NaN':e.nan+'';return{format:t,formatPrefix:function(n,i){var a=t((n=Ce(n),n.type='f',n)),d=3*ui(-8,hi(8,fi(ud(i)/3))),r=li(10,-d),o=Cd[8+d/3];return function(e){return a(r*e)+o}}}};(function(e){return hd=Sd(e),bd=hd.format,md=hd.formatPrefix,hd})({decimal:'.',thousands:',',grouping:[3],currency:['$',''],minus:'-'});var Td=function(e){return ui(0,-ud(oi(e)))},_d=function(e,t){return ui(0,3*ui(-8,hi(8,fi(ud(t)/3)))-ud(oi(e)))},Ld=function(e,t){return e=oi(e),t=oi(t)-e,ui(0,ud(t)-ud(e))+1},Ad=function(e,t,n){var i,a=e[0],d=e[e.length-1],r=S(a,d,null==t?10:t);switch(n=Ce(null==n?',f':n),n.type){case's':{var o=ui(oi(a),oi(d));return null!=n.precision||isNaN(i=_d(r,o))||(n.precision=i),md(n,o)}case'':case'e':case'g':case'p':case'r':{null!=n.precision||isNaN(i=Ld(r,ui(oi(a),oi(d))))||(n.precision=i-('e'===n.type));break}case'f':case'%':{null!=n.precision||isNaN(i=Td(r))||(n.precision=i-2*('%'===n.type));break}}return bd(n)},Ed=new Date,Dd=new Date,Md=Le(function(){},function(e,t){e.setTime(+e+t)},function(e,t){return t-e});Md.every=function(e){return e=fi(e),isFinite(e)&&0<e?1<e?Le(function(t){t.setTime(fi(t/e)*e)},function(t,n){t.setTime(+t+n*e)},function(t,n){return(n-t)/e}):Md:null};var Ud=1e3,Od=6e4,Nd=36e5,Id=864e5,jd=6048e5,Rd=Le(function(e){e.setTime(e-e.getMilliseconds())},function(e,t){e.setTime(+e+t*Ud)},function(e,t){return(t-e)/Ud},function(e){return e.getUTCSeconds()}),qd=Le(function(e){e.setTime(e-e.getMilliseconds()-e.getSeconds()*Ud)},function(e,t){e.setTime(+e+t*Od)},function(e,t){return(t-e)/Od},function(e){return e.getMinutes()}),Hd=Le(function(e){e.setTime(e-e.getMilliseconds()-e.getSeconds()*Ud-e.getMinutes()*Od)},function(e,t){e.setTime(+e+t*Nd)},function(e,t){return(t-e)/Nd},function(e){return e.getHours()}),Pd=Le(function(e){e.setHours(0,0,0,0)},function(e,t){e.setDate(e.getDate()+t)},function(e,t){return(t-e-(t.getTimezoneOffset()-e.getTimezoneOffset())*Od)/Id},function(e){return e.getDate()-1}),Fd=Ae(0),zd=Ae(1),Yd=Ae(2),Bd=Ae(3),Wd=Ae(4),Vd=Ae(5),Kd=Ae(6),$d=Le(function(e){e.setDate(1),e.setHours(0,0,0,0)},function(e,t){e.setMonth(e.getMonth()+t)},function(e,t){return t.getMonth()-e.getMonth()+12*(t.getFullYear()-e.getFullYear())},function(e){return e.getMonth()}),Qd=Le(function(e){e.setMonth(0,1),e.setHours(0,0,0,0)},function(e,t){e.setFullYear(e.getFullYear()+t)},function(e,t){return t.getFullYear()-e.getFullYear()},function(e){return e.getFullYear()});Qd.every=function(e){return isFinite(e=fi(e))&&0<e?Le(function(t){t.setFullYear(fi(t.getFullYear()/e)*e),t.setMonth(0,1),t.setHours(0,0,0,0)},function(t,n){t.setFullYear(t.getFullYear()+n*e)}):null};var Xd=Le(function(e){e.setUTCSeconds(0,0)},function(e,t){e.setTime(+e+t*Od)},function(e,t){return(t-e)/Od},function(e){return e.getUTCMinutes()}),Zd=Le(function(e){e.setUTCMinutes(0,0,0)},function(e,t){e.setTime(+e+t*Nd)},function(e,t){return(t-e)/Nd},function(e){return e.getUTCHours()}),Jd=Le(function(e){e.setUTCHours(0,0,0,0)},function(e,t){e.setUTCDate(e.getUTCDate()+t)},function(e,t){return(t-e)/Id},function(e){return e.getUTCDate()-1}),Gd=Ee(0),er=Ee(1),tr=Ee(2),nr=Ee(3),ir=Ee(4),ar=Ee(5),dr=Ee(6),rr=Le(function(e){e.setUTCDate(1),e.setUTCHours(0,0,0,0)},function(e,t){e.setUTCMonth(e.getUTCMonth()+t)},function(e,t){return t.getUTCMonth()-e.getUTCMonth()+12*(t.getUTCFullYear()-e.getUTCFullYear())},function(e){return e.getUTCMonth()}),or=Le(function(e){e.setUTCMonth(0,1),e.setUTCHours(0,0,0,0)},function(e,t){e.setUTCFullYear(e.getUTCFullYear()+t)},function(e,t){return t.getUTCFullYear()-e.getUTCFullYear()},function(e){return e.getUTCFullYear()});or.every=function(e){return isFinite(e=fi(e))&&0<e?Le(function(t){t.setUTCFullYear(fi(t.getUTCFullYear()/e)*e),t.setUTCMonth(0,1),t.setUTCHours(0,0,0,0)},function(t,n){t.setUTCFullYear(t.getUTCFullYear()+n*e)}):null};var lr,sr,cr,ur={0:'0',"-":'',_:' '},pr=/^\s*\d+/,gr=/^%/,fr=/[\\^$*+?|[\]().{}]/g;(function(e){return lr=Oe(e),sr=lr.utcFormat,cr=lr.utcParse,lr})({dateTime:'%x, %X',date:'%-m/%-d/%Y',time:'%-I:%M:%S %p',periods:['AM','PM'],days:['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'],shortDays:['Sun','Mon','Tue','Wed','Thu','Fri','Sat'],months:['January','February','March','April','May','June','July','August','September','October','November','December'],shortMonths:['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']});var hr='%Y-%m-%dT%H:%M:%S.%LZ',br=Date.prototype.toISOString?function(e){return e.toISOString()}:sr(hr),mr=+new Date('2000-01-01T00:00:00.000Z')?function(e){var t=new Date(e);return isNaN(t)?null:t}:cr(hr),yr=function(e){return e.match(/.{6}/g).map(function(e){return'#'+e})};yr('1f77b4ff7f0e2ca02cd627289467bd8c564be377c27f7f7fbcbd2217becf'),yr('393b795254a36b6ecf9c9ede6379398ca252b5cf6bcedb9c8c6d31bd9e39e7ba52e7cb94843c39ad494ad6616be7969c7b4173a55194ce6dbdde9ed6'),yr('3182bd6baed69ecae1c6dbefe6550dfd8d3cfdae6bfdd0a231a35474c476a1d99bc7e9c0756bb19e9ac8bcbddcdadaeb636363969696bdbdbdd9d9d9'),yr('1f77b4aec7e8ff7f0effbb782ca02c98df8ad62728ff98969467bdc5b0d58c564bc49c94e377c2f7b6d27f7f7fc7c7c7bcbd22dbdb8d17becf9edae5'),od(ae(300,0.5,0),ae(-240,0.5,1));var xr=od(ae(-100,0.75,0.35),ae(80,1.5,0.8)),kr=od(ae(260,0.75,0.35),ae(80,1.5,0.8)),vr=ae();Ft(yr('44015444025645045745055946075a46085c460a5d460b5e470d60470e6147106347116447136548146748166848176948186a481a6c481b6d481c6e481d6f481f70482071482173482374482475482576482677482878482979472a7a472c7a472d7b472e7c472f7d46307e46327e46337f463480453581453781453882443983443a83443b84433d84433e85423f854240864241864142874144874045884046883f47883f48893e49893e4a893e4c8a3d4d8a3d4e8a3c4f8a3c508b3b518b3b528b3a538b3a548c39558c39568c38588c38598c375a8c375b8d365c8d365d8d355e8d355f8d34608d34618d33628d33638d32648e32658e31668e31678e31688e30698e306a8e2f6b8e2f6c8e2e6d8e2e6e8e2e6f8e2d708e2d718e2c718e2c728e2c738e2b748e2b758e2a768e2a778e2a788e29798e297a8e297b8e287c8e287d8e277e8e277f8e27808e26818e26828e26828e25838e25848e25858e24868e24878e23888e23898e238a8d228b8d228c8d228d8d218e8d218f8d21908d21918c20928c20928c20938c1f948c1f958b1f968b1f978b1f988b1f998a1f9a8a1e9b8a1e9c891e9d891f9e891f9f881fa0881fa1881fa1871fa28720a38620a48621a58521a68522a78522a88423a98324aa8325ab8225ac8226ad8127ad8128ae8029af7f2ab07f2cb17e2db27d2eb37c2fb47c31b57b32b67a34b67935b77937b87838b9773aba763bbb753dbc743fbc7340bd7242be7144bf7046c06f48c16e4ac16d4cc26c4ec36b50c46a52c56954c56856c66758c7655ac8645cc8635ec96260ca6063cb5f65cb5e67cc5c69cd5b6ccd5a6ece5870cf5773d05675d05477d1537ad1517cd2507fd34e81d34d84d44b86d54989d5488bd6468ed64590d74393d74195d84098d83e9bd93c9dd93ba0da39a2da37a5db36a8db34aadc32addc30b0dd2fb2dd2db5de2bb8de29bade28bddf26c0df25c2df23c5e021c8e020cae11fcde11dd0e11cd2e21bd5e21ad8e219dae319dde318dfe318e2e418e5e419e7e419eae51aece51befe51cf1e51df4e61ef6e620f8e621fbe723fde725'));var wr=Ft(yr('00000401000501010601010802010902020b02020d03030f03031204041405041606051806051a07061c08071e0907200a08220b09240c09260d0a290e0b2b100b2d110c2f120d31130d34140e36150e38160f3b180f3d19103f1a10421c10441d11471e114920114b21114e22115024125325125527125829115a2a115c2c115f2d11612f116331116533106734106936106b38106c390f6e3b0f703d0f713f0f72400f74420f75440f764510774710784910784a10794c117a4e117b4f127b51127c52137c54137d56147d57157e59157e5a167e5c167f5d177f5f187f601880621980641a80651a80671b80681c816a1c816b1d816d1d816e1e81701f81721f817320817521817621817822817922827b23827c23827e24828025828125818326818426818627818827818928818b29818c29818e2a81902a81912b81932b80942c80962c80982d80992d809b2e7f9c2e7f9e2f7fa02f7fa1307ea3307ea5317ea6317da8327daa337dab337cad347cae347bb0357bb2357bb3367ab5367ab73779b83779ba3878bc3978bd3977bf3a77c03a76c23b75c43c75c53c74c73d73c83e73ca3e72cc3f71cd4071cf4070d0416fd2426fd3436ed5446dd6456cd8456cd9466bdb476adc4869de4968df4a68e04c67e24d66e34e65e44f64e55064e75263e85362e95462ea5661eb5760ec5860ed5a5fee5b5eef5d5ef05f5ef1605df2625df2645cf3655cf4675cf4695cf56b5cf66c5cf66e5cf7705cf7725cf8745cf8765cf9785df9795df97b5dfa7d5efa7f5efa815ffb835ffb8560fb8761fc8961fc8a62fc8c63fc8e64fc9065fd9266fd9467fd9668fd9869fd9a6afd9b6bfe9d6cfe9f6dfea16efea36ffea571fea772fea973feaa74feac76feae77feb078feb27afeb47bfeb67cfeb77efeb97ffebb81febd82febf84fec185fec287fec488fec68afec88cfeca8dfecc8ffecd90fecf92fed194fed395fed597fed799fed89afdda9cfddc9efddea0fde0a1fde2a3fde3a5fde5a7fde7a9fde9aafdebacfcecaefceeb0fcf0b2fcf2b4fcf4b6fcf6b8fcf7b9fcf9bbfcfbbdfcfdbf')),Cr=Ft(yr('00000401000501010601010802010a02020c02020e03021004031204031405041706041907051b08051d09061f0a07220b07240c08260d08290e092b10092d110a30120a32140b34150b37160b39180c3c190c3e1b0c411c0c431e0c451f0c48210c4a230c4c240c4f260c51280b53290b552b0b572d0b592f0a5b310a5c320a5e340a5f3609613809623909633b09643d09653e0966400a67420a68440a68450a69470b6a490b6a4a0c6b4c0c6b4d0d6c4f0d6c510e6c520e6d540f6d550f6d57106e59106e5a116e5c126e5d126e5f136e61136e62146e64156e65156e67166e69166e6a176e6c186e6d186e6f196e71196e721a6e741a6e751b6e771c6d781c6d7a1d6d7c1d6d7d1e6d7f1e6c801f6c82206c84206b85216b87216b88226a8a226a8c23698d23698f24699025689225689326679526679727669827669a28659b29649d29649f2a63a02a63a22b62a32c61a52c60a62d60a82e5fa92e5eab2f5ead305dae305cb0315bb1325ab3325ab43359b63458b73557b93556ba3655bc3754bd3853bf3952c03a51c13a50c33b4fc43c4ec63d4dc73e4cc83f4bca404acb4149cc4248ce4347cf4446d04545d24644d34743d44842d54a41d74b3fd84c3ed94d3dda4e3cdb503bdd513ade5238df5337e05536e15635e25734e35933e45a31e55c30e65d2fe75e2ee8602de9612bea632aeb6429eb6628ec6726ed6925ee6a24ef6c23ef6e21f06f20f1711ff1731df2741cf3761bf37819f47918f57b17f57d15f67e14f68013f78212f78410f8850ff8870ef8890cf98b0bf98c0af98e09fa9008fa9207fa9407fb9606fb9706fb9906fb9b06fb9d07fc9f07fca108fca309fca50afca60cfca80dfcaa0ffcac11fcae12fcb014fcb216fcb418fbb61afbb81dfbba1ffbbc21fbbe23fac026fac228fac42afac62df9c72ff9c932f9cb35f8cd37f8cf3af7d13df7d340f6d543f6d746f5d949f5db4cf4dd4ff4df53f4e156f3e35af3e55df2e661f2e865f2ea69f1ec6df1ed71f1ef75f1f179f2f27df2f482f3f586f3f68af4f88ef5f992f6fa96f8fb9af9fc9dfafda1fcffa4')),Sr=Ft(yr('0d088710078813078916078a19068c1b068d1d068e20068f2206902406912605912805922a05932c05942e05952f059631059733059735049837049938049a3a049a3c049b3e049c3f049c41049d43039e44039e46039f48039f4903a04b03a14c02a14e02a25002a25102a35302a35502a45601a45801a45901a55b01a55c01a65e01a66001a66100a76300a76400a76600a76700a86900a86a00a86c00a86e00a86f00a87100a87201a87401a87501a87701a87801a87a02a87b02a87d03a87e03a88004a88104a78305a78405a78606a68707a68808a68a09a58b0aa58d0ba58e0ca48f0da4910ea3920fa39410a29511a19613a19814a099159f9a169f9c179e9d189d9e199da01a9ca11b9ba21d9aa31e9aa51f99a62098a72197a82296aa2395ab2494ac2694ad2793ae2892b02991b12a90b22b8fb32c8eb42e8db52f8cb6308bb7318ab83289ba3388bb3488bc3587bd3786be3885bf3984c03a83c13b82c23c81c33d80c43e7fc5407ec6417dc7427cc8437bc9447aca457acb4679cc4778cc4977cd4a76ce4b75cf4c74d04d73d14e72d24f71d35171d45270d5536fd5546ed6556dd7566cd8576bd9586ada5a6ada5b69db5c68dc5d67dd5e66de5f65de6164df6263e06363e16462e26561e26660e3685fe4695ee56a5de56b5de66c5ce76e5be76f5ae87059e97158e97257ea7457eb7556eb7655ec7754ed7953ed7a52ee7b51ef7c51ef7e50f07f4ff0804ef1814df1834cf2844bf3854bf3874af48849f48948f58b47f58c46f68d45f68f44f79044f79143f79342f89441f89540f9973ff9983ef99a3efa9b3dfa9c3cfa9e3bfb9f3afba139fba238fca338fca537fca636fca835fca934fdab33fdac33fdae32fdaf31fdb130fdb22ffdb42ffdb52efeb72dfeb82cfeba2cfebb2bfebd2afebe2afec029fdc229fdc328fdc527fdc627fdc827fdca26fdcb26fccd25fcce25fcd025fcd225fbd324fbd524fbd724fad824fada24f9dc24f9dd25f8df25f8e125f7e225f7e425f6e626f6e826f5e926f5eb27f4ed27f3ee27f3f027f2f227f1f426f1f525f0f724f0f921')),Tr={value:function(){}};Yt.prototype=zt.prototype={constructor:Yt,on:function(e,a){var d,t=this._,r=Bt(e+'',t),o=-1,i=r.length;if(2>arguments.length){for(;++o<i;)if((d=(e=r[o]).type)&&(d=Wt(t[d],e.name)))return d;return}if(null!=a&&'function'!=typeof a)throw new Error('invalid callback: '+a);for(;++o<i;)if(d=(e=r[o]).type)t[d]=Vt(t[d],e.name,a);else if(null==a)for(d in t)t[d]=Vt(t[d],e.name,null);return this},copy:function(){var e={},n=this._;for(var i in n)e[i]=n[i].slice();return new Yt(e)},call:function(e,a){if(0<(d=arguments.length-2))for(var d,n,t=Array(d),r=0;r<d;++r)t[r]=arguments[r+2];if(!this._.hasOwnProperty(e))throw new Error('unknown type: '+e);for(n=this._[e],r=0,d=n.length;r<d;++r)n[r].value.apply(a,t)},apply:function(e,a,d){if(!this._.hasOwnProperty(e))throw new Error('unknown type: '+e);for(var r=this._[e],t=0,i=r.length;t<i;++t)r[t].value.apply(a,d)}};var _r='http://www.w3.org/1999/xhtml',Lr={svg:'http://www.w3.org/2000/svg',xhtml:_r,xlink:'http://www.w3.org/1999/xlink',xml:'http://www.w3.org/XML/1998/namespace',xmlns:'http://www.w3.org/2000/xmlns/'},Ar=function(e){var t=e+='',n=t.indexOf(':');return 0<=n&&'xmlns'!==(t=e.slice(0,n))&&(e=e.slice(n+1)),Lr.hasOwnProperty(t)?{space:Lr[t],local:e}:e},Er=function(e){var t=Ar(e);return(t.local?$t:Kt)(t)},Dr=function(e){return null==e?Qt:function(){return this.querySelector(e)}},Mr=function(e){return null==e?Xt:function(){return this.querySelectorAll(e)}},Ur=function(e){return function(){return this.matches(e)}},Or=function(e){return Array(e.length)};Zt.prototype={constructor:Zt,appendChild:function(e){return this._parent.insertBefore(e,this._next)},insertBefore:function(e,t){return this._parent.insertBefore(e,t)},querySelector:function(e){return this._parent.querySelector(e)},querySelectorAll:function(e){return this._parent.querySelectorAll(e)}};var Nr=function(e){return function(){return e}},Ir='$',jr=function(e){return e.ownerDocument&&e.ownerDocument.defaultView||e.document&&e||e.defaultView};mn.prototype={add:function(e){var t=this._names.indexOf(e);0>t&&(this._names.push(e),this._node.setAttribute('class',this._names.join(' ')))},remove:function(e){var t=this._names.indexOf(e);0<=t&&(this._names.splice(t,1),this._node.setAttribute('class',this._names.join(' ')))},contains:function(e){return 0<=this._names.indexOf(e)}};var Rr={},qr=null;if('undefined'!=typeof document){var Hr=document.documentElement;'onmouseenter'in Hr||(Rr={mouseenter:'mouseover',mouseleave:'mouseout'})}var Pr=[null];Wn.prototype=function(){return new Wn([[document.documentElement]],Pr)}.prototype={constructor:Wn,select:function(e){'function'!=typeof e&&(e=Dr(e));for(var t=this._groups,a=t.length,d=Array(a),r=0;r<a;++r)for(var o,l,s=t[r],c=s.length,n=d[r]=Array(c),u=0;u<c;++u)(o=s[u])&&(l=e.call(o,o.__data__,u,s))&&('__data__'in o&&(l.__data__=o.__data__),n[u]=l);return new Wn(d,this._parents)},selectAll:function(e){'function'!=typeof e&&(e=Mr(e));for(var t=this._groups,a=t.length,d=[],r=[],o=0;o<a;++o)for(var l,s=t[o],c=s.length,n=0;n<c;++n)(l=s[n])&&(d.push(e.call(l,l.__data__,n,s)),r.push(l));return new Wn(d,r)},filter:function(e){'function'!=typeof e&&(e=Ur(e));for(var t=this._groups,a=t.length,d=Array(a),r=0;r<a;++r)for(var o,l=t[r],s=l.length,n=d[r]=[],c=0;c<s;++c)(o=l[c])&&e.call(o,o.__data__,c,l)&&n.push(o);return new Wn(d,this._parents)},data:function(e,t){if(!e)return g=Array(this.size()),s=-1,this.each(function(e){g[++s]=e}),g;var n=t?Gt:Jt,i=this._parents,a=this._groups;'function'!=typeof e&&(e=Nr(e));for(var d=a.length,r=Array(d),o=Array(d),l=Array(d),s=0;s<d;++s){var c=i[s],u=a[s],p=u.length,g=e.call(c,c&&c.__data__,s,i),f=g.length,h=o[s]=Array(f),b=r[s]=Array(f),m=l[s]=Array(p);n(c,u,h,b,m,g,t);for(var y,x,k=0,v=0;k<f;++k)if(y=h[k]){for(k>=v&&(v=k+1);!(x=b[v])&&++v<f;);y._next=x||null}}return r=new Wn(r,i),r._enter=o,r._exit=l,r},enter:function(){return new Wn(this._enter||this._groups.map(Or),this._parents)},exit:function(){return new Wn(this._exit||this._groups.map(Or),this._parents)},join:function(e,t,n){var i=this.enter(),a=this,d=this.exit();return i='function'==typeof e?e(i):i.append(e+''),null!=t&&(a=t(a)),null==n?d.remove():n(d),i&&a?i.merge(a).order():a},merge:function(e){for(var t=this._groups,a=e._groups,d=t.length,r=a.length,o=hi(d,r),l=Array(d),s=0;s<o;++s)for(var c,u=t[s],p=a[s],g=u.length,n=l[s]=Array(g),f=0;f<g;++f)(c=u[f]||p[f])&&(n[f]=c);for(;s<d;++s)l[s]=t[s];return new Wn(l,this._parents)},order:function(){for(var e=this._groups,t=-1,n=e.length;++t<n;)for(var a,d=e[t],r=d.length-1,i=d[r];0<=--r;)(a=d[r])&&(i&&4^a.compareDocumentPosition(i)&&i.parentNode.insertBefore(a,i),i=a);return this},sort:function(e){function t(t,n){return t&&n?e(t.__data__,n.__data__):!t-!n}e||(e=en);for(var a=this._groups,d=a.length,r=Array(d),o=0;o<d;++o){for(var l,s=a[o],c=s.length,n=r[o]=Array(c),u=0;u<c;++u)(l=s[u])&&(n[u]=l);n.sort(t)}return new Wn(r,this._parents).order()},call:function(){var e=arguments[0];return arguments[0]=this,e.apply(null,arguments),this},nodes:function(){var e=Array(this.size()),t=-1;return this.each(function(){e[++t]=this}),e},node:function(){for(var e=this._groups,t=0,a=e.length;t<a;++t)for(var d,r=e[t],o=0,i=r.length;o<i;++o)if(d=r[o],d)return d;return null},size:function(){var e=0;return this.each(function(){++e}),e},empty:function(){return!this.node()},each:function(e){for(var t=this._groups,a=0,d=t.length;a<d;++a)for(var r,o=t[a],l=0,i=o.length;l<i;++l)(r=o[l])&&e.call(r,r.__data__,l,o);return this},attr:function(e,t){var n=Ar(e);if(2>arguments.length){var i=this.node();return n.local?i.getAttributeNS(n.space,n.local):i.getAttribute(n)}return this.each((null==t?n.local?nn:tn:'function'==typeof t?n.local?on:rn:n.local?dn:an)(n,t))},style:function(e,t,n){return 1<arguments.length?this.each((null==t?ln:'function'==typeof t?cn:sn)(e,t,null==n?'':n)):un(this.node(),e)},property:function(e,t){return 1<arguments.length?this.each((null==t?pn:'function'==typeof t?fn:gn)(e,t)):this.node()[e]},classed:function(e,t){var a=hn(e+'');if(2>arguments.length){for(var d=bn(this.node()),r=-1,i=a.length;++r<i;)if(!d.contains(a[r]))return!1;return!0}return this.each(('function'==typeof t?wn:t?kn:vn)(a,t))},text:function(e){return arguments.length?this.each(null==e?Cn:('function'==typeof e?Tn:Sn)(e)):this.node().textContent},html:function(e){return arguments.length?this.each(null==e?_n:('function'==typeof e?An:Ln)(e)):this.node().innerHTML},raise:function(){return this.each(En)},lower:function(){return this.each(Dn)},append:function(e){var t='function'==typeof e?e:Er(e);return this.select(function(){return this.appendChild(t.apply(this,arguments))})},insert:function(e,t){var n='function'==typeof e?e:Er(e),i=null==t?Mn:'function'==typeof t?t:Dr(t);return this.select(function(){return this.insertBefore(n.apply(this,arguments),i.apply(this,arguments)||null)})},remove:function(){return this.each(Un)},clone:function(e){return this.select(e?Nn:On)},datum:function(e){return arguments.length?this.property('__data__',e):this.node().__data__},on:function(e,a,d){var r,i,t=Rn(e+''),l=t.length;if(2>arguments.length){var n=this.node().__on;if(n)for(var s,o=0,c=n.length;o<c;++o)for(r=0,s=n[o];r<l;++r)if((i=t[r]).type===s.type&&i.name===s.name)return s.value;return}for(n=a?Hn:qn,null==d&&(d=!1),r=0;r<l;++r)this.each(n(t[r],a,d));return this},dispatch:function(e,t){return this.each(('function'==typeof t?Bn:zn)(e,t))}};var Fr=function(e){return'string'==typeof e?new Wn([[document.querySelector(e)]],[document.documentElement]):new Wn([[e]],Pr)},zr=function(){for(var e,t=qr;e=t.sourceEvent;)t=e;return t},Yr=function(e,t){var n=e.ownerSVGElement||e;if(n.createSVGPoint){var i=n.createSVGPoint();return i.x=t.clientX,i.y=t.clientY,i=i.matrixTransform(e.getScreenCTM().inverse()),[i.x,i.y]}var a=e.getBoundingClientRect();return[t.clientX-a.left-e.clientLeft,t.clientY-a.top-e.clientTop]},Br=function(e){var t=zr();return t.changedTouches&&(t=t.changedTouches[0]),Yr(e,t)},Wr=function(e,t,a){3>arguments.length&&(a=t,t=zr().changedTouches);for(var d,r=0,i=t?t.length:0;r<i;++r)if((d=t[r]).identifier===a)return Yr(e,d);return null},Vr=function(){qr.preventDefault(),qr.stopImmediatePropagation()},Kr=function(e){var t=e.document.documentElement,n=Fr(e).on('dragstart.drag',Vr,!0);'onselectstart'in t?n.on('selectstart.drag',Vr,!0):(t.__noselect=t.style.MozUserSelect,t.style.MozUserSelect='none')};$n.prototype.on=function(){var e=this._.on.apply(this._,arguments);return e===this._?this:e};var $r=function(){function e(e){e.on('mousedown.drag',t).filter(h).on('touchstart.drag',a).on('touchmove.drag',d).on('touchend.drag touchcancel.drag',r).style('touch-action','none').style('-webkit-tap-highlight-color','rgba(0,0,0,0)')}function t(){if(!u&&p.apply(this,arguments)){var e=o('mouse',g.apply(this,arguments),Br,this,arguments);e&&(Fr(qr.view).on('mousemove.drag',n,!0).on('mouseup.drag',i,!0),Kr(qr.view),Vn(),c=!1,l=qr.clientX,s=qr.clientY,e('start'))}}function n(){if(Vr(),!c){var e=qr.clientX-l,t=qr.clientY-s;c=e*e+t*t>x}b.mouse('drag')}function i(){Fr(qr.view).on('mousemove.drag mouseup.drag',null),Kn(qr.view,c),Vr(),b.mouse('end')}function a(){if(p.apply(this,arguments)){var e,t,i=qr.changedTouches,a=g.apply(this,arguments),d=i.length;for(e=0;e<d;++e)(t=o(i[e].identifier,a,Wr,this,arguments))&&(Vn(),t('start'))}}function d(){var e,t,i=qr.changedTouches,a=i.length;for(e=0;e<a;++e)(t=b[i[e].identifier])&&(Vr(),t('drag'))}function r(){var e,t,i=qr.changedTouches,a=i.length;for(u&&clearTimeout(u),u=setTimeout(function(){u=null},500),e=0;e<a;++e)(t=b[i[e].identifier])&&(Vn(),t('end'))}function o(t,i,a,d,r){var o,l,s,c=a(i,t),u=m.copy();return Pn(new $n(e,'beforestart',o,t,y,c[0],c[1],0,0,u),function(){return null!=(qr.subject=o=f.apply(d,r))&&(l=o.x-c[0]||0,s=o.y-c[1]||0,!0)})?function p(g){var f,n=c;switch(g){case'start':b[t]=p,f=y++;break;case'end':delete b[t],--y;case'drag':c=a(i,t),f=y;}Pn(new $n(e,g,o,t,f,c[0]+l,c[1]+s,c[0]-n[0],c[1]-n[1],u),u.apply,u,[g,d,r])}:void 0}var l,s,c,u,p=Qn,g=Jn,f=Gn,h=ei,b={},m=zt('start','drag','end'),y=0,x=0;return e.filter=function(t){return arguments.length?(p='function'==typeof t?t:constant(!!t),e):p},e.container=function(t){return arguments.length?(g='function'==typeof t?t:constant(t),e):g},e.subject=function(t){return arguments.length?(f='function'==typeof t?t:constant(t),e):f},e.touchable=function(t){return arguments.length?(h='function'==typeof t?t:constant(!!t),e):h},e.on=function(){var t=m.on.apply(m,arguments);return t===m?e:t},e.clickDistance=function(t){return arguments.length?(x=(t=+t)*t,e):ai(x)},e};const Qr=Ti('d-slider',`
+`);
+
+  class Interstitial extends T$a(HTMLElement) {
+
+    connectedCallback() {
+      if (this.shouldRemoveSelf()) {
+        this.parentElement.removeChild(this);
+      } else {
+        const passwordInput = this.root.querySelector('#interstitial-password-input');
+        passwordInput.oninput = (event) => this.passwordChanged(event);
+      }
+    }
+
+    passwordChanged(event) {
+      const entered = event.target.value;
+      if (entered === this.password) {
+        console.log('Correct password entered.');
+        this.parentElement.removeChild(this);
+        if (typeof(Storage) !== 'undefined') {
+          console.log('Saved that correct password was entered.');
+          localStorage.setItem(this.localStorageIdentifier(), 'true');
+        }
+      }
+    }
+
+    shouldRemoveSelf() {
+      // should never be visible in production
+      if (window && window.location.hostname === productionHostname) {
+        console.warn('Interstitial found on production, hiding it.');
+        return true
+      }
+      // should only have to enter password once
+      if (typeof(Storage) !== 'undefined') {
+        if (localStorage.getItem(this.localStorageIdentifier()) === 'true') {
+          console.log('Loaded that correct password was entered before; skipping interstitial.');
+          return true;
+        }
+      }
+      // otherwise, leave visible
+      return false;
+    }
+
+    localStorageIdentifier() {
+      const prefix = 'distill-drafts';
+      const suffix = 'interstitial-password-correct';
+      return prefix + (window ? window.location.pathname : '-') + suffix
+    }
+
+  }
+
+  function ascending(a, b) {
+    return a < b ? -1 : a > b ? 1 : a >= b ? 0 : NaN;
+  }
+
+  function bisector(compare) {
+    if (compare.length === 1) compare = ascendingComparator(compare);
+    return {
+      left: function(a, x, lo, hi) {
+        if (lo == null) lo = 0;
+        if (hi == null) hi = a.length;
+        while (lo < hi) {
+          var mid = lo + hi >>> 1;
+          if (compare(a[mid], x) < 0) lo = mid + 1;
+          else hi = mid;
+        }
+        return lo;
+      },
+      right: function(a, x, lo, hi) {
+        if (lo == null) lo = 0;
+        if (hi == null) hi = a.length;
+        while (lo < hi) {
+          var mid = lo + hi >>> 1;
+          if (compare(a[mid], x) > 0) hi = mid;
+          else lo = mid + 1;
+        }
+        return lo;
+      }
+    };
+  }
+
+  function ascendingComparator(f) {
+    return function(d, x) {
+      return ascending(f(d), x);
+    };
+  }
+
+  var ascendingBisect = bisector(ascending);
+  var bisectRight = ascendingBisect.right;
+
+  function range(start, stop, step) {
+    start = +start, stop = +stop, step = (n = arguments.length) < 2 ? (stop = start, start = 0, 1) : n < 3 ? 1 : +step;
+
+    var i = -1,
+        n = Math.max(0, Math.ceil((stop - start) / step)) | 0,
+        range = new Array(n);
+
+    while (++i < n) {
+      range[i] = start + i * step;
+    }
+
+    return range;
+  }
+
+  var e10 = Math.sqrt(50),
+      e5 = Math.sqrt(10),
+      e2 = Math.sqrt(2);
+
+  function ticks(start, stop, count) {
+    var reverse,
+        i = -1,
+        n,
+        ticks,
+        step;
+
+    stop = +stop, start = +start, count = +count;
+    if (start === stop && count > 0) return [start];
+    if (reverse = stop < start) n = start, start = stop, stop = n;
+    if ((step = tickIncrement(start, stop, count)) === 0 || !isFinite(step)) return [];
+
+    if (step > 0) {
+      start = Math.ceil(start / step);
+      stop = Math.floor(stop / step);
+      ticks = new Array(n = Math.ceil(stop - start + 1));
+      while (++i < n) ticks[i] = (start + i) * step;
+    } else {
+      start = Math.floor(start * step);
+      stop = Math.ceil(stop * step);
+      ticks = new Array(n = Math.ceil(start - stop + 1));
+      while (++i < n) ticks[i] = (start - i) / step;
+    }
+
+    if (reverse) ticks.reverse();
+
+    return ticks;
+  }
+
+  function tickIncrement(start, stop, count) {
+    var step = (stop - start) / Math.max(0, count),
+        power = Math.floor(Math.log(step) / Math.LN10),
+        error = step / Math.pow(10, power);
+    return power >= 0
+        ? (error >= e10 ? 10 : error >= e5 ? 5 : error >= e2 ? 2 : 1) * Math.pow(10, power)
+        : -Math.pow(10, -power) / (error >= e10 ? 10 : error >= e5 ? 5 : error >= e2 ? 2 : 1);
+  }
+
+  function tickStep(start, stop, count) {
+    var step0 = Math.abs(stop - start) / Math.max(0, count),
+        step1 = Math.pow(10, Math.floor(Math.log(step0) / Math.LN10)),
+        error = step0 / step1;
+    if (error >= e10) step1 *= 10;
+    else if (error >= e5) step1 *= 5;
+    else if (error >= e2) step1 *= 2;
+    return stop < start ? -step1 : step1;
+  }
+
+  function initRange(domain, range) {
+    switch (arguments.length) {
+      case 0: break;
+      case 1: this.range(domain); break;
+      default: this.range(range).domain(domain); break;
+    }
+    return this;
+  }
+
+  function define(constructor, factory, prototype) {
+    constructor.prototype = factory.prototype = prototype;
+    prototype.constructor = constructor;
+  }
+
+  function extend(parent, definition) {
+    var prototype = Object.create(parent.prototype);
+    for (var key in definition) prototype[key] = definition[key];
+    return prototype;
+  }
+
+  function Color() {}
+
+  var darker = 0.7;
+  var brighter = 1 / darker;
+
+  var reI = "\\s*([+-]?\\d+)\\s*",
+      reN = "\\s*([+-]?\\d*\\.?\\d+(?:[eE][+-]?\\d+)?)\\s*",
+      reP = "\\s*([+-]?\\d*\\.?\\d+(?:[eE][+-]?\\d+)?)%\\s*",
+      reHex = /^#([0-9a-f]{3,8})$/,
+      reRgbInteger = new RegExp("^rgb\\(" + [reI, reI, reI] + "\\)$"),
+      reRgbPercent = new RegExp("^rgb\\(" + [reP, reP, reP] + "\\)$"),
+      reRgbaInteger = new RegExp("^rgba\\(" + [reI, reI, reI, reN] + "\\)$"),
+      reRgbaPercent = new RegExp("^rgba\\(" + [reP, reP, reP, reN] + "\\)$"),
+      reHslPercent = new RegExp("^hsl\\(" + [reN, reP, reP] + "\\)$"),
+      reHslaPercent = new RegExp("^hsla\\(" + [reN, reP, reP, reN] + "\\)$");
+
+  var named = {
+    aliceblue: 0xf0f8ff,
+    antiquewhite: 0xfaebd7,
+    aqua: 0x00ffff,
+    aquamarine: 0x7fffd4,
+    azure: 0xf0ffff,
+    beige: 0xf5f5dc,
+    bisque: 0xffe4c4,
+    black: 0x000000,
+    blanchedalmond: 0xffebcd,
+    blue: 0x0000ff,
+    blueviolet: 0x8a2be2,
+    brown: 0xa52a2a,
+    burlywood: 0xdeb887,
+    cadetblue: 0x5f9ea0,
+    chartreuse: 0x7fff00,
+    chocolate: 0xd2691e,
+    coral: 0xff7f50,
+    cornflowerblue: 0x6495ed,
+    cornsilk: 0xfff8dc,
+    crimson: 0xdc143c,
+    cyan: 0x00ffff,
+    darkblue: 0x00008b,
+    darkcyan: 0x008b8b,
+    darkgoldenrod: 0xb8860b,
+    darkgray: 0xa9a9a9,
+    darkgreen: 0x006400,
+    darkgrey: 0xa9a9a9,
+    darkkhaki: 0xbdb76b,
+    darkmagenta: 0x8b008b,
+    darkolivegreen: 0x556b2f,
+    darkorange: 0xff8c00,
+    darkorchid: 0x9932cc,
+    darkred: 0x8b0000,
+    darksalmon: 0xe9967a,
+    darkseagreen: 0x8fbc8f,
+    darkslateblue: 0x483d8b,
+    darkslategray: 0x2f4f4f,
+    darkslategrey: 0x2f4f4f,
+    darkturquoise: 0x00ced1,
+    darkviolet: 0x9400d3,
+    deeppink: 0xff1493,
+    deepskyblue: 0x00bfff,
+    dimgray: 0x696969,
+    dimgrey: 0x696969,
+    dodgerblue: 0x1e90ff,
+    firebrick: 0xb22222,
+    floralwhite: 0xfffaf0,
+    forestgreen: 0x228b22,
+    fuchsia: 0xff00ff,
+    gainsboro: 0xdcdcdc,
+    ghostwhite: 0xf8f8ff,
+    gold: 0xffd700,
+    goldenrod: 0xdaa520,
+    gray: 0x808080,
+    green: 0x008000,
+    greenyellow: 0xadff2f,
+    grey: 0x808080,
+    honeydew: 0xf0fff0,
+    hotpink: 0xff69b4,
+    indianred: 0xcd5c5c,
+    indigo: 0x4b0082,
+    ivory: 0xfffff0,
+    khaki: 0xf0e68c,
+    lavender: 0xe6e6fa,
+    lavenderblush: 0xfff0f5,
+    lawngreen: 0x7cfc00,
+    lemonchiffon: 0xfffacd,
+    lightblue: 0xadd8e6,
+    lightcoral: 0xf08080,
+    lightcyan: 0xe0ffff,
+    lightgoldenrodyellow: 0xfafad2,
+    lightgray: 0xd3d3d3,
+    lightgreen: 0x90ee90,
+    lightgrey: 0xd3d3d3,
+    lightpink: 0xffb6c1,
+    lightsalmon: 0xffa07a,
+    lightseagreen: 0x20b2aa,
+    lightskyblue: 0x87cefa,
+    lightslategray: 0x778899,
+    lightslategrey: 0x778899,
+    lightsteelblue: 0xb0c4de,
+    lightyellow: 0xffffe0,
+    lime: 0x00ff00,
+    limegreen: 0x32cd32,
+    linen: 0xfaf0e6,
+    magenta: 0xff00ff,
+    maroon: 0x800000,
+    mediumaquamarine: 0x66cdaa,
+    mediumblue: 0x0000cd,
+    mediumorchid: 0xba55d3,
+    mediumpurple: 0x9370db,
+    mediumseagreen: 0x3cb371,
+    mediumslateblue: 0x7b68ee,
+    mediumspringgreen: 0x00fa9a,
+    mediumturquoise: 0x48d1cc,
+    mediumvioletred: 0xc71585,
+    midnightblue: 0x191970,
+    mintcream: 0xf5fffa,
+    mistyrose: 0xffe4e1,
+    moccasin: 0xffe4b5,
+    navajowhite: 0xffdead,
+    navy: 0x000080,
+    oldlace: 0xfdf5e6,
+    olive: 0x808000,
+    olivedrab: 0x6b8e23,
+    orange: 0xffa500,
+    orangered: 0xff4500,
+    orchid: 0xda70d6,
+    palegoldenrod: 0xeee8aa,
+    palegreen: 0x98fb98,
+    paleturquoise: 0xafeeee,
+    palevioletred: 0xdb7093,
+    papayawhip: 0xffefd5,
+    peachpuff: 0xffdab9,
+    peru: 0xcd853f,
+    pink: 0xffc0cb,
+    plum: 0xdda0dd,
+    powderblue: 0xb0e0e6,
+    purple: 0x800080,
+    rebeccapurple: 0x663399,
+    red: 0xff0000,
+    rosybrown: 0xbc8f8f,
+    royalblue: 0x4169e1,
+    saddlebrown: 0x8b4513,
+    salmon: 0xfa8072,
+    sandybrown: 0xf4a460,
+    seagreen: 0x2e8b57,
+    seashell: 0xfff5ee,
+    sienna: 0xa0522d,
+    silver: 0xc0c0c0,
+    skyblue: 0x87ceeb,
+    slateblue: 0x6a5acd,
+    slategray: 0x708090,
+    slategrey: 0x708090,
+    snow: 0xfffafa,
+    springgreen: 0x00ff7f,
+    steelblue: 0x4682b4,
+    tan: 0xd2b48c,
+    teal: 0x008080,
+    thistle: 0xd8bfd8,
+    tomato: 0xff6347,
+    turquoise: 0x40e0d0,
+    violet: 0xee82ee,
+    wheat: 0xf5deb3,
+    white: 0xffffff,
+    whitesmoke: 0xf5f5f5,
+    yellow: 0xffff00,
+    yellowgreen: 0x9acd32
+  };
+
+  define(Color, color, {
+    copy: function(channels) {
+      return Object.assign(new this.constructor, this, channels);
+    },
+    displayable: function() {
+      return this.rgb().displayable();
+    },
+    hex: color_formatHex, // Deprecated! Use color.formatHex.
+    formatHex: color_formatHex,
+    formatHsl: color_formatHsl,
+    formatRgb: color_formatRgb,
+    toString: color_formatRgb
+  });
+
+  function color_formatHex() {
+    return this.rgb().formatHex();
+  }
+
+  function color_formatHsl() {
+    return hslConvert(this).formatHsl();
+  }
+
+  function color_formatRgb() {
+    return this.rgb().formatRgb();
+  }
+
+  function color(format) {
+    var m, l;
+    format = (format + "").trim().toLowerCase();
+    return (m = reHex.exec(format)) ? (l = m[1].length, m = parseInt(m[1], 16), l === 6 ? rgbn(m) // #ff0000
+        : l === 3 ? new Rgb((m >> 8 & 0xf) | (m >> 4 & 0xf0), (m >> 4 & 0xf) | (m & 0xf0), ((m & 0xf) << 4) | (m & 0xf), 1) // #f00
+        : l === 8 ? rgba(m >> 24 & 0xff, m >> 16 & 0xff, m >> 8 & 0xff, (m & 0xff) / 0xff) // #ff000000
+        : l === 4 ? rgba((m >> 12 & 0xf) | (m >> 8 & 0xf0), (m >> 8 & 0xf) | (m >> 4 & 0xf0), (m >> 4 & 0xf) | (m & 0xf0), (((m & 0xf) << 4) | (m & 0xf)) / 0xff) // #f000
+        : null) // invalid hex
+        : (m = reRgbInteger.exec(format)) ? new Rgb(m[1], m[2], m[3], 1) // rgb(255, 0, 0)
+        : (m = reRgbPercent.exec(format)) ? new Rgb(m[1] * 255 / 100, m[2] * 255 / 100, m[3] * 255 / 100, 1) // rgb(100%, 0%, 0%)
+        : (m = reRgbaInteger.exec(format)) ? rgba(m[1], m[2], m[3], m[4]) // rgba(255, 0, 0, 1)
+        : (m = reRgbaPercent.exec(format)) ? rgba(m[1] * 255 / 100, m[2] * 255 / 100, m[3] * 255 / 100, m[4]) // rgb(100%, 0%, 0%, 1)
+        : (m = reHslPercent.exec(format)) ? hsla(m[1], m[2] / 100, m[3] / 100, 1) // hsl(120, 50%, 50%)
+        : (m = reHslaPercent.exec(format)) ? hsla(m[1], m[2] / 100, m[3] / 100, m[4]) // hsla(120, 50%, 50%, 1)
+        : named.hasOwnProperty(format) ? rgbn(named[format]) // eslint-disable-line no-prototype-builtins
+        : format === "transparent" ? new Rgb(NaN, NaN, NaN, 0)
+        : null;
+  }
+
+  function rgbn(n) {
+    return new Rgb(n >> 16 & 0xff, n >> 8 & 0xff, n & 0xff, 1);
+  }
+
+  function rgba(r, g, b, a) {
+    if (a <= 0) r = g = b = NaN;
+    return new Rgb(r, g, b, a);
+  }
+
+  function rgbConvert(o) {
+    if (!(o instanceof Color)) o = color(o);
+    if (!o) return new Rgb;
+    o = o.rgb();
+    return new Rgb(o.r, o.g, o.b, o.opacity);
+  }
+
+  function rgb(r, g, b, opacity) {
+    return arguments.length === 1 ? rgbConvert(r) : new Rgb(r, g, b, opacity == null ? 1 : opacity);
+  }
+
+  function Rgb(r, g, b, opacity) {
+    this.r = +r;
+    this.g = +g;
+    this.b = +b;
+    this.opacity = +opacity;
+  }
+
+  define(Rgb, rgb, extend(Color, {
+    brighter: function(k) {
+      k = k == null ? brighter : Math.pow(brighter, k);
+      return new Rgb(this.r * k, this.g * k, this.b * k, this.opacity);
+    },
+    darker: function(k) {
+      k = k == null ? darker : Math.pow(darker, k);
+      return new Rgb(this.r * k, this.g * k, this.b * k, this.opacity);
+    },
+    rgb: function() {
+      return this;
+    },
+    displayable: function() {
+      return (-0.5 <= this.r && this.r < 255.5)
+          && (-0.5 <= this.g && this.g < 255.5)
+          && (-0.5 <= this.b && this.b < 255.5)
+          && (0 <= this.opacity && this.opacity <= 1);
+    },
+    hex: rgb_formatHex, // Deprecated! Use color.formatHex.
+    formatHex: rgb_formatHex,
+    formatRgb: rgb_formatRgb,
+    toString: rgb_formatRgb
+  }));
+
+  function rgb_formatHex() {
+    return "#" + hex(this.r) + hex(this.g) + hex(this.b);
+  }
+
+  function rgb_formatRgb() {
+    var a = this.opacity; a = isNaN(a) ? 1 : Math.max(0, Math.min(1, a));
+    return (a === 1 ? "rgb(" : "rgba(")
+        + Math.max(0, Math.min(255, Math.round(this.r) || 0)) + ", "
+        + Math.max(0, Math.min(255, Math.round(this.g) || 0)) + ", "
+        + Math.max(0, Math.min(255, Math.round(this.b) || 0))
+        + (a === 1 ? ")" : ", " + a + ")");
+  }
+
+  function hex(value) {
+    value = Math.max(0, Math.min(255, Math.round(value) || 0));
+    return (value < 16 ? "0" : "") + value.toString(16);
+  }
+
+  function hsla(h, s, l, a) {
+    if (a <= 0) h = s = l = NaN;
+    else if (l <= 0 || l >= 1) h = s = NaN;
+    else if (s <= 0) h = NaN;
+    return new Hsl(h, s, l, a);
+  }
+
+  function hslConvert(o) {
+    if (o instanceof Hsl) return new Hsl(o.h, o.s, o.l, o.opacity);
+    if (!(o instanceof Color)) o = color(o);
+    if (!o) return new Hsl;
+    if (o instanceof Hsl) return o;
+    o = o.rgb();
+    var r = o.r / 255,
+        g = o.g / 255,
+        b = o.b / 255,
+        min = Math.min(r, g, b),
+        max = Math.max(r, g, b),
+        h = NaN,
+        s = max - min,
+        l = (max + min) / 2;
+    if (s) {
+      if (r === max) h = (g - b) / s + (g < b) * 6;
+      else if (g === max) h = (b - r) / s + 2;
+      else h = (r - g) / s + 4;
+      s /= l < 0.5 ? max + min : 2 - max - min;
+      h *= 60;
+    } else {
+      s = l > 0 && l < 1 ? 0 : h;
+    }
+    return new Hsl(h, s, l, o.opacity);
+  }
+
+  function hsl(h, s, l, opacity) {
+    return arguments.length === 1 ? hslConvert(h) : new Hsl(h, s, l, opacity == null ? 1 : opacity);
+  }
+
+  function Hsl(h, s, l, opacity) {
+    this.h = +h;
+    this.s = +s;
+    this.l = +l;
+    this.opacity = +opacity;
+  }
+
+  define(Hsl, hsl, extend(Color, {
+    brighter: function(k) {
+      k = k == null ? brighter : Math.pow(brighter, k);
+      return new Hsl(this.h, this.s, this.l * k, this.opacity);
+    },
+    darker: function(k) {
+      k = k == null ? darker : Math.pow(darker, k);
+      return new Hsl(this.h, this.s, this.l * k, this.opacity);
+    },
+    rgb: function() {
+      var h = this.h % 360 + (this.h < 0) * 360,
+          s = isNaN(h) || isNaN(this.s) ? 0 : this.s,
+          l = this.l,
+          m2 = l + (l < 0.5 ? l : 1 - l) * s,
+          m1 = 2 * l - m2;
+      return new Rgb(
+        hsl2rgb(h >= 240 ? h - 240 : h + 120, m1, m2),
+        hsl2rgb(h, m1, m2),
+        hsl2rgb(h < 120 ? h + 240 : h - 120, m1, m2),
+        this.opacity
+      );
+    },
+    displayable: function() {
+      return (0 <= this.s && this.s <= 1 || isNaN(this.s))
+          && (0 <= this.l && this.l <= 1)
+          && (0 <= this.opacity && this.opacity <= 1);
+    },
+    formatHsl: function() {
+      var a = this.opacity; a = isNaN(a) ? 1 : Math.max(0, Math.min(1, a));
+      return (a === 1 ? "hsl(" : "hsla(")
+          + (this.h || 0) + ", "
+          + (this.s || 0) * 100 + "%, "
+          + (this.l || 0) * 100 + "%"
+          + (a === 1 ? ")" : ", " + a + ")");
+    }
+  }));
+
+  /* From FvD 13.37, CSS Color Module Level 3 */
+  function hsl2rgb(h, m1, m2) {
+    return (h < 60 ? m1 + (m2 - m1) * h / 60
+        : h < 180 ? m2
+        : h < 240 ? m1 + (m2 - m1) * (240 - h) / 60
+        : m1) * 255;
+  }
+
+  var deg2rad = Math.PI / 180;
+  var rad2deg = 180 / Math.PI;
+
+  // https://observablehq.com/@mbostock/lab-and-rgb
+  var K = 18,
+      Xn = 0.96422,
+      Yn = 1,
+      Zn = 0.82521,
+      t0 = 4 / 29,
+      t1 = 6 / 29,
+      t2 = 3 * t1 * t1,
+      t3 = t1 * t1 * t1;
+
+  function labConvert(o) {
+    if (o instanceof Lab) return new Lab(o.l, o.a, o.b, o.opacity);
+    if (o instanceof Hcl) return hcl2lab(o);
+    if (!(o instanceof Rgb)) o = rgbConvert(o);
+    var r = rgb2lrgb(o.r),
+        g = rgb2lrgb(o.g),
+        b = rgb2lrgb(o.b),
+        y = xyz2lab((0.2225045 * r + 0.7168786 * g + 0.0606169 * b) / Yn), x, z;
+    if (r === g && g === b) x = z = y; else {
+      x = xyz2lab((0.4360747 * r + 0.3850649 * g + 0.1430804 * b) / Xn);
+      z = xyz2lab((0.0139322 * r + 0.0971045 * g + 0.7141733 * b) / Zn);
+    }
+    return new Lab(116 * y - 16, 500 * (x - y), 200 * (y - z), o.opacity);
+  }
+
+  function lab(l, a, b, opacity) {
+    return arguments.length === 1 ? labConvert(l) : new Lab(l, a, b, opacity == null ? 1 : opacity);
+  }
+
+  function Lab(l, a, b, opacity) {
+    this.l = +l;
+    this.a = +a;
+    this.b = +b;
+    this.opacity = +opacity;
+  }
+
+  define(Lab, lab, extend(Color, {
+    brighter: function(k) {
+      return new Lab(this.l + K * (k == null ? 1 : k), this.a, this.b, this.opacity);
+    },
+    darker: function(k) {
+      return new Lab(this.l - K * (k == null ? 1 : k), this.a, this.b, this.opacity);
+    },
+    rgb: function() {
+      var y = (this.l + 16) / 116,
+          x = isNaN(this.a) ? y : y + this.a / 500,
+          z = isNaN(this.b) ? y : y - this.b / 200;
+      x = Xn * lab2xyz(x);
+      y = Yn * lab2xyz(y);
+      z = Zn * lab2xyz(z);
+      return new Rgb(
+        lrgb2rgb( 3.1338561 * x - 1.6168667 * y - 0.4906146 * z),
+        lrgb2rgb(-0.9787684 * x + 1.9161415 * y + 0.0334540 * z),
+        lrgb2rgb( 0.0719453 * x - 0.2289914 * y + 1.4052427 * z),
+        this.opacity
+      );
+    }
+  }));
+
+  function xyz2lab(t) {
+    return t > t3 ? Math.pow(t, 1 / 3) : t / t2 + t0;
+  }
+
+  function lab2xyz(t) {
+    return t > t1 ? t * t * t : t2 * (t - t0);
+  }
+
+  function lrgb2rgb(x) {
+    return 255 * (x <= 0.0031308 ? 12.92 * x : 1.055 * Math.pow(x, 1 / 2.4) - 0.055);
+  }
+
+  function rgb2lrgb(x) {
+    return (x /= 255) <= 0.04045 ? x / 12.92 : Math.pow((x + 0.055) / 1.055, 2.4);
+  }
+
+  function hclConvert(o) {
+    if (o instanceof Hcl) return new Hcl(o.h, o.c, o.l, o.opacity);
+    if (!(o instanceof Lab)) o = labConvert(o);
+    if (o.a === 0 && o.b === 0) return new Hcl(NaN, 0 < o.l && o.l < 100 ? 0 : NaN, o.l, o.opacity);
+    var h = Math.atan2(o.b, o.a) * rad2deg;
+    return new Hcl(h < 0 ? h + 360 : h, Math.sqrt(o.a * o.a + o.b * o.b), o.l, o.opacity);
+  }
+
+  function hcl(h, c, l, opacity) {
+    return arguments.length === 1 ? hclConvert(h) : new Hcl(h, c, l, opacity == null ? 1 : opacity);
+  }
+
+  function Hcl(h, c, l, opacity) {
+    this.h = +h;
+    this.c = +c;
+    this.l = +l;
+    this.opacity = +opacity;
+  }
+
+  function hcl2lab(o) {
+    if (isNaN(o.h)) return new Lab(o.l, 0, 0, o.opacity);
+    var h = o.h * deg2rad;
+    return new Lab(o.l, Math.cos(h) * o.c, Math.sin(h) * o.c, o.opacity);
+  }
+
+  define(Hcl, hcl, extend(Color, {
+    brighter: function(k) {
+      return new Hcl(this.h, this.c, this.l + K * (k == null ? 1 : k), this.opacity);
+    },
+    darker: function(k) {
+      return new Hcl(this.h, this.c, this.l - K * (k == null ? 1 : k), this.opacity);
+    },
+    rgb: function() {
+      return hcl2lab(this).rgb();
+    }
+  }));
+
+  var A = -0.14861,
+      B = +1.78277,
+      C = -0.29227,
+      D = -0.90649,
+      E = +1.97294,
+      ED = E * D,
+      EB = E * B,
+      BC_DA = B * C - D * A;
+
+  function cubehelixConvert(o) {
+    if (o instanceof Cubehelix) return new Cubehelix(o.h, o.s, o.l, o.opacity);
+    if (!(o instanceof Rgb)) o = rgbConvert(o);
+    var r = o.r / 255,
+        g = o.g / 255,
+        b = o.b / 255,
+        l = (BC_DA * b + ED * r - EB * g) / (BC_DA + ED - EB),
+        bl = b - l,
+        k = (E * (g - l) - C * bl) / D,
+        s = Math.sqrt(k * k + bl * bl) / (E * l * (1 - l)), // NaN if l=0 or l=1
+        h = s ? Math.atan2(k, bl) * rad2deg - 120 : NaN;
+    return new Cubehelix(h < 0 ? h + 360 : h, s, l, o.opacity);
+  }
+
+  function cubehelix(h, s, l, opacity) {
+    return arguments.length === 1 ? cubehelixConvert(h) : new Cubehelix(h, s, l, opacity == null ? 1 : opacity);
+  }
+
+  function Cubehelix(h, s, l, opacity) {
+    this.h = +h;
+    this.s = +s;
+    this.l = +l;
+    this.opacity = +opacity;
+  }
+
+  define(Cubehelix, cubehelix, extend(Color, {
+    brighter: function(k) {
+      k = k == null ? brighter : Math.pow(brighter, k);
+      return new Cubehelix(this.h, this.s, this.l * k, this.opacity);
+    },
+    darker: function(k) {
+      k = k == null ? darker : Math.pow(darker, k);
+      return new Cubehelix(this.h, this.s, this.l * k, this.opacity);
+    },
+    rgb: function() {
+      var h = isNaN(this.h) ? 0 : (this.h + 120) * deg2rad,
+          l = +this.l,
+          a = isNaN(this.s) ? 0 : this.s * l * (1 - l),
+          cosh = Math.cos(h),
+          sinh = Math.sin(h);
+      return new Rgb(
+        255 * (l + a * (A * cosh + B * sinh)),
+        255 * (l + a * (C * cosh + D * sinh)),
+        255 * (l + a * (E * cosh)),
+        this.opacity
+      );
+    }
+  }));
+
+  function constant(x) {
+    return function() {
+      return x;
+    };
+  }
+
+  function linear(a, d) {
+    return function(t) {
+      return a + t * d;
+    };
+  }
+
+  function exponential(a, b, y) {
+    return a = Math.pow(a, y), b = Math.pow(b, y) - a, y = 1 / y, function(t) {
+      return Math.pow(a + t * b, y);
+    };
+  }
+
+  function gamma(y) {
+    return (y = +y) === 1 ? nogamma : function(a, b) {
+      return b - a ? exponential(a, b, y) : constant(isNaN(a) ? b : a);
+    };
+  }
+
+  function nogamma(a, b) {
+    var d = b - a;
+    return d ? linear(a, d) : constant(isNaN(a) ? b : a);
+  }
+
+  var rgb$1 = (function rgbGamma(y) {
+    var color = gamma(y);
+
+    function rgb$1(start, end) {
+      var r = color((start = rgb(start)).r, (end = rgb(end)).r),
+          g = color(start.g, end.g),
+          b = color(start.b, end.b),
+          opacity = nogamma(start.opacity, end.opacity);
+      return function(t) {
+        start.r = r(t);
+        start.g = g(t);
+        start.b = b(t);
+        start.opacity = opacity(t);
+        return start + "";
+      };
+    }
+
+    rgb$1.gamma = rgbGamma;
+
+    return rgb$1;
+  })(1);
+
+  function numberArray(a, b) {
+    if (!b) b = [];
+    var n = a ? Math.min(b.length, a.length) : 0,
+        c = b.slice(),
+        i;
+    return function(t) {
+      for (i = 0; i < n; ++i) c[i] = a[i] * (1 - t) + b[i] * t;
+      return c;
+    };
+  }
+
+  function isNumberArray(x) {
+    return ArrayBuffer.isView(x) && !(x instanceof DataView);
+  }
+
+  function genericArray(a, b) {
+    var nb = b ? b.length : 0,
+        na = a ? Math.min(nb, a.length) : 0,
+        x = new Array(na),
+        c = new Array(nb),
+        i;
+
+    for (i = 0; i < na; ++i) x[i] = interpolate(a[i], b[i]);
+    for (; i < nb; ++i) c[i] = b[i];
+
+    return function(t) {
+      for (i = 0; i < na; ++i) c[i] = x[i](t);
+      return c;
+    };
+  }
+
+  function date(a, b) {
+    var d = new Date;
+    return a = +a, b = +b, function(t) {
+      return d.setTime(a * (1 - t) + b * t), d;
+    };
+  }
+
+  function interpolateNumber(a, b) {
+    return a = +a, b = +b, function(t) {
+      return a * (1 - t) + b * t;
+    };
+  }
+
+  function object(a, b) {
+    var i = {},
+        c = {},
+        k;
+
+    if (a === null || typeof a !== "object") a = {};
+    if (b === null || typeof b !== "object") b = {};
+
+    for (k in b) {
+      if (k in a) {
+        i[k] = interpolate(a[k], b[k]);
+      } else {
+        c[k] = b[k];
+      }
+    }
+
+    return function(t) {
+      for (k in i) c[k] = i[k](t);
+      return c;
+    };
+  }
+
+  var reA = /[-+]?(?:\d+\.?\d*|\.?\d+)(?:[eE][-+]?\d+)?/g,
+      reB = new RegExp(reA.source, "g");
+
+  function zero(b) {
+    return function() {
+      return b;
+    };
+  }
+
+  function one(b) {
+    return function(t) {
+      return b(t) + "";
+    };
+  }
+
+  function string(a, b) {
+    var bi = reA.lastIndex = reB.lastIndex = 0, // scan index for next number in b
+        am, // current match in a
+        bm, // current match in b
+        bs, // string preceding current number in b, if any
+        i = -1, // index in s
+        s = [], // string constants and placeholders
+        q = []; // number interpolators
+
+    // Coerce inputs to strings.
+    a = a + "", b = b + "";
+
+    // Interpolate pairs of numbers in a & b.
+    while ((am = reA.exec(a))
+        && (bm = reB.exec(b))) {
+      if ((bs = bm.index) > bi) { // a string precedes the next number in b
+        bs = b.slice(bi, bs);
+        if (s[i]) s[i] += bs; // coalesce with previous string
+        else s[++i] = bs;
+      }
+      if ((am = am[0]) === (bm = bm[0])) { // numbers in a & b match
+        if (s[i]) s[i] += bm; // coalesce with previous string
+        else s[++i] = bm;
+      } else { // interpolate non-matching numbers
+        s[++i] = null;
+        q.push({i: i, x: interpolateNumber(am, bm)});
+      }
+      bi = reB.lastIndex;
+    }
+
+    // Add remains of b.
+    if (bi < b.length) {
+      bs = b.slice(bi);
+      if (s[i]) s[i] += bs; // coalesce with previous string
+      else s[++i] = bs;
+    }
+
+    // Special optimization for only a single match.
+    // Otherwise, interpolate each of the numbers and rejoin the string.
+    return s.length < 2 ? (q[0]
+        ? one(q[0].x)
+        : zero(b))
+        : (b = q.length, function(t) {
+            for (var i = 0, o; i < b; ++i) s[(o = q[i]).i] = o.x(t);
+            return s.join("");
+          });
+  }
+
+  function interpolate(a, b) {
+    var t = typeof b, c;
+    return b == null || t === "boolean" ? constant(b)
+        : (t === "number" ? interpolateNumber
+        : t === "string" ? ((c = color(b)) ? (b = c, rgb$1) : string)
+        : b instanceof color ? rgb$1
+        : b instanceof Date ? date
+        : isNumberArray(b) ? numberArray
+        : Array.isArray(b) ? genericArray
+        : typeof b.valueOf !== "function" && typeof b.toString !== "function" || isNaN(b) ? object
+        : interpolateNumber)(a, b);
+  }
+
+  function interpolateRound(a, b) {
+    return a = +a, b = +b, function(t) {
+      return Math.round(a * (1 - t) + b * t);
+    };
+  }
+
+  function constant$1(x) {
+    return function() {
+      return x;
+    };
+  }
+
+  function number(x) {
+    return +x;
+  }
+
+  var unit = [0, 1];
+
+  function identity(x) {
+    return x;
+  }
+
+  function normalize(a, b) {
+    return (b -= (a = +a))
+        ? function(x) { return (x - a) / b; }
+        : constant$1(isNaN(b) ? NaN : 0.5);
+  }
+
+  function clamper(a, b) {
+    var t;
+    if (a > b) t = a, a = b, b = t;
+    return function(x) { return Math.max(a, Math.min(b, x)); };
+  }
+
+  // normalize(a, b)(x) takes a domain value x in [a,b] and returns the corresponding parameter t in [0,1].
+  // interpolate(a, b)(t) takes a parameter t in [0,1] and returns the corresponding range value x in [a,b].
+  function bimap(domain, range, interpolate) {
+    var d0 = domain[0], d1 = domain[1], r0 = range[0], r1 = range[1];
+    if (d1 < d0) d0 = normalize(d1, d0), r0 = interpolate(r1, r0);
+    else d0 = normalize(d0, d1), r0 = interpolate(r0, r1);
+    return function(x) { return r0(d0(x)); };
+  }
+
+  function polymap(domain, range, interpolate) {
+    var j = Math.min(domain.length, range.length) - 1,
+        d = new Array(j),
+        r = new Array(j),
+        i = -1;
+
+    // Reverse descending domains.
+    if (domain[j] < domain[0]) {
+      domain = domain.slice().reverse();
+      range = range.slice().reverse();
+    }
+
+    while (++i < j) {
+      d[i] = normalize(domain[i], domain[i + 1]);
+      r[i] = interpolate(range[i], range[i + 1]);
+    }
+
+    return function(x) {
+      var i = bisectRight(domain, x, 1, j) - 1;
+      return r[i](d[i](x));
+    };
+  }
+
+  function copy(source, target) {
+    return target
+        .domain(source.domain())
+        .range(source.range())
+        .interpolate(source.interpolate())
+        .clamp(source.clamp())
+        .unknown(source.unknown());
+  }
+
+  function transformer() {
+    var domain = unit,
+        range = unit,
+        interpolate$1 = interpolate,
+        transform,
+        untransform,
+        unknown,
+        clamp = identity,
+        piecewise,
+        output,
+        input;
+
+    function rescale() {
+      var n = Math.min(domain.length, range.length);
+      if (clamp !== identity) clamp = clamper(domain[0], domain[n - 1]);
+      piecewise = n > 2 ? polymap : bimap;
+      output = input = null;
+      return scale;
+    }
+
+    function scale(x) {
+      return isNaN(x = +x) ? unknown : (output || (output = piecewise(domain.map(transform), range, interpolate$1)))(transform(clamp(x)));
+    }
+
+    scale.invert = function(y) {
+      return clamp(untransform((input || (input = piecewise(range, domain.map(transform), interpolateNumber)))(y)));
+    };
+
+    scale.domain = function(_) {
+      return arguments.length ? (domain = Array.from(_, number), rescale()) : domain.slice();
+    };
+
+    scale.range = function(_) {
+      return arguments.length ? (range = Array.from(_), rescale()) : range.slice();
+    };
+
+    scale.rangeRound = function(_) {
+      return range = Array.from(_), interpolate$1 = interpolateRound, rescale();
+    };
+
+    scale.clamp = function(_) {
+      return arguments.length ? (clamp = _ ? true : identity, rescale()) : clamp !== identity;
+    };
+
+    scale.interpolate = function(_) {
+      return arguments.length ? (interpolate$1 = _, rescale()) : interpolate$1;
+    };
+
+    scale.unknown = function(_) {
+      return arguments.length ? (unknown = _, scale) : unknown;
+    };
+
+    return function(t, u) {
+      transform = t, untransform = u;
+      return rescale();
+    };
+  }
+
+  function continuous() {
+    return transformer()(identity, identity);
+  }
+
+  // Computes the decimal coefficient and exponent of the specified number x with
+  // significant digits p, where x is positive and p is in [1, 21] or undefined.
+  // For example, formatDecimal(1.23) returns ["123", 0].
+  function formatDecimal(x, p) {
+    if ((i = (x = p ? x.toExponential(p - 1) : x.toExponential()).indexOf("e")) < 0) return null; // NaN, ±Infinity
+    var i, coefficient = x.slice(0, i);
+
+    // The string returned by toExponential either has the form \d\.\d+e[-+]\d+
+    // (e.g., 1.2e+3) or the form \de[-+]\d+ (e.g., 1e+3).
+    return [
+      coefficient.length > 1 ? coefficient[0] + coefficient.slice(2) : coefficient,
+      +x.slice(i + 1)
+    ];
+  }
+
+  function exponent(x) {
+    return x = formatDecimal(Math.abs(x)), x ? x[1] : NaN;
+  }
+
+  function formatGroup(grouping, thousands) {
+    return function(value, width) {
+      var i = value.length,
+          t = [],
+          j = 0,
+          g = grouping[0],
+          length = 0;
+
+      while (i > 0 && g > 0) {
+        if (length + g + 1 > width) g = Math.max(1, width - length);
+        t.push(value.substring(i -= g, i + g));
+        if ((length += g + 1) > width) break;
+        g = grouping[j = (j + 1) % grouping.length];
+      }
+
+      return t.reverse().join(thousands);
+    };
+  }
+
+  function formatNumerals(numerals) {
+    return function(value) {
+      return value.replace(/[0-9]/g, function(i) {
+        return numerals[+i];
+      });
+    };
+  }
+
+  // [[fill]align][sign][symbol][0][width][,][.precision][~][type]
+  var re = /^(?:(.)?([<>=^]))?([+\-( ])?([$#])?(0)?(\d+)?(,)?(\.\d+)?(~)?([a-z%])?$/i;
+
+  function formatSpecifier(specifier) {
+    if (!(match = re.exec(specifier))) throw new Error("invalid format: " + specifier);
+    var match;
+    return new FormatSpecifier({
+      fill: match[1],
+      align: match[2],
+      sign: match[3],
+      symbol: match[4],
+      zero: match[5],
+      width: match[6],
+      comma: match[7],
+      precision: match[8] && match[8].slice(1),
+      trim: match[9],
+      type: match[10]
+    });
+  }
+
+  formatSpecifier.prototype = FormatSpecifier.prototype; // instanceof
+
+  function FormatSpecifier(specifier) {
+    this.fill = specifier.fill === undefined ? " " : specifier.fill + "";
+    this.align = specifier.align === undefined ? ">" : specifier.align + "";
+    this.sign = specifier.sign === undefined ? "-" : specifier.sign + "";
+    this.symbol = specifier.symbol === undefined ? "" : specifier.symbol + "";
+    this.zero = !!specifier.zero;
+    this.width = specifier.width === undefined ? undefined : +specifier.width;
+    this.comma = !!specifier.comma;
+    this.precision = specifier.precision === undefined ? undefined : +specifier.precision;
+    this.trim = !!specifier.trim;
+    this.type = specifier.type === undefined ? "" : specifier.type + "";
+  }
+
+  FormatSpecifier.prototype.toString = function() {
+    return this.fill
+        + this.align
+        + this.sign
+        + this.symbol
+        + (this.zero ? "0" : "")
+        + (this.width === undefined ? "" : Math.max(1, this.width | 0))
+        + (this.comma ? "," : "")
+        + (this.precision === undefined ? "" : "." + Math.max(0, this.precision | 0))
+        + (this.trim ? "~" : "")
+        + this.type;
+  };
+
+  // Trims insignificant zeros, e.g., replaces 1.2000k with 1.2k.
+  function formatTrim(s) {
+    out: for (var n = s.length, i = 1, i0 = -1, i1; i < n; ++i) {
+      switch (s[i]) {
+        case ".": i0 = i1 = i; break;
+        case "0": if (i0 === 0) i0 = i; i1 = i; break;
+        default: if (!+s[i]) break out; if (i0 > 0) i0 = 0; break;
+      }
+    }
+    return i0 > 0 ? s.slice(0, i0) + s.slice(i1 + 1) : s;
+  }
+
+  var prefixExponent;
+
+  function formatPrefixAuto(x, p) {
+    var d = formatDecimal(x, p);
+    if (!d) return x + "";
+    var coefficient = d[0],
+        exponent = d[1],
+        i = exponent - (prefixExponent = Math.max(-8, Math.min(8, Math.floor(exponent / 3))) * 3) + 1,
+        n = coefficient.length;
+    return i === n ? coefficient
+        : i > n ? coefficient + new Array(i - n + 1).join("0")
+        : i > 0 ? coefficient.slice(0, i) + "." + coefficient.slice(i)
+        : "0." + new Array(1 - i).join("0") + formatDecimal(x, Math.max(0, p + i - 1))[0]; // less than 1y!
+  }
+
+  function formatRounded(x, p) {
+    var d = formatDecimal(x, p);
+    if (!d) return x + "";
+    var coefficient = d[0],
+        exponent = d[1];
+    return exponent < 0 ? "0." + new Array(-exponent).join("0") + coefficient
+        : coefficient.length > exponent + 1 ? coefficient.slice(0, exponent + 1) + "." + coefficient.slice(exponent + 1)
+        : coefficient + new Array(exponent - coefficient.length + 2).join("0");
+  }
+
+  var formatTypes = {
+    "%": function(x, p) { return (x * 100).toFixed(p); },
+    "b": function(x) { return Math.round(x).toString(2); },
+    "c": function(x) { return x + ""; },
+    "d": function(x) { return Math.round(x).toString(10); },
+    "e": function(x, p) { return x.toExponential(p); },
+    "f": function(x, p) { return x.toFixed(p); },
+    "g": function(x, p) { return x.toPrecision(p); },
+    "o": function(x) { return Math.round(x).toString(8); },
+    "p": function(x, p) { return formatRounded(x * 100, p); },
+    "r": formatRounded,
+    "s": formatPrefixAuto,
+    "X": function(x) { return Math.round(x).toString(16).toUpperCase(); },
+    "x": function(x) { return Math.round(x).toString(16); }
+  };
+
+  function identity$1(x) {
+    return x;
+  }
+
+  var map = Array.prototype.map,
+      prefixes = ["y","z","a","f","p","n","µ","m","","k","M","G","T","P","E","Z","Y"];
+
+  function formatLocale(locale) {
+    var group = locale.grouping === undefined || locale.thousands === undefined ? identity$1 : formatGroup(map.call(locale.grouping, Number), locale.thousands + ""),
+        currencyPrefix = locale.currency === undefined ? "" : locale.currency[0] + "",
+        currencySuffix = locale.currency === undefined ? "" : locale.currency[1] + "",
+        decimal = locale.decimal === undefined ? "." : locale.decimal + "",
+        numerals = locale.numerals === undefined ? identity$1 : formatNumerals(map.call(locale.numerals, String)),
+        percent = locale.percent === undefined ? "%" : locale.percent + "",
+        minus = locale.minus === undefined ? "-" : locale.minus + "",
+        nan = locale.nan === undefined ? "NaN" : locale.nan + "";
+
+    function newFormat(specifier) {
+      specifier = formatSpecifier(specifier);
+
+      var fill = specifier.fill,
+          align = specifier.align,
+          sign = specifier.sign,
+          symbol = specifier.symbol,
+          zero = specifier.zero,
+          width = specifier.width,
+          comma = specifier.comma,
+          precision = specifier.precision,
+          trim = specifier.trim,
+          type = specifier.type;
+
+      // The "n" type is an alias for ",g".
+      if (type === "n") comma = true, type = "g";
+
+      // The "" type, and any invalid type, is an alias for ".12~g".
+      else if (!formatTypes[type]) precision === undefined && (precision = 12), trim = true, type = "g";
+
+      // If zero fill is specified, padding goes after sign and before digits.
+      if (zero || (fill === "0" && align === "=")) zero = true, fill = "0", align = "=";
+
+      // Compute the prefix and suffix.
+      // For SI-prefix, the suffix is lazily computed.
+      var prefix = symbol === "$" ? currencyPrefix : symbol === "#" && /[boxX]/.test(type) ? "0" + type.toLowerCase() : "",
+          suffix = symbol === "$" ? currencySuffix : /[%p]/.test(type) ? percent : "";
+
+      // What format function should we use?
+      // Is this an integer type?
+      // Can this type generate exponential notation?
+      var formatType = formatTypes[type],
+          maybeSuffix = /[defgprs%]/.test(type);
+
+      // Set the default precision if not specified,
+      // or clamp the specified precision to the supported range.
+      // For significant precision, it must be in [1, 21].
+      // For fixed precision, it must be in [0, 20].
+      precision = precision === undefined ? 6
+          : /[gprs]/.test(type) ? Math.max(1, Math.min(21, precision))
+          : Math.max(0, Math.min(20, precision));
+
+      function format(value) {
+        var valuePrefix = prefix,
+            valueSuffix = suffix,
+            i, n, c;
+
+        if (type === "c") {
+          valueSuffix = formatType(value) + valueSuffix;
+          value = "";
+        } else {
+          value = +value;
+
+          // Determine the sign. -0 is not less than 0, but 1 / -0 is!
+          var valueNegative = value < 0 || 1 / value < 0;
+
+          // Perform the initial formatting.
+          value = isNaN(value) ? nan : formatType(Math.abs(value), precision);
+
+          // Trim insignificant zeros.
+          if (trim) value = formatTrim(value);
+
+          // If a negative value rounds to zero after formatting, and no explicit positive sign is requested, hide the sign.
+          if (valueNegative && +value === 0 && sign !== "+") valueNegative = false;
+
+          // Compute the prefix and suffix.
+          valuePrefix = (valueNegative ? (sign === "(" ? sign : minus) : sign === "-" || sign === "(" ? "" : sign) + valuePrefix;
+          valueSuffix = (type === "s" ? prefixes[8 + prefixExponent / 3] : "") + valueSuffix + (valueNegative && sign === "(" ? ")" : "");
+
+          // Break the formatted value into the integer “value” part that can be
+          // grouped, and fractional or exponential “suffix” part that is not.
+          if (maybeSuffix) {
+            i = -1, n = value.length;
+            while (++i < n) {
+              if (c = value.charCodeAt(i), 48 > c || c > 57) {
+                valueSuffix = (c === 46 ? decimal + value.slice(i + 1) : value.slice(i)) + valueSuffix;
+                value = value.slice(0, i);
+                break;
+              }
+            }
+          }
+        }
+
+        // If the fill character is not "0", grouping is applied before padding.
+        if (comma && !zero) value = group(value, Infinity);
+
+        // Compute the padding.
+        var length = valuePrefix.length + value.length + valueSuffix.length,
+            padding = length < width ? new Array(width - length + 1).join(fill) : "";
+
+        // If the fill character is "0", grouping is applied after padding.
+        if (comma && zero) value = group(padding + value, padding.length ? width - valueSuffix.length : Infinity), padding = "";
+
+        // Reconstruct the final output based on the desired alignment.
+        switch (align) {
+          case "<": value = valuePrefix + value + valueSuffix + padding; break;
+          case "=": value = valuePrefix + padding + value + valueSuffix; break;
+          case "^": value = padding.slice(0, length = padding.length >> 1) + valuePrefix + value + valueSuffix + padding.slice(length); break;
+          default: value = padding + valuePrefix + value + valueSuffix; break;
+        }
+
+        return numerals(value);
+      }
+
+      format.toString = function() {
+        return specifier + "";
+      };
+
+      return format;
+    }
+
+    function formatPrefix(specifier, value) {
+      var f = newFormat((specifier = formatSpecifier(specifier), specifier.type = "f", specifier)),
+          e = Math.max(-8, Math.min(8, Math.floor(exponent(value) / 3))) * 3,
+          k = Math.pow(10, -e),
+          prefix = prefixes[8 + e / 3];
+      return function(value) {
+        return f(k * value) + prefix;
+      };
+    }
+
+    return {
+      format: newFormat,
+      formatPrefix: formatPrefix
+    };
+  }
+
+  var locale;
+  var format;
+  var formatPrefix;
+
+  defaultLocale({
+    decimal: ".",
+    thousands: ",",
+    grouping: [3],
+    currency: ["$", ""],
+    minus: "-"
+  });
+
+  function defaultLocale(definition) {
+    locale = formatLocale(definition);
+    format = locale.format;
+    formatPrefix = locale.formatPrefix;
+    return locale;
+  }
+
+  function precisionFixed(step) {
+    return Math.max(0, -exponent(Math.abs(step)));
+  }
+
+  function precisionPrefix(step, value) {
+    return Math.max(0, Math.max(-8, Math.min(8, Math.floor(exponent(value) / 3))) * 3 - exponent(Math.abs(step)));
+  }
+
+  function precisionRound(step, max) {
+    step = Math.abs(step), max = Math.abs(max) - step;
+    return Math.max(0, exponent(max) - exponent(step)) + 1;
+  }
+
+  function tickFormat(start, stop, count, specifier) {
+    var step = tickStep(start, stop, count),
+        precision;
+    specifier = formatSpecifier(specifier == null ? ",f" : specifier);
+    switch (specifier.type) {
+      case "s": {
+        var value = Math.max(Math.abs(start), Math.abs(stop));
+        if (specifier.precision == null && !isNaN(precision = precisionPrefix(step, value))) specifier.precision = precision;
+        return formatPrefix(specifier, value);
+      }
+      case "":
+      case "e":
+      case "g":
+      case "p":
+      case "r": {
+        if (specifier.precision == null && !isNaN(precision = precisionRound(step, Math.max(Math.abs(start), Math.abs(stop))))) specifier.precision = precision - (specifier.type === "e");
+        break;
+      }
+      case "f":
+      case "%": {
+        if (specifier.precision == null && !isNaN(precision = precisionFixed(step))) specifier.precision = precision - (specifier.type === "%") * 2;
+        break;
+      }
+    }
+    return format(specifier);
+  }
+
+  function linearish(scale) {
+    var domain = scale.domain;
+
+    scale.ticks = function(count) {
+      var d = domain();
+      return ticks(d[0], d[d.length - 1], count == null ? 10 : count);
+    };
+
+    scale.tickFormat = function(count, specifier) {
+      var d = domain();
+      return tickFormat(d[0], d[d.length - 1], count == null ? 10 : count, specifier);
+    };
+
+    scale.nice = function(count) {
+      if (count == null) count = 10;
+
+      var d = domain(),
+          i0 = 0,
+          i1 = d.length - 1,
+          start = d[i0],
+          stop = d[i1],
+          step;
+
+      if (stop < start) {
+        step = start, start = stop, stop = step;
+        step = i0, i0 = i1, i1 = step;
+      }
+
+      step = tickIncrement(start, stop, count);
+
+      if (step > 0) {
+        start = Math.floor(start / step) * step;
+        stop = Math.ceil(stop / step) * step;
+        step = tickIncrement(start, stop, count);
+      } else if (step < 0) {
+        start = Math.ceil(start * step) / step;
+        stop = Math.floor(stop * step) / step;
+        step = tickIncrement(start, stop, count);
+      }
+
+      if (step > 0) {
+        d[i0] = Math.floor(start / step) * step;
+        d[i1] = Math.ceil(stop / step) * step;
+        domain(d);
+      } else if (step < 0) {
+        d[i0] = Math.ceil(start * step) / step;
+        d[i1] = Math.floor(stop * step) / step;
+        domain(d);
+      }
+
+      return scale;
+    };
+
+    return scale;
+  }
+
+  function linear$1() {
+    var scale = continuous();
+
+    scale.copy = function() {
+      return copy(scale, linear$1());
+    };
+
+    initRange.apply(scale, arguments);
+
+    return linearish(scale);
+  }
+
+  var t0$1 = new Date,
+      t1$1 = new Date;
+
+  function newInterval(floori, offseti, count, field) {
+
+    function interval(date) {
+      return floori(date = arguments.length === 0 ? new Date : new Date(+date)), date;
+    }
+
+    interval.floor = function(date) {
+      return floori(date = new Date(+date)), date;
+    };
+
+    interval.ceil = function(date) {
+      return floori(date = new Date(date - 1)), offseti(date, 1), floori(date), date;
+    };
+
+    interval.round = function(date) {
+      var d0 = interval(date),
+          d1 = interval.ceil(date);
+      return date - d0 < d1 - date ? d0 : d1;
+    };
+
+    interval.offset = function(date, step) {
+      return offseti(date = new Date(+date), step == null ? 1 : Math.floor(step)), date;
+    };
+
+    interval.range = function(start, stop, step) {
+      var range = [], previous;
+      start = interval.ceil(start);
+      step = step == null ? 1 : Math.floor(step);
+      if (!(start < stop) || !(step > 0)) return range; // also handles Invalid Date
+      do range.push(previous = new Date(+start)), offseti(start, step), floori(start);
+      while (previous < start && start < stop);
+      return range;
+    };
+
+    interval.filter = function(test) {
+      return newInterval(function(date) {
+        if (date >= date) while (floori(date), !test(date)) date.setTime(date - 1);
+      }, function(date, step) {
+        if (date >= date) {
+          if (step < 0) while (++step <= 0) {
+            while (offseti(date, -1), !test(date)) {} // eslint-disable-line no-empty
+          } else while (--step >= 0) {
+            while (offseti(date, +1), !test(date)) {} // eslint-disable-line no-empty
+          }
+        }
+      });
+    };
+
+    if (count) {
+      interval.count = function(start, end) {
+        t0$1.setTime(+start), t1$1.setTime(+end);
+        floori(t0$1), floori(t1$1);
+        return Math.floor(count(t0$1, t1$1));
+      };
+
+      interval.every = function(step) {
+        step = Math.floor(step);
+        return !isFinite(step) || !(step > 0) ? null
+            : !(step > 1) ? interval
+            : interval.filter(field
+                ? function(d) { return field(d) % step === 0; }
+                : function(d) { return interval.count(0, d) % step === 0; });
+      };
+    }
+
+    return interval;
+  }
+
+  var millisecond = newInterval(function() {
+    // noop
+  }, function(date, step) {
+    date.setTime(+date + step);
+  }, function(start, end) {
+    return end - start;
+  });
+
+  // An optimized implementation for this simple case.
+  millisecond.every = function(k) {
+    k = Math.floor(k);
+    if (!isFinite(k) || !(k > 0)) return null;
+    if (!(k > 1)) return millisecond;
+    return newInterval(function(date) {
+      date.setTime(Math.floor(date / k) * k);
+    }, function(date, step) {
+      date.setTime(+date + step * k);
+    }, function(start, end) {
+      return (end - start) / k;
+    });
+  };
+
+  var durationSecond = 1e3;
+  var durationMinute = 6e4;
+  var durationHour = 36e5;
+  var durationDay = 864e5;
+  var durationWeek = 6048e5;
+
+  var second = newInterval(function(date) {
+    date.setTime(date - date.getMilliseconds());
+  }, function(date, step) {
+    date.setTime(+date + step * durationSecond);
+  }, function(start, end) {
+    return (end - start) / durationSecond;
+  }, function(date) {
+    return date.getUTCSeconds();
+  });
+
+  var minute = newInterval(function(date) {
+    date.setTime(date - date.getMilliseconds() - date.getSeconds() * durationSecond);
+  }, function(date, step) {
+    date.setTime(+date + step * durationMinute);
+  }, function(start, end) {
+    return (end - start) / durationMinute;
+  }, function(date) {
+    return date.getMinutes();
+  });
+
+  var hour = newInterval(function(date) {
+    date.setTime(date - date.getMilliseconds() - date.getSeconds() * durationSecond - date.getMinutes() * durationMinute);
+  }, function(date, step) {
+    date.setTime(+date + step * durationHour);
+  }, function(start, end) {
+    return (end - start) / durationHour;
+  }, function(date) {
+    return date.getHours();
+  });
+
+  var day = newInterval(function(date) {
+    date.setHours(0, 0, 0, 0);
+  }, function(date, step) {
+    date.setDate(date.getDate() + step);
+  }, function(start, end) {
+    return (end - start - (end.getTimezoneOffset() - start.getTimezoneOffset()) * durationMinute) / durationDay;
+  }, function(date) {
+    return date.getDate() - 1;
+  });
+
+  function weekday(i) {
+    return newInterval(function(date) {
+      date.setDate(date.getDate() - (date.getDay() + 7 - i) % 7);
+      date.setHours(0, 0, 0, 0);
+    }, function(date, step) {
+      date.setDate(date.getDate() + step * 7);
+    }, function(start, end) {
+      return (end - start - (end.getTimezoneOffset() - start.getTimezoneOffset()) * durationMinute) / durationWeek;
+    });
+  }
+
+  var sunday = weekday(0);
+  var monday = weekday(1);
+  var tuesday = weekday(2);
+  var wednesday = weekday(3);
+  var thursday = weekday(4);
+  var friday = weekday(5);
+  var saturday = weekday(6);
+
+  var month = newInterval(function(date) {
+    date.setDate(1);
+    date.setHours(0, 0, 0, 0);
+  }, function(date, step) {
+    date.setMonth(date.getMonth() + step);
+  }, function(start, end) {
+    return end.getMonth() - start.getMonth() + (end.getFullYear() - start.getFullYear()) * 12;
+  }, function(date) {
+    return date.getMonth();
+  });
+
+  var year = newInterval(function(date) {
+    date.setMonth(0, 1);
+    date.setHours(0, 0, 0, 0);
+  }, function(date, step) {
+    date.setFullYear(date.getFullYear() + step);
+  }, function(start, end) {
+    return end.getFullYear() - start.getFullYear();
+  }, function(date) {
+    return date.getFullYear();
+  });
+
+  // An optimized implementation for this simple case.
+  year.every = function(k) {
+    return !isFinite(k = Math.floor(k)) || !(k > 0) ? null : newInterval(function(date) {
+      date.setFullYear(Math.floor(date.getFullYear() / k) * k);
+      date.setMonth(0, 1);
+      date.setHours(0, 0, 0, 0);
+    }, function(date, step) {
+      date.setFullYear(date.getFullYear() + step * k);
+    });
+  };
+
+  var utcMinute = newInterval(function(date) {
+    date.setUTCSeconds(0, 0);
+  }, function(date, step) {
+    date.setTime(+date + step * durationMinute);
+  }, function(start, end) {
+    return (end - start) / durationMinute;
+  }, function(date) {
+    return date.getUTCMinutes();
+  });
+
+  var utcHour = newInterval(function(date) {
+    date.setUTCMinutes(0, 0, 0);
+  }, function(date, step) {
+    date.setTime(+date + step * durationHour);
+  }, function(start, end) {
+    return (end - start) / durationHour;
+  }, function(date) {
+    return date.getUTCHours();
+  });
+
+  var utcDay = newInterval(function(date) {
+    date.setUTCHours(0, 0, 0, 0);
+  }, function(date, step) {
+    date.setUTCDate(date.getUTCDate() + step);
+  }, function(start, end) {
+    return (end - start) / durationDay;
+  }, function(date) {
+    return date.getUTCDate() - 1;
+  });
+
+  function utcWeekday(i) {
+    return newInterval(function(date) {
+      date.setUTCDate(date.getUTCDate() - (date.getUTCDay() + 7 - i) % 7);
+      date.setUTCHours(0, 0, 0, 0);
+    }, function(date, step) {
+      date.setUTCDate(date.getUTCDate() + step * 7);
+    }, function(start, end) {
+      return (end - start) / durationWeek;
+    });
+  }
+
+  var utcSunday = utcWeekday(0);
+  var utcMonday = utcWeekday(1);
+  var utcTuesday = utcWeekday(2);
+  var utcWednesday = utcWeekday(3);
+  var utcThursday = utcWeekday(4);
+  var utcFriday = utcWeekday(5);
+  var utcSaturday = utcWeekday(6);
+
+  var utcMonth = newInterval(function(date) {
+    date.setUTCDate(1);
+    date.setUTCHours(0, 0, 0, 0);
+  }, function(date, step) {
+    date.setUTCMonth(date.getUTCMonth() + step);
+  }, function(start, end) {
+    return end.getUTCMonth() - start.getUTCMonth() + (end.getUTCFullYear() - start.getUTCFullYear()) * 12;
+  }, function(date) {
+    return date.getUTCMonth();
+  });
+
+  var utcYear = newInterval(function(date) {
+    date.setUTCMonth(0, 1);
+    date.setUTCHours(0, 0, 0, 0);
+  }, function(date, step) {
+    date.setUTCFullYear(date.getUTCFullYear() + step);
+  }, function(start, end) {
+    return end.getUTCFullYear() - start.getUTCFullYear();
+  }, function(date) {
+    return date.getUTCFullYear();
+  });
+
+  // An optimized implementation for this simple case.
+  utcYear.every = function(k) {
+    return !isFinite(k = Math.floor(k)) || !(k > 0) ? null : newInterval(function(date) {
+      date.setUTCFullYear(Math.floor(date.getUTCFullYear() / k) * k);
+      date.setUTCMonth(0, 1);
+      date.setUTCHours(0, 0, 0, 0);
+    }, function(date, step) {
+      date.setUTCFullYear(date.getUTCFullYear() + step * k);
+    });
+  };
+
+  function localDate(d) {
+    if (0 <= d.y && d.y < 100) {
+      var date = new Date(-1, d.m, d.d, d.H, d.M, d.S, d.L);
+      date.setFullYear(d.y);
+      return date;
+    }
+    return new Date(d.y, d.m, d.d, d.H, d.M, d.S, d.L);
+  }
+
+  function utcDate(d) {
+    if (0 <= d.y && d.y < 100) {
+      var date = new Date(Date.UTC(-1, d.m, d.d, d.H, d.M, d.S, d.L));
+      date.setUTCFullYear(d.y);
+      return date;
+    }
+    return new Date(Date.UTC(d.y, d.m, d.d, d.H, d.M, d.S, d.L));
+  }
+
+  function newDate(y, m, d) {
+    return {y: y, m: m, d: d, H: 0, M: 0, S: 0, L: 0};
+  }
+
+  function formatLocale$1(locale) {
+    var locale_dateTime = locale.dateTime,
+        locale_date = locale.date,
+        locale_time = locale.time,
+        locale_periods = locale.periods,
+        locale_weekdays = locale.days,
+        locale_shortWeekdays = locale.shortDays,
+        locale_months = locale.months,
+        locale_shortMonths = locale.shortMonths;
+
+    var periodRe = formatRe(locale_periods),
+        periodLookup = formatLookup(locale_periods),
+        weekdayRe = formatRe(locale_weekdays),
+        weekdayLookup = formatLookup(locale_weekdays),
+        shortWeekdayRe = formatRe(locale_shortWeekdays),
+        shortWeekdayLookup = formatLookup(locale_shortWeekdays),
+        monthRe = formatRe(locale_months),
+        monthLookup = formatLookup(locale_months),
+        shortMonthRe = formatRe(locale_shortMonths),
+        shortMonthLookup = formatLookup(locale_shortMonths);
+
+    var formats = {
+      "a": formatShortWeekday,
+      "A": formatWeekday,
+      "b": formatShortMonth,
+      "B": formatMonth,
+      "c": null,
+      "d": formatDayOfMonth,
+      "e": formatDayOfMonth,
+      "f": formatMicroseconds,
+      "H": formatHour24,
+      "I": formatHour12,
+      "j": formatDayOfYear,
+      "L": formatMilliseconds,
+      "m": formatMonthNumber,
+      "M": formatMinutes,
+      "p": formatPeriod,
+      "q": formatQuarter,
+      "Q": formatUnixTimestamp,
+      "s": formatUnixTimestampSeconds,
+      "S": formatSeconds,
+      "u": formatWeekdayNumberMonday,
+      "U": formatWeekNumberSunday,
+      "V": formatWeekNumberISO,
+      "w": formatWeekdayNumberSunday,
+      "W": formatWeekNumberMonday,
+      "x": null,
+      "X": null,
+      "y": formatYear,
+      "Y": formatFullYear,
+      "Z": formatZone,
+      "%": formatLiteralPercent
+    };
+
+    var utcFormats = {
+      "a": formatUTCShortWeekday,
+      "A": formatUTCWeekday,
+      "b": formatUTCShortMonth,
+      "B": formatUTCMonth,
+      "c": null,
+      "d": formatUTCDayOfMonth,
+      "e": formatUTCDayOfMonth,
+      "f": formatUTCMicroseconds,
+      "H": formatUTCHour24,
+      "I": formatUTCHour12,
+      "j": formatUTCDayOfYear,
+      "L": formatUTCMilliseconds,
+      "m": formatUTCMonthNumber,
+      "M": formatUTCMinutes,
+      "p": formatUTCPeriod,
+      "q": formatUTCQuarter,
+      "Q": formatUnixTimestamp,
+      "s": formatUnixTimestampSeconds,
+      "S": formatUTCSeconds,
+      "u": formatUTCWeekdayNumberMonday,
+      "U": formatUTCWeekNumberSunday,
+      "V": formatUTCWeekNumberISO,
+      "w": formatUTCWeekdayNumberSunday,
+      "W": formatUTCWeekNumberMonday,
+      "x": null,
+      "X": null,
+      "y": formatUTCYear,
+      "Y": formatUTCFullYear,
+      "Z": formatUTCZone,
+      "%": formatLiteralPercent
+    };
+
+    var parses = {
+      "a": parseShortWeekday,
+      "A": parseWeekday,
+      "b": parseShortMonth,
+      "B": parseMonth,
+      "c": parseLocaleDateTime,
+      "d": parseDayOfMonth,
+      "e": parseDayOfMonth,
+      "f": parseMicroseconds,
+      "H": parseHour24,
+      "I": parseHour24,
+      "j": parseDayOfYear,
+      "L": parseMilliseconds,
+      "m": parseMonthNumber,
+      "M": parseMinutes,
+      "p": parsePeriod,
+      "q": parseQuarter,
+      "Q": parseUnixTimestamp,
+      "s": parseUnixTimestampSeconds,
+      "S": parseSeconds,
+      "u": parseWeekdayNumberMonday,
+      "U": parseWeekNumberSunday,
+      "V": parseWeekNumberISO,
+      "w": parseWeekdayNumberSunday,
+      "W": parseWeekNumberMonday,
+      "x": parseLocaleDate,
+      "X": parseLocaleTime,
+      "y": parseYear,
+      "Y": parseFullYear,
+      "Z": parseZone,
+      "%": parseLiteralPercent
+    };
+
+    // These recursive directive definitions must be deferred.
+    formats.x = newFormat(locale_date, formats);
+    formats.X = newFormat(locale_time, formats);
+    formats.c = newFormat(locale_dateTime, formats);
+    utcFormats.x = newFormat(locale_date, utcFormats);
+    utcFormats.X = newFormat(locale_time, utcFormats);
+    utcFormats.c = newFormat(locale_dateTime, utcFormats);
+
+    function newFormat(specifier, formats) {
+      return function(date) {
+        var string = [],
+            i = -1,
+            j = 0,
+            n = specifier.length,
+            c,
+            pad,
+            format;
+
+        if (!(date instanceof Date)) date = new Date(+date);
+
+        while (++i < n) {
+          if (specifier.charCodeAt(i) === 37) {
+            string.push(specifier.slice(j, i));
+            if ((pad = pads[c = specifier.charAt(++i)]) != null) c = specifier.charAt(++i);
+            else pad = c === "e" ? " " : "0";
+            if (format = formats[c]) c = format(date, pad);
+            string.push(c);
+            j = i + 1;
+          }
+        }
+
+        string.push(specifier.slice(j, i));
+        return string.join("");
+      };
+    }
+
+    function newParse(specifier, Z) {
+      return function(string) {
+        var d = newDate(1900, undefined, 1),
+            i = parseSpecifier(d, specifier, string += "", 0),
+            week, day$1;
+        if (i != string.length) return null;
+
+        // If a UNIX timestamp is specified, return it.
+        if ("Q" in d) return new Date(d.Q);
+        if ("s" in d) return new Date(d.s * 1000 + ("L" in d ? d.L : 0));
+
+        // If this is utcParse, never use the local timezone.
+        if (Z && !("Z" in d)) d.Z = 0;
+
+        // The am-pm flag is 0 for AM, and 1 for PM.
+        if ("p" in d) d.H = d.H % 12 + d.p * 12;
+
+        // If the month was not specified, inherit from the quarter.
+        if (d.m === undefined) d.m = "q" in d ? d.q : 0;
+
+        // Convert day-of-week and week-of-year to day-of-year.
+        if ("V" in d) {
+          if (d.V < 1 || d.V > 53) return null;
+          if (!("w" in d)) d.w = 1;
+          if ("Z" in d) {
+            week = utcDate(newDate(d.y, 0, 1)), day$1 = week.getUTCDay();
+            week = day$1 > 4 || day$1 === 0 ? utcMonday.ceil(week) : utcMonday(week);
+            week = utcDay.offset(week, (d.V - 1) * 7);
+            d.y = week.getUTCFullYear();
+            d.m = week.getUTCMonth();
+            d.d = week.getUTCDate() + (d.w + 6) % 7;
+          } else {
+            week = localDate(newDate(d.y, 0, 1)), day$1 = week.getDay();
+            week = day$1 > 4 || day$1 === 0 ? monday.ceil(week) : monday(week);
+            week = day.offset(week, (d.V - 1) * 7);
+            d.y = week.getFullYear();
+            d.m = week.getMonth();
+            d.d = week.getDate() + (d.w + 6) % 7;
+          }
+        } else if ("W" in d || "U" in d) {
+          if (!("w" in d)) d.w = "u" in d ? d.u % 7 : "W" in d ? 1 : 0;
+          day$1 = "Z" in d ? utcDate(newDate(d.y, 0, 1)).getUTCDay() : localDate(newDate(d.y, 0, 1)).getDay();
+          d.m = 0;
+          d.d = "W" in d ? (d.w + 6) % 7 + d.W * 7 - (day$1 + 5) % 7 : d.w + d.U * 7 - (day$1 + 6) % 7;
+        }
+
+        // If a time zone is specified, all fields are interpreted as UTC and then
+        // offset according to the specified time zone.
+        if ("Z" in d) {
+          d.H += d.Z / 100 | 0;
+          d.M += d.Z % 100;
+          return utcDate(d);
+        }
+
+        // Otherwise, all fields are in local time.
+        return localDate(d);
+      };
+    }
+
+    function parseSpecifier(d, specifier, string, j) {
+      var i = 0,
+          n = specifier.length,
+          m = string.length,
+          c,
+          parse;
+
+      while (i < n) {
+        if (j >= m) return -1;
+        c = specifier.charCodeAt(i++);
+        if (c === 37) {
+          c = specifier.charAt(i++);
+          parse = parses[c in pads ? specifier.charAt(i++) : c];
+          if (!parse || ((j = parse(d, string, j)) < 0)) return -1;
+        } else if (c != string.charCodeAt(j++)) {
+          return -1;
+        }
+      }
+
+      return j;
+    }
+
+    function parsePeriod(d, string, i) {
+      var n = periodRe.exec(string.slice(i));
+      return n ? (d.p = periodLookup[n[0].toLowerCase()], i + n[0].length) : -1;
+    }
+
+    function parseShortWeekday(d, string, i) {
+      var n = shortWeekdayRe.exec(string.slice(i));
+      return n ? (d.w = shortWeekdayLookup[n[0].toLowerCase()], i + n[0].length) : -1;
+    }
+
+    function parseWeekday(d, string, i) {
+      var n = weekdayRe.exec(string.slice(i));
+      return n ? (d.w = weekdayLookup[n[0].toLowerCase()], i + n[0].length) : -1;
+    }
+
+    function parseShortMonth(d, string, i) {
+      var n = shortMonthRe.exec(string.slice(i));
+      return n ? (d.m = shortMonthLookup[n[0].toLowerCase()], i + n[0].length) : -1;
+    }
+
+    function parseMonth(d, string, i) {
+      var n = monthRe.exec(string.slice(i));
+      return n ? (d.m = monthLookup[n[0].toLowerCase()], i + n[0].length) : -1;
+    }
+
+    function parseLocaleDateTime(d, string, i) {
+      return parseSpecifier(d, locale_dateTime, string, i);
+    }
+
+    function parseLocaleDate(d, string, i) {
+      return parseSpecifier(d, locale_date, string, i);
+    }
+
+    function parseLocaleTime(d, string, i) {
+      return parseSpecifier(d, locale_time, string, i);
+    }
+
+    function formatShortWeekday(d) {
+      return locale_shortWeekdays[d.getDay()];
+    }
+
+    function formatWeekday(d) {
+      return locale_weekdays[d.getDay()];
+    }
+
+    function formatShortMonth(d) {
+      return locale_shortMonths[d.getMonth()];
+    }
+
+    function formatMonth(d) {
+      return locale_months[d.getMonth()];
+    }
+
+    function formatPeriod(d) {
+      return locale_periods[+(d.getHours() >= 12)];
+    }
+
+    function formatQuarter(d) {
+      return 1 + ~~(d.getMonth() / 3);
+    }
+
+    function formatUTCShortWeekday(d) {
+      return locale_shortWeekdays[d.getUTCDay()];
+    }
+
+    function formatUTCWeekday(d) {
+      return locale_weekdays[d.getUTCDay()];
+    }
+
+    function formatUTCShortMonth(d) {
+      return locale_shortMonths[d.getUTCMonth()];
+    }
+
+    function formatUTCMonth(d) {
+      return locale_months[d.getUTCMonth()];
+    }
+
+    function formatUTCPeriod(d) {
+      return locale_periods[+(d.getUTCHours() >= 12)];
+    }
+
+    function formatUTCQuarter(d) {
+      return 1 + ~~(d.getUTCMonth() / 3);
+    }
+
+    return {
+      format: function(specifier) {
+        var f = newFormat(specifier += "", formats);
+        f.toString = function() { return specifier; };
+        return f;
+      },
+      parse: function(specifier) {
+        var p = newParse(specifier += "", false);
+        p.toString = function() { return specifier; };
+        return p;
+      },
+      utcFormat: function(specifier) {
+        var f = newFormat(specifier += "", utcFormats);
+        f.toString = function() { return specifier; };
+        return f;
+      },
+      utcParse: function(specifier) {
+        var p = newParse(specifier += "", true);
+        p.toString = function() { return specifier; };
+        return p;
+      }
+    };
+  }
+
+  var pads = {"-": "", "_": " ", "0": "0"},
+      numberRe = /^\s*\d+/, // note: ignores next directive
+      percentRe = /^%/,
+      requoteRe = /[\\^$*+?|[\]().{}]/g;
+
+  function pad(value, fill, width) {
+    var sign = value < 0 ? "-" : "",
+        string = (sign ? -value : value) + "",
+        length = string.length;
+    return sign + (length < width ? new Array(width - length + 1).join(fill) + string : string);
+  }
+
+  function requote(s) {
+    return s.replace(requoteRe, "\\$&");
+  }
+
+  function formatRe(names) {
+    return new RegExp("^(?:" + names.map(requote).join("|") + ")", "i");
+  }
+
+  function formatLookup(names) {
+    var map = {}, i = -1, n = names.length;
+    while (++i < n) map[names[i].toLowerCase()] = i;
+    return map;
+  }
+
+  function parseWeekdayNumberSunday(d, string, i) {
+    var n = numberRe.exec(string.slice(i, i + 1));
+    return n ? (d.w = +n[0], i + n[0].length) : -1;
+  }
+
+  function parseWeekdayNumberMonday(d, string, i) {
+    var n = numberRe.exec(string.slice(i, i + 1));
+    return n ? (d.u = +n[0], i + n[0].length) : -1;
+  }
+
+  function parseWeekNumberSunday(d, string, i) {
+    var n = numberRe.exec(string.slice(i, i + 2));
+    return n ? (d.U = +n[0], i + n[0].length) : -1;
+  }
+
+  function parseWeekNumberISO(d, string, i) {
+    var n = numberRe.exec(string.slice(i, i + 2));
+    return n ? (d.V = +n[0], i + n[0].length) : -1;
+  }
+
+  function parseWeekNumberMonday(d, string, i) {
+    var n = numberRe.exec(string.slice(i, i + 2));
+    return n ? (d.W = +n[0], i + n[0].length) : -1;
+  }
+
+  function parseFullYear(d, string, i) {
+    var n = numberRe.exec(string.slice(i, i + 4));
+    return n ? (d.y = +n[0], i + n[0].length) : -1;
+  }
+
+  function parseYear(d, string, i) {
+    var n = numberRe.exec(string.slice(i, i + 2));
+    return n ? (d.y = +n[0] + (+n[0] > 68 ? 1900 : 2000), i + n[0].length) : -1;
+  }
+
+  function parseZone(d, string, i) {
+    var n = /^(Z)|([+-]\d\d)(?::?(\d\d))?/.exec(string.slice(i, i + 6));
+    return n ? (d.Z = n[1] ? 0 : -(n[2] + (n[3] || "00")), i + n[0].length) : -1;
+  }
+
+  function parseQuarter(d, string, i) {
+    var n = numberRe.exec(string.slice(i, i + 1));
+    return n ? (d.q = n[0] * 3 - 3, i + n[0].length) : -1;
+  }
+
+  function parseMonthNumber(d, string, i) {
+    var n = numberRe.exec(string.slice(i, i + 2));
+    return n ? (d.m = n[0] - 1, i + n[0].length) : -1;
+  }
+
+  function parseDayOfMonth(d, string, i) {
+    var n = numberRe.exec(string.slice(i, i + 2));
+    return n ? (d.d = +n[0], i + n[0].length) : -1;
+  }
+
+  function parseDayOfYear(d, string, i) {
+    var n = numberRe.exec(string.slice(i, i + 3));
+    return n ? (d.m = 0, d.d = +n[0], i + n[0].length) : -1;
+  }
+
+  function parseHour24(d, string, i) {
+    var n = numberRe.exec(string.slice(i, i + 2));
+    return n ? (d.H = +n[0], i + n[0].length) : -1;
+  }
+
+  function parseMinutes(d, string, i) {
+    var n = numberRe.exec(string.slice(i, i + 2));
+    return n ? (d.M = +n[0], i + n[0].length) : -1;
+  }
+
+  function parseSeconds(d, string, i) {
+    var n = numberRe.exec(string.slice(i, i + 2));
+    return n ? (d.S = +n[0], i + n[0].length) : -1;
+  }
+
+  function parseMilliseconds(d, string, i) {
+    var n = numberRe.exec(string.slice(i, i + 3));
+    return n ? (d.L = +n[0], i + n[0].length) : -1;
+  }
+
+  function parseMicroseconds(d, string, i) {
+    var n = numberRe.exec(string.slice(i, i + 6));
+    return n ? (d.L = Math.floor(n[0] / 1000), i + n[0].length) : -1;
+  }
+
+  function parseLiteralPercent(d, string, i) {
+    var n = percentRe.exec(string.slice(i, i + 1));
+    return n ? i + n[0].length : -1;
+  }
+
+  function parseUnixTimestamp(d, string, i) {
+    var n = numberRe.exec(string.slice(i));
+    return n ? (d.Q = +n[0], i + n[0].length) : -1;
+  }
+
+  function parseUnixTimestampSeconds(d, string, i) {
+    var n = numberRe.exec(string.slice(i));
+    return n ? (d.s = +n[0], i + n[0].length) : -1;
+  }
+
+  function formatDayOfMonth(d, p) {
+    return pad(d.getDate(), p, 2);
+  }
+
+  function formatHour24(d, p) {
+    return pad(d.getHours(), p, 2);
+  }
+
+  function formatHour12(d, p) {
+    return pad(d.getHours() % 12 || 12, p, 2);
+  }
+
+  function formatDayOfYear(d, p) {
+    return pad(1 + day.count(year(d), d), p, 3);
+  }
+
+  function formatMilliseconds(d, p) {
+    return pad(d.getMilliseconds(), p, 3);
+  }
+
+  function formatMicroseconds(d, p) {
+    return formatMilliseconds(d, p) + "000";
+  }
+
+  function formatMonthNumber(d, p) {
+    return pad(d.getMonth() + 1, p, 2);
+  }
+
+  function formatMinutes(d, p) {
+    return pad(d.getMinutes(), p, 2);
+  }
+
+  function formatSeconds(d, p) {
+    return pad(d.getSeconds(), p, 2);
+  }
+
+  function formatWeekdayNumberMonday(d) {
+    var day = d.getDay();
+    return day === 0 ? 7 : day;
+  }
+
+  function formatWeekNumberSunday(d, p) {
+    return pad(sunday.count(year(d) - 1, d), p, 2);
+  }
+
+  function formatWeekNumberISO(d, p) {
+    var day = d.getDay();
+    d = (day >= 4 || day === 0) ? thursday(d) : thursday.ceil(d);
+    return pad(thursday.count(year(d), d) + (year(d).getDay() === 4), p, 2);
+  }
+
+  function formatWeekdayNumberSunday(d) {
+    return d.getDay();
+  }
+
+  function formatWeekNumberMonday(d, p) {
+    return pad(monday.count(year(d) - 1, d), p, 2);
+  }
+
+  function formatYear(d, p) {
+    return pad(d.getFullYear() % 100, p, 2);
+  }
+
+  function formatFullYear(d, p) {
+    return pad(d.getFullYear() % 10000, p, 4);
+  }
+
+  function formatZone(d) {
+    var z = d.getTimezoneOffset();
+    return (z > 0 ? "-" : (z *= -1, "+"))
+        + pad(z / 60 | 0, "0", 2)
+        + pad(z % 60, "0", 2);
+  }
+
+  function formatUTCDayOfMonth(d, p) {
+    return pad(d.getUTCDate(), p, 2);
+  }
+
+  function formatUTCHour24(d, p) {
+    return pad(d.getUTCHours(), p, 2);
+  }
+
+  function formatUTCHour12(d, p) {
+    return pad(d.getUTCHours() % 12 || 12, p, 2);
+  }
+
+  function formatUTCDayOfYear(d, p) {
+    return pad(1 + utcDay.count(utcYear(d), d), p, 3);
+  }
+
+  function formatUTCMilliseconds(d, p) {
+    return pad(d.getUTCMilliseconds(), p, 3);
+  }
+
+  function formatUTCMicroseconds(d, p) {
+    return formatUTCMilliseconds(d, p) + "000";
+  }
+
+  function formatUTCMonthNumber(d, p) {
+    return pad(d.getUTCMonth() + 1, p, 2);
+  }
+
+  function formatUTCMinutes(d, p) {
+    return pad(d.getUTCMinutes(), p, 2);
+  }
+
+  function formatUTCSeconds(d, p) {
+    return pad(d.getUTCSeconds(), p, 2);
+  }
+
+  function formatUTCWeekdayNumberMonday(d) {
+    var dow = d.getUTCDay();
+    return dow === 0 ? 7 : dow;
+  }
+
+  function formatUTCWeekNumberSunday(d, p) {
+    return pad(utcSunday.count(utcYear(d) - 1, d), p, 2);
+  }
+
+  function formatUTCWeekNumberISO(d, p) {
+    var day = d.getUTCDay();
+    d = (day >= 4 || day === 0) ? utcThursday(d) : utcThursday.ceil(d);
+    return pad(utcThursday.count(utcYear(d), d) + (utcYear(d).getUTCDay() === 4), p, 2);
+  }
+
+  function formatUTCWeekdayNumberSunday(d) {
+    return d.getUTCDay();
+  }
+
+  function formatUTCWeekNumberMonday(d, p) {
+    return pad(utcMonday.count(utcYear(d) - 1, d), p, 2);
+  }
+
+  function formatUTCYear(d, p) {
+    return pad(d.getUTCFullYear() % 100, p, 2);
+  }
+
+  function formatUTCFullYear(d, p) {
+    return pad(d.getUTCFullYear() % 10000, p, 4);
+  }
+
+  function formatUTCZone() {
+    return "+0000";
+  }
+
+  function formatLiteralPercent() {
+    return "%";
+  }
+
+  function formatUnixTimestamp(d) {
+    return +d;
+  }
+
+  function formatUnixTimestampSeconds(d) {
+    return Math.floor(+d / 1000);
+  }
+
+  var locale$1;
+  var timeFormat;
+  var timeParse;
+  var utcFormat;
+  var utcParse;
+
+  defaultLocale$1({
+    dateTime: "%x, %X",
+    date: "%-m/%-d/%Y",
+    time: "%-I:%M:%S %p",
+    periods: ["AM", "PM"],
+    days: ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"],
+    shortDays: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"],
+    months: ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"],
+    shortMonths: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
+  });
+
+  function defaultLocale$1(definition) {
+    locale$1 = formatLocale$1(definition);
+    timeFormat = locale$1.format;
+    timeParse = locale$1.parse;
+    utcFormat = locale$1.utcFormat;
+    utcParse = locale$1.utcParse;
+    return locale$1;
+  }
+
+  var isoSpecifier = "%Y-%m-%dT%H:%M:%S.%LZ";
+
+  function formatIsoNative(date) {
+    return date.toISOString();
+  }
+
+  var formatIso = Date.prototype.toISOString
+      ? formatIsoNative
+      : utcFormat(isoSpecifier);
+
+  function parseIsoNative(string) {
+    var date = new Date(string);
+    return isNaN(date) ? null : date;
+  }
+
+  var parseIso = +new Date("2000-01-01T00:00:00.000Z")
+      ? parseIsoNative
+      : utcParse(isoSpecifier);
+
+  var noop = {value: function() {}};
+
+  function dispatch() {
+    for (var i = 0, n = arguments.length, _ = {}, t; i < n; ++i) {
+      if (!(t = arguments[i] + "") || (t in _) || /[\s.]/.test(t)) throw new Error("illegal type: " + t);
+      _[t] = [];
+    }
+    return new Dispatch(_);
+  }
+
+  function Dispatch(_) {
+    this._ = _;
+  }
+
+  function parseTypenames(typenames, types) {
+    return typenames.trim().split(/^|\s+/).map(function(t) {
+      var name = "", i = t.indexOf(".");
+      if (i >= 0) name = t.slice(i + 1), t = t.slice(0, i);
+      if (t && !types.hasOwnProperty(t)) throw new Error("unknown type: " + t);
+      return {type: t, name: name};
+    });
+  }
+
+  Dispatch.prototype = dispatch.prototype = {
+    constructor: Dispatch,
+    on: function(typename, callback) {
+      var _ = this._,
+          T = parseTypenames(typename + "", _),
+          t,
+          i = -1,
+          n = T.length;
+
+      // If no callback was specified, return the callback of the given type and name.
+      if (arguments.length < 2) {
+        while (++i < n) if ((t = (typename = T[i]).type) && (t = get(_[t], typename.name))) return t;
+        return;
+      }
+
+      // If a type was specified, set the callback for the given type and name.
+      // Otherwise, if a null callback was specified, remove callbacks of the given name.
+      if (callback != null && typeof callback !== "function") throw new Error("invalid callback: " + callback);
+      while (++i < n) {
+        if (t = (typename = T[i]).type) _[t] = set(_[t], typename.name, callback);
+        else if (callback == null) for (t in _) _[t] = set(_[t], typename.name, null);
+      }
+
+      return this;
+    },
+    copy: function() {
+      var copy = {}, _ = this._;
+      for (var t in _) copy[t] = _[t].slice();
+      return new Dispatch(copy);
+    },
+    call: function(type, that) {
+      if ((n = arguments.length - 2) > 0) for (var args = new Array(n), i = 0, n, t; i < n; ++i) args[i] = arguments[i + 2];
+      if (!this._.hasOwnProperty(type)) throw new Error("unknown type: " + type);
+      for (t = this._[type], i = 0, n = t.length; i < n; ++i) t[i].value.apply(that, args);
+    },
+    apply: function(type, that, args) {
+      if (!this._.hasOwnProperty(type)) throw new Error("unknown type: " + type);
+      for (var t = this._[type], i = 0, n = t.length; i < n; ++i) t[i].value.apply(that, args);
+    }
+  };
+
+  function get(type, name) {
+    for (var i = 0, n = type.length, c; i < n; ++i) {
+      if ((c = type[i]).name === name) {
+        return c.value;
+      }
+    }
+  }
+
+  function set(type, name, callback) {
+    for (var i = 0, n = type.length; i < n; ++i) {
+      if (type[i].name === name) {
+        type[i] = noop, type = type.slice(0, i).concat(type.slice(i + 1));
+        break;
+      }
+    }
+    if (callback != null) type.push({name: name, value: callback});
+    return type;
+  }
+
+  var xhtml = "http://www.w3.org/1999/xhtml";
+
+  var namespaces = {
+    svg: "http://www.w3.org/2000/svg",
+    xhtml: xhtml,
+    xlink: "http://www.w3.org/1999/xlink",
+    xml: "http://www.w3.org/XML/1998/namespace",
+    xmlns: "http://www.w3.org/2000/xmlns/"
+  };
+
+  function namespace(name) {
+    var prefix = name += "", i = prefix.indexOf(":");
+    if (i >= 0 && (prefix = name.slice(0, i)) !== "xmlns") name = name.slice(i + 1);
+    return namespaces.hasOwnProperty(prefix) ? {space: namespaces[prefix], local: name} : name;
+  }
+
+  function creatorInherit(name) {
+    return function() {
+      var document = this.ownerDocument,
+          uri = this.namespaceURI;
+      return uri === xhtml && document.documentElement.namespaceURI === xhtml
+          ? document.createElement(name)
+          : document.createElementNS(uri, name);
+    };
+  }
+
+  function creatorFixed(fullname) {
+    return function() {
+      return this.ownerDocument.createElementNS(fullname.space, fullname.local);
+    };
+  }
+
+  function creator(name) {
+    var fullname = namespace(name);
+    return (fullname.local
+        ? creatorFixed
+        : creatorInherit)(fullname);
+  }
+
+  function none() {}
+
+  function selector(selector) {
+    return selector == null ? none : function() {
+      return this.querySelector(selector);
+    };
+  }
+
+  function selection_select(select) {
+    if (typeof select !== "function") select = selector(select);
+
+    for (var groups = this._groups, m = groups.length, subgroups = new Array(m), j = 0; j < m; ++j) {
+      for (var group = groups[j], n = group.length, subgroup = subgroups[j] = new Array(n), node, subnode, i = 0; i < n; ++i) {
+        if ((node = group[i]) && (subnode = select.call(node, node.__data__, i, group))) {
+          if ("__data__" in node) subnode.__data__ = node.__data__;
+          subgroup[i] = subnode;
+        }
+      }
+    }
+
+    return new Selection(subgroups, this._parents);
+  }
+
+  function empty() {
+    return [];
+  }
+
+  function selectorAll(selector) {
+    return selector == null ? empty : function() {
+      return this.querySelectorAll(selector);
+    };
+  }
+
+  function selection_selectAll(select) {
+    if (typeof select !== "function") select = selectorAll(select);
+
+    for (var groups = this._groups, m = groups.length, subgroups = [], parents = [], j = 0; j < m; ++j) {
+      for (var group = groups[j], n = group.length, node, i = 0; i < n; ++i) {
+        if (node = group[i]) {
+          subgroups.push(select.call(node, node.__data__, i, group));
+          parents.push(node);
+        }
+      }
+    }
+
+    return new Selection(subgroups, parents);
+  }
+
+  function matcher(selector) {
+    return function() {
+      return this.matches(selector);
+    };
+  }
+
+  function selection_filter(match) {
+    if (typeof match !== "function") match = matcher(match);
+
+    for (var groups = this._groups, m = groups.length, subgroups = new Array(m), j = 0; j < m; ++j) {
+      for (var group = groups[j], n = group.length, subgroup = subgroups[j] = [], node, i = 0; i < n; ++i) {
+        if ((node = group[i]) && match.call(node, node.__data__, i, group)) {
+          subgroup.push(node);
+        }
+      }
+    }
+
+    return new Selection(subgroups, this._parents);
+  }
+
+  function sparse(update) {
+    return new Array(update.length);
+  }
+
+  function selection_enter() {
+    return new Selection(this._enter || this._groups.map(sparse), this._parents);
+  }
+
+  function EnterNode(parent, datum) {
+    this.ownerDocument = parent.ownerDocument;
+    this.namespaceURI = parent.namespaceURI;
+    this._next = null;
+    this._parent = parent;
+    this.__data__ = datum;
+  }
+
+  EnterNode.prototype = {
+    constructor: EnterNode,
+    appendChild: function(child) { return this._parent.insertBefore(child, this._next); },
+    insertBefore: function(child, next) { return this._parent.insertBefore(child, next); },
+    querySelector: function(selector) { return this._parent.querySelector(selector); },
+    querySelectorAll: function(selector) { return this._parent.querySelectorAll(selector); }
+  };
+
+  function constant$2(x) {
+    return function() {
+      return x;
+    };
+  }
+
+  var keyPrefix = "$"; // Protect against keys like “__proto__”.
+
+  function bindIndex(parent, group, enter, update, exit, data) {
+    var i = 0,
+        node,
+        groupLength = group.length,
+        dataLength = data.length;
+
+    // Put any non-null nodes that fit into update.
+    // Put any null nodes into enter.
+    // Put any remaining data into enter.
+    for (; i < dataLength; ++i) {
+      if (node = group[i]) {
+        node.__data__ = data[i];
+        update[i] = node;
+      } else {
+        enter[i] = new EnterNode(parent, data[i]);
+      }
+    }
+
+    // Put any non-null nodes that don’t fit into exit.
+    for (; i < groupLength; ++i) {
+      if (node = group[i]) {
+        exit[i] = node;
+      }
+    }
+  }
+
+  function bindKey(parent, group, enter, update, exit, data, key) {
+    var i,
+        node,
+        nodeByKeyValue = {},
+        groupLength = group.length,
+        dataLength = data.length,
+        keyValues = new Array(groupLength),
+        keyValue;
+
+    // Compute the key for each node.
+    // If multiple nodes have the same key, the duplicates are added to exit.
+    for (i = 0; i < groupLength; ++i) {
+      if (node = group[i]) {
+        keyValues[i] = keyValue = keyPrefix + key.call(node, node.__data__, i, group);
+        if (keyValue in nodeByKeyValue) {
+          exit[i] = node;
+        } else {
+          nodeByKeyValue[keyValue] = node;
+        }
+      }
+    }
+
+    // Compute the key for each datum.
+    // If there a node associated with this key, join and add it to update.
+    // If there is not (or the key is a duplicate), add it to enter.
+    for (i = 0; i < dataLength; ++i) {
+      keyValue = keyPrefix + key.call(parent, data[i], i, data);
+      if (node = nodeByKeyValue[keyValue]) {
+        update[i] = node;
+        node.__data__ = data[i];
+        nodeByKeyValue[keyValue] = null;
+      } else {
+        enter[i] = new EnterNode(parent, data[i]);
+      }
+    }
+
+    // Add any remaining nodes that were not bound to data to exit.
+    for (i = 0; i < groupLength; ++i) {
+      if ((node = group[i]) && (nodeByKeyValue[keyValues[i]] === node)) {
+        exit[i] = node;
+      }
+    }
+  }
+
+  function selection_data(value, key) {
+    if (!value) {
+      data = new Array(this.size()), j = -1;
+      this.each(function(d) { data[++j] = d; });
+      return data;
+    }
+
+    var bind = key ? bindKey : bindIndex,
+        parents = this._parents,
+        groups = this._groups;
+
+    if (typeof value !== "function") value = constant$2(value);
+
+    for (var m = groups.length, update = new Array(m), enter = new Array(m), exit = new Array(m), j = 0; j < m; ++j) {
+      var parent = parents[j],
+          group = groups[j],
+          groupLength = group.length,
+          data = value.call(parent, parent && parent.__data__, j, parents),
+          dataLength = data.length,
+          enterGroup = enter[j] = new Array(dataLength),
+          updateGroup = update[j] = new Array(dataLength),
+          exitGroup = exit[j] = new Array(groupLength);
+
+      bind(parent, group, enterGroup, updateGroup, exitGroup, data, key);
+
+      // Now connect the enter nodes to their following update node, such that
+      // appendChild can insert the materialized enter node before this node,
+      // rather than at the end of the parent node.
+      for (var i0 = 0, i1 = 0, previous, next; i0 < dataLength; ++i0) {
+        if (previous = enterGroup[i0]) {
+          if (i0 >= i1) i1 = i0 + 1;
+          while (!(next = updateGroup[i1]) && ++i1 < dataLength);
+          previous._next = next || null;
+        }
+      }
+    }
+
+    update = new Selection(update, parents);
+    update._enter = enter;
+    update._exit = exit;
+    return update;
+  }
+
+  function selection_exit() {
+    return new Selection(this._exit || this._groups.map(sparse), this._parents);
+  }
+
+  function selection_join(onenter, onupdate, onexit) {
+    var enter = this.enter(), update = this, exit = this.exit();
+    enter = typeof onenter === "function" ? onenter(enter) : enter.append(onenter + "");
+    if (onupdate != null) update = onupdate(update);
+    if (onexit == null) exit.remove(); else onexit(exit);
+    return enter && update ? enter.merge(update).order() : update;
+  }
+
+  function selection_merge(selection) {
+
+    for (var groups0 = this._groups, groups1 = selection._groups, m0 = groups0.length, m1 = groups1.length, m = Math.min(m0, m1), merges = new Array(m0), j = 0; j < m; ++j) {
+      for (var group0 = groups0[j], group1 = groups1[j], n = group0.length, merge = merges[j] = new Array(n), node, i = 0; i < n; ++i) {
+        if (node = group0[i] || group1[i]) {
+          merge[i] = node;
+        }
+      }
+    }
+
+    for (; j < m0; ++j) {
+      merges[j] = groups0[j];
+    }
+
+    return new Selection(merges, this._parents);
+  }
+
+  function selection_order() {
+
+    for (var groups = this._groups, j = -1, m = groups.length; ++j < m;) {
+      for (var group = groups[j], i = group.length - 1, next = group[i], node; --i >= 0;) {
+        if (node = group[i]) {
+          if (next && node.compareDocumentPosition(next) ^ 4) next.parentNode.insertBefore(node, next);
+          next = node;
+        }
+      }
+    }
+
+    return this;
+  }
+
+  function selection_sort(compare) {
+    if (!compare) compare = ascending$1;
+
+    function compareNode(a, b) {
+      return a && b ? compare(a.__data__, b.__data__) : !a - !b;
+    }
+
+    for (var groups = this._groups, m = groups.length, sortgroups = new Array(m), j = 0; j < m; ++j) {
+      for (var group = groups[j], n = group.length, sortgroup = sortgroups[j] = new Array(n), node, i = 0; i < n; ++i) {
+        if (node = group[i]) {
+          sortgroup[i] = node;
+        }
+      }
+      sortgroup.sort(compareNode);
+    }
+
+    return new Selection(sortgroups, this._parents).order();
+  }
+
+  function ascending$1(a, b) {
+    return a < b ? -1 : a > b ? 1 : a >= b ? 0 : NaN;
+  }
+
+  function selection_call() {
+    var callback = arguments[0];
+    arguments[0] = this;
+    callback.apply(null, arguments);
+    return this;
+  }
+
+  function selection_nodes() {
+    var nodes = new Array(this.size()), i = -1;
+    this.each(function() { nodes[++i] = this; });
+    return nodes;
+  }
+
+  function selection_node() {
+
+    for (var groups = this._groups, j = 0, m = groups.length; j < m; ++j) {
+      for (var group = groups[j], i = 0, n = group.length; i < n; ++i) {
+        var node = group[i];
+        if (node) return node;
+      }
+    }
+
+    return null;
+  }
+
+  function selection_size() {
+    var size = 0;
+    this.each(function() { ++size; });
+    return size;
+  }
+
+  function selection_empty() {
+    return !this.node();
+  }
+
+  function selection_each(callback) {
+
+    for (var groups = this._groups, j = 0, m = groups.length; j < m; ++j) {
+      for (var group = groups[j], i = 0, n = group.length, node; i < n; ++i) {
+        if (node = group[i]) callback.call(node, node.__data__, i, group);
+      }
+    }
+
+    return this;
+  }
+
+  function attrRemove(name) {
+    return function() {
+      this.removeAttribute(name);
+    };
+  }
+
+  function attrRemoveNS(fullname) {
+    return function() {
+      this.removeAttributeNS(fullname.space, fullname.local);
+    };
+  }
+
+  function attrConstant(name, value) {
+    return function() {
+      this.setAttribute(name, value);
+    };
+  }
+
+  function attrConstantNS(fullname, value) {
+    return function() {
+      this.setAttributeNS(fullname.space, fullname.local, value);
+    };
+  }
+
+  function attrFunction(name, value) {
+    return function() {
+      var v = value.apply(this, arguments);
+      if (v == null) this.removeAttribute(name);
+      else this.setAttribute(name, v);
+    };
+  }
+
+  function attrFunctionNS(fullname, value) {
+    return function() {
+      var v = value.apply(this, arguments);
+      if (v == null) this.removeAttributeNS(fullname.space, fullname.local);
+      else this.setAttributeNS(fullname.space, fullname.local, v);
+    };
+  }
+
+  function selection_attr(name, value) {
+    var fullname = namespace(name);
+
+    if (arguments.length < 2) {
+      var node = this.node();
+      return fullname.local
+          ? node.getAttributeNS(fullname.space, fullname.local)
+          : node.getAttribute(fullname);
+    }
+
+    return this.each((value == null
+        ? (fullname.local ? attrRemoveNS : attrRemove) : (typeof value === "function"
+        ? (fullname.local ? attrFunctionNS : attrFunction)
+        : (fullname.local ? attrConstantNS : attrConstant)))(fullname, value));
+  }
+
+  function defaultView(node) {
+    return (node.ownerDocument && node.ownerDocument.defaultView) // node is a Node
+        || (node.document && node) // node is a Window
+        || node.defaultView; // node is a Document
+  }
+
+  function styleRemove(name) {
+    return function() {
+      this.style.removeProperty(name);
+    };
+  }
+
+  function styleConstant(name, value, priority) {
+    return function() {
+      this.style.setProperty(name, value, priority);
+    };
+  }
+
+  function styleFunction(name, value, priority) {
+    return function() {
+      var v = value.apply(this, arguments);
+      if (v == null) this.style.removeProperty(name);
+      else this.style.setProperty(name, v, priority);
+    };
+  }
+
+  function selection_style(name, value, priority) {
+    return arguments.length > 1
+        ? this.each((value == null
+              ? styleRemove : typeof value === "function"
+              ? styleFunction
+              : styleConstant)(name, value, priority == null ? "" : priority))
+        : styleValue(this.node(), name);
+  }
+
+  function styleValue(node, name) {
+    return node.style.getPropertyValue(name)
+        || defaultView(node).getComputedStyle(node, null).getPropertyValue(name);
+  }
+
+  function propertyRemove(name) {
+    return function() {
+      delete this[name];
+    };
+  }
+
+  function propertyConstant(name, value) {
+    return function() {
+      this[name] = value;
+    };
+  }
+
+  function propertyFunction(name, value) {
+    return function() {
+      var v = value.apply(this, arguments);
+      if (v == null) delete this[name];
+      else this[name] = v;
+    };
+  }
+
+  function selection_property(name, value) {
+    return arguments.length > 1
+        ? this.each((value == null
+            ? propertyRemove : typeof value === "function"
+            ? propertyFunction
+            : propertyConstant)(name, value))
+        : this.node()[name];
+  }
+
+  function classArray(string) {
+    return string.trim().split(/^|\s+/);
+  }
+
+  function classList(node) {
+    return node.classList || new ClassList(node);
+  }
+
+  function ClassList(node) {
+    this._node = node;
+    this._names = classArray(node.getAttribute("class") || "");
+  }
+
+  ClassList.prototype = {
+    add: function(name) {
+      var i = this._names.indexOf(name);
+      if (i < 0) {
+        this._names.push(name);
+        this._node.setAttribute("class", this._names.join(" "));
+      }
+    },
+    remove: function(name) {
+      var i = this._names.indexOf(name);
+      if (i >= 0) {
+        this._names.splice(i, 1);
+        this._node.setAttribute("class", this._names.join(" "));
+      }
+    },
+    contains: function(name) {
+      return this._names.indexOf(name) >= 0;
+    }
+  };
+
+  function classedAdd(node, names) {
+    var list = classList(node), i = -1, n = names.length;
+    while (++i < n) list.add(names[i]);
+  }
+
+  function classedRemove(node, names) {
+    var list = classList(node), i = -1, n = names.length;
+    while (++i < n) list.remove(names[i]);
+  }
+
+  function classedTrue(names) {
+    return function() {
+      classedAdd(this, names);
+    };
+  }
+
+  function classedFalse(names) {
+    return function() {
+      classedRemove(this, names);
+    };
+  }
+
+  function classedFunction(names, value) {
+    return function() {
+      (value.apply(this, arguments) ? classedAdd : classedRemove)(this, names);
+    };
+  }
+
+  function selection_classed(name, value) {
+    var names = classArray(name + "");
+
+    if (arguments.length < 2) {
+      var list = classList(this.node()), i = -1, n = names.length;
+      while (++i < n) if (!list.contains(names[i])) return false;
+      return true;
+    }
+
+    return this.each((typeof value === "function"
+        ? classedFunction : value
+        ? classedTrue
+        : classedFalse)(names, value));
+  }
+
+  function textRemove() {
+    this.textContent = "";
+  }
+
+  function textConstant(value) {
+    return function() {
+      this.textContent = value;
+    };
+  }
+
+  function textFunction(value) {
+    return function() {
+      var v = value.apply(this, arguments);
+      this.textContent = v == null ? "" : v;
+    };
+  }
+
+  function selection_text(value) {
+    return arguments.length
+        ? this.each(value == null
+            ? textRemove : (typeof value === "function"
+            ? textFunction
+            : textConstant)(value))
+        : this.node().textContent;
+  }
+
+  function htmlRemove() {
+    this.innerHTML = "";
+  }
+
+  function htmlConstant(value) {
+    return function() {
+      this.innerHTML = value;
+    };
+  }
+
+  function htmlFunction(value) {
+    return function() {
+      var v = value.apply(this, arguments);
+      this.innerHTML = v == null ? "" : v;
+    };
+  }
+
+  function selection_html(value) {
+    return arguments.length
+        ? this.each(value == null
+            ? htmlRemove : (typeof value === "function"
+            ? htmlFunction
+            : htmlConstant)(value))
+        : this.node().innerHTML;
+  }
+
+  function raise() {
+    if (this.nextSibling) this.parentNode.appendChild(this);
+  }
+
+  function selection_raise() {
+    return this.each(raise);
+  }
+
+  function lower() {
+    if (this.previousSibling) this.parentNode.insertBefore(this, this.parentNode.firstChild);
+  }
+
+  function selection_lower() {
+    return this.each(lower);
+  }
+
+  function selection_append(name) {
+    var create = typeof name === "function" ? name : creator(name);
+    return this.select(function() {
+      return this.appendChild(create.apply(this, arguments));
+    });
+  }
+
+  function constantNull() {
+    return null;
+  }
+
+  function selection_insert(name, before) {
+    var create = typeof name === "function" ? name : creator(name),
+        select = before == null ? constantNull : typeof before === "function" ? before : selector(before);
+    return this.select(function() {
+      return this.insertBefore(create.apply(this, arguments), select.apply(this, arguments) || null);
+    });
+  }
+
+  function remove() {
+    var parent = this.parentNode;
+    if (parent) parent.removeChild(this);
+  }
+
+  function selection_remove() {
+    return this.each(remove);
+  }
+
+  function selection_cloneShallow() {
+    var clone = this.cloneNode(false), parent = this.parentNode;
+    return parent ? parent.insertBefore(clone, this.nextSibling) : clone;
+  }
+
+  function selection_cloneDeep() {
+    var clone = this.cloneNode(true), parent = this.parentNode;
+    return parent ? parent.insertBefore(clone, this.nextSibling) : clone;
+  }
+
+  function selection_clone(deep) {
+    return this.select(deep ? selection_cloneDeep : selection_cloneShallow);
+  }
+
+  function selection_datum(value) {
+    return arguments.length
+        ? this.property("__data__", value)
+        : this.node().__data__;
+  }
+
+  var filterEvents = {};
+
+  var event = null;
+
+  if (typeof document !== "undefined") {
+    var element = document.documentElement;
+    if (!("onmouseenter" in element)) {
+      filterEvents = {mouseenter: "mouseover", mouseleave: "mouseout"};
+    }
+  }
+
+  function filterContextListener(listener, index, group) {
+    listener = contextListener(listener, index, group);
+    return function(event) {
+      var related = event.relatedTarget;
+      if (!related || (related !== this && !(related.compareDocumentPosition(this) & 8))) {
+        listener.call(this, event);
+      }
+    };
+  }
+
+  function contextListener(listener, index, group) {
+    return function(event1) {
+      var event0 = event; // Events can be reentrant (e.g., focus).
+      event = event1;
+      try {
+        listener.call(this, this.__data__, index, group);
+      } finally {
+        event = event0;
+      }
+    };
+  }
+
+  function parseTypenames$1(typenames) {
+    return typenames.trim().split(/^|\s+/).map(function(t) {
+      var name = "", i = t.indexOf(".");
+      if (i >= 0) name = t.slice(i + 1), t = t.slice(0, i);
+      return {type: t, name: name};
+    });
+  }
+
+  function onRemove(typename) {
+    return function() {
+      var on = this.__on;
+      if (!on) return;
+      for (var j = 0, i = -1, m = on.length, o; j < m; ++j) {
+        if (o = on[j], (!typename.type || o.type === typename.type) && o.name === typename.name) {
+          this.removeEventListener(o.type, o.listener, o.capture);
+        } else {
+          on[++i] = o;
+        }
+      }
+      if (++i) on.length = i;
+      else delete this.__on;
+    };
+  }
+
+  function onAdd(typename, value, capture) {
+    var wrap = filterEvents.hasOwnProperty(typename.type) ? filterContextListener : contextListener;
+    return function(d, i, group) {
+      var on = this.__on, o, listener = wrap(value, i, group);
+      if (on) for (var j = 0, m = on.length; j < m; ++j) {
+        if ((o = on[j]).type === typename.type && o.name === typename.name) {
+          this.removeEventListener(o.type, o.listener, o.capture);
+          this.addEventListener(o.type, o.listener = listener, o.capture = capture);
+          o.value = value;
+          return;
+        }
+      }
+      this.addEventListener(typename.type, listener, capture);
+      o = {type: typename.type, name: typename.name, value: value, listener: listener, capture: capture};
+      if (!on) this.__on = [o];
+      else on.push(o);
+    };
+  }
+
+  function selection_on(typename, value, capture) {
+    var typenames = parseTypenames$1(typename + ""), i, n = typenames.length, t;
+
+    if (arguments.length < 2) {
+      var on = this.node().__on;
+      if (on) for (var j = 0, m = on.length, o; j < m; ++j) {
+        for (i = 0, o = on[j]; i < n; ++i) {
+          if ((t = typenames[i]).type === o.type && t.name === o.name) {
+            return o.value;
+          }
+        }
+      }
+      return;
+    }
+
+    on = value ? onAdd : onRemove;
+    if (capture == null) capture = false;
+    for (i = 0; i < n; ++i) this.each(on(typenames[i], value, capture));
+    return this;
+  }
+
+  function customEvent(event1, listener, that, args) {
+    var event0 = event;
+    event1.sourceEvent = event;
+    event = event1;
+    try {
+      return listener.apply(that, args);
+    } finally {
+      event = event0;
+    }
+  }
+
+  function dispatchEvent(node, type, params) {
+    var window = defaultView(node),
+        event = window.CustomEvent;
+
+    if (typeof event === "function") {
+      event = new event(type, params);
+    } else {
+      event = window.document.createEvent("Event");
+      if (params) event.initEvent(type, params.bubbles, params.cancelable), event.detail = params.detail;
+      else event.initEvent(type, false, false);
+    }
+
+    node.dispatchEvent(event);
+  }
+
+  function dispatchConstant(type, params) {
+    return function() {
+      return dispatchEvent(this, type, params);
+    };
+  }
+
+  function dispatchFunction(type, params) {
+    return function() {
+      return dispatchEvent(this, type, params.apply(this, arguments));
+    };
+  }
+
+  function selection_dispatch(type, params) {
+    return this.each((typeof params === "function"
+        ? dispatchFunction
+        : dispatchConstant)(type, params));
+  }
+
+  var root = [null];
+
+  function Selection(groups, parents) {
+    this._groups = groups;
+    this._parents = parents;
+  }
+
+  function selection() {
+    return new Selection([[document.documentElement]], root);
+  }
+
+  Selection.prototype = selection.prototype = {
+    constructor: Selection,
+    select: selection_select,
+    selectAll: selection_selectAll,
+    filter: selection_filter,
+    data: selection_data,
+    enter: selection_enter,
+    exit: selection_exit,
+    join: selection_join,
+    merge: selection_merge,
+    order: selection_order,
+    sort: selection_sort,
+    call: selection_call,
+    nodes: selection_nodes,
+    node: selection_node,
+    size: selection_size,
+    empty: selection_empty,
+    each: selection_each,
+    attr: selection_attr,
+    style: selection_style,
+    property: selection_property,
+    classed: selection_classed,
+    text: selection_text,
+    html: selection_html,
+    raise: selection_raise,
+    lower: selection_lower,
+    append: selection_append,
+    insert: selection_insert,
+    remove: selection_remove,
+    clone: selection_clone,
+    datum: selection_datum,
+    on: selection_on,
+    dispatch: selection_dispatch
+  };
+
+  function select(selector) {
+    return typeof selector === "string"
+        ? new Selection([[document.querySelector(selector)]], [document.documentElement])
+        : new Selection([[selector]], root);
+  }
+
+  function sourceEvent() {
+    var current = event, source;
+    while (source = current.sourceEvent) current = source;
+    return current;
+  }
+
+  function point(node, event) {
+    var svg = node.ownerSVGElement || node;
+
+    if (svg.createSVGPoint) {
+      var point = svg.createSVGPoint();
+      point.x = event.clientX, point.y = event.clientY;
+      point = point.matrixTransform(node.getScreenCTM().inverse());
+      return [point.x, point.y];
+    }
+
+    var rect = node.getBoundingClientRect();
+    return [event.clientX - rect.left - node.clientLeft, event.clientY - rect.top - node.clientTop];
+  }
+
+  function mouse(node) {
+    var event = sourceEvent();
+    if (event.changedTouches) event = event.changedTouches[0];
+    return point(node, event);
+  }
+
+  function touch(node, touches, identifier) {
+    if (arguments.length < 3) identifier = touches, touches = sourceEvent().changedTouches;
+
+    for (var i = 0, n = touches ? touches.length : 0, touch; i < n; ++i) {
+      if ((touch = touches[i]).identifier === identifier) {
+        return point(node, touch);
+      }
+    }
+
+    return null;
+  }
+
+  function nopropagation() {
+    event.stopImmediatePropagation();
+  }
+
+  function noevent() {
+    event.preventDefault();
+    event.stopImmediatePropagation();
+  }
+
+  function nodrag(view) {
+    var root = view.document.documentElement,
+        selection = select(view).on("dragstart.drag", noevent, true);
+    if ("onselectstart" in root) {
+      selection.on("selectstart.drag", noevent, true);
+    } else {
+      root.__noselect = root.style.MozUserSelect;
+      root.style.MozUserSelect = "none";
+    }
+  }
+
+  function yesdrag(view, noclick) {
+    var root = view.document.documentElement,
+        selection = select(view).on("dragstart.drag", null);
+    if (noclick) {
+      selection.on("click.drag", noevent, true);
+      setTimeout(function() { selection.on("click.drag", null); }, 0);
+    }
+    if ("onselectstart" in root) {
+      selection.on("selectstart.drag", null);
+    } else {
+      root.style.MozUserSelect = root.__noselect;
+      delete root.__noselect;
+    }
+  }
+
+  function constant$3(x) {
+    return function() {
+      return x;
+    };
+  }
+
+  function DragEvent(target, type, subject, id, active, x, y, dx, dy, dispatch) {
+    this.target = target;
+    this.type = type;
+    this.subject = subject;
+    this.identifier = id;
+    this.active = active;
+    this.x = x;
+    this.y = y;
+    this.dx = dx;
+    this.dy = dy;
+    this._ = dispatch;
+  }
+
+  DragEvent.prototype.on = function() {
+    var value = this._.on.apply(this._, arguments);
+    return value === this._ ? this : value;
+  };
+
+  // Ignore right-click, since that should open the context menu.
+  function defaultFilter() {
+    return !event.ctrlKey && !event.button;
+  }
+
+  function defaultContainer() {
+    return this.parentNode;
+  }
+
+  function defaultSubject(d) {
+    return d == null ? {x: event.x, y: event.y} : d;
+  }
+
+  function defaultTouchable() {
+    return navigator.maxTouchPoints || ("ontouchstart" in this);
+  }
+
+  function drag() {
+    var filter = defaultFilter,
+        container = defaultContainer,
+        subject = defaultSubject,
+        touchable = defaultTouchable,
+        gestures = {},
+        listeners = dispatch("start", "drag", "end"),
+        active = 0,
+        mousedownx,
+        mousedowny,
+        mousemoving,
+        touchending,
+        clickDistance2 = 0;
+
+    function drag(selection) {
+      selection
+          .on("mousedown.drag", mousedowned)
+        .filter(touchable)
+          .on("touchstart.drag", touchstarted)
+          .on("touchmove.drag", touchmoved)
+          .on("touchend.drag touchcancel.drag", touchended)
+          .style("touch-action", "none")
+          .style("-webkit-tap-highlight-color", "rgba(0,0,0,0)");
+    }
+
+    function mousedowned() {
+      if (touchending || !filter.apply(this, arguments)) return;
+      var gesture = beforestart("mouse", container.apply(this, arguments), mouse, this, arguments);
+      if (!gesture) return;
+      select(event.view).on("mousemove.drag", mousemoved, true).on("mouseup.drag", mouseupped, true);
+      nodrag(event.view);
+      nopropagation();
+      mousemoving = false;
+      mousedownx = event.clientX;
+      mousedowny = event.clientY;
+      gesture("start");
+    }
+
+    function mousemoved() {
+      noevent();
+      if (!mousemoving) {
+        var dx = event.clientX - mousedownx, dy = event.clientY - mousedowny;
+        mousemoving = dx * dx + dy * dy > clickDistance2;
+      }
+      gestures.mouse("drag");
+    }
+
+    function mouseupped() {
+      select(event.view).on("mousemove.drag mouseup.drag", null);
+      yesdrag(event.view, mousemoving);
+      noevent();
+      gestures.mouse("end");
+    }
+
+    function touchstarted() {
+      if (!filter.apply(this, arguments)) return;
+      var touches = event.changedTouches,
+          c = container.apply(this, arguments),
+          n = touches.length, i, gesture;
+
+      for (i = 0; i < n; ++i) {
+        if (gesture = beforestart(touches[i].identifier, c, touch, this, arguments)) {
+          nopropagation();
+          gesture("start");
+        }
+      }
+    }
+
+    function touchmoved() {
+      var touches = event.changedTouches,
+          n = touches.length, i, gesture;
+
+      for (i = 0; i < n; ++i) {
+        if (gesture = gestures[touches[i].identifier]) {
+          noevent();
+          gesture("drag");
+        }
+      }
+    }
+
+    function touchended() {
+      var touches = event.changedTouches,
+          n = touches.length, i, gesture;
+
+      if (touchending) clearTimeout(touchending);
+      touchending = setTimeout(function() { touchending = null; }, 500); // Ghost clicks are delayed!
+      for (i = 0; i < n; ++i) {
+        if (gesture = gestures[touches[i].identifier]) {
+          nopropagation();
+          gesture("end");
+        }
+      }
+    }
+
+    function beforestart(id, container, point, that, args) {
+      var p = point(container, id), s, dx, dy,
+          sublisteners = listeners.copy();
+
+      if (!customEvent(new DragEvent(drag, "beforestart", s, id, active, p[0], p[1], 0, 0, sublisteners), function() {
+        if ((event.subject = s = subject.apply(that, args)) == null) return false;
+        dx = s.x - p[0] || 0;
+        dy = s.y - p[1] || 0;
+        return true;
+      })) return;
+
+      return function gesture(type) {
+        var p0 = p, n;
+        switch (type) {
+          case "start": gestures[id] = gesture, n = active++; break;
+          case "end": delete gestures[id], --active; // nobreak
+          case "drag": p = point(container, id), n = active; break;
+        }
+        customEvent(new DragEvent(drag, type, s, id, n, p[0] + dx, p[1] + dy, p[0] - p0[0], p[1] - p0[1], sublisteners), sublisteners.apply, sublisteners, [type, that, args]);
+      };
+    }
+
+    drag.filter = function(_) {
+      return arguments.length ? (filter = typeof _ === "function" ? _ : constant$3(!!_), drag) : filter;
+    };
+
+    drag.container = function(_) {
+      return arguments.length ? (container = typeof _ === "function" ? _ : constant$3(_), drag) : container;
+    };
+
+    drag.subject = function(_) {
+      return arguments.length ? (subject = typeof _ === "function" ? _ : constant$3(_), drag) : subject;
+    };
+
+    drag.touchable = function(_) {
+      return arguments.length ? (touchable = typeof _ === "function" ? _ : constant$3(!!_), drag) : touchable;
+    };
+
+    drag.on = function() {
+      var value = listeners.on.apply(listeners, arguments);
+      return value === listeners ? drag : value;
+    };
+
+    drag.clickDistance = function(_) {
+      return arguments.length ? (clickDistance2 = (_ = +_) * _, drag) : Math.sqrt(clickDistance2);
+    };
+
+    return drag;
+  }
+
+  // Copyright 2018 The Distill Template Authors
+
+  const T$b = Template('d-slider', `
 <style>
   :host {
     position: relative;
@@ -563,7 +8841,225 @@ p small {
     </div>
     <div class='ticks'></div>
   </div>
-`),Xr={left:37,up:38,right:39,down:40,pageUp:33,pageDown:34,end:35,home:36};class Zr extends Qr(HTMLElement){connectedCallback(){this.connected=!0,this.setAttribute('role','slider'),this.hasAttribute('tabindex')||this.setAttribute('tabindex',0),this.mouseEvent=!1,this.knob=this.root.querySelector('.knob-container'),this.background=this.root.querySelector('.background'),this.trackFill=this.root.querySelector('.track-fill'),this.track=this.root.querySelector('.track'),this.min=this.min?this.min:0,this.max=this.max?this.max:100,this.scale=_e().domain([this.min,this.max]).range([0,1]).clamp(!0),this.origin=this.origin===void 0?this.min:this.origin,this.step=this.step?this.step:1,this.update(this.value?this.value:0),this.ticks=!!this.ticks&&this.ticks,this.renderTicks(),this.drag=$r().container(this.background).on('start',()=>{this.mouseEvent=!0,this.background.classList.add('mousedown'),this.changeValue=this.value,this.dragUpdate()}).on('drag',()=>{this.dragUpdate()}).on('end',()=>{this.mouseEvent=!1,this.background.classList.remove('mousedown'),this.dragUpdate(),this.changeValue!==this.value&&this.dispatchChange(),this.changeValue=this.value}),this.drag(Fr(this.background)),this.addEventListener('focusin',()=>{this.mouseEvent||this.background.classList.add('focus')}),this.addEventListener('focusout',()=>{this.background.classList.remove('focus')}),this.addEventListener('keydown',this.onKeyDown)}static get observedAttributes(){return['min','max','value','step','ticks','origin','tickValues','tickLabels']}attributeChangedCallback(e,t,n){isNaN(n)||void 0===n||null===n||('min'==e&&(this.min=+n,this.setAttribute('aria-valuemin',this.min)),'max'==e&&(this.max=+n,this.setAttribute('aria-valuemax',this.max)),'value'==e&&this.update(+n),'origin'==e&&(this.origin=+n),'step'==e&&0<n&&(this.step=+n),'ticks'==e&&(this.ticks=!(''!==n)||n))}onKeyDown(e){this.changeValue=this.value;let t=!1;switch(e.keyCode){case Xr.left:case Xr.down:this.update(this.value-this.step),t=!0;break;case Xr.right:case Xr.up:this.update(this.value+this.step),t=!0;break;case Xr.pageUp:this.update(this.value+10*this.step),t=!0;break;case Xr.pageDown:this.update(this.value+10*this.step),t=!0;break;case Xr.home:this.update(this.min),t=!0;break;case Xr.end:this.update(this.max),t=!0;break;default:}t&&(this.background.classList.add('focus'),e.preventDefault(),e.stopPropagation(),this.changeValue!==this.value&&this.dispatchChange())}validateValueRange(e,t,n){return ui(hi(t,n),e)}quantizeValue(e,t){return gi(e/t)*t}dragUpdate(){const e=this.background.getBoundingClientRect(),t=qr.x,n=e.width;this.update(this.scale.invert(t/n))}update(e){let t=e;'any'!==this.step&&(t=this.quantizeValue(e,this.step)),t=this.validateValueRange(this.min,this.max,t),this.connected&&(this.knob.style.left=100*this.scale(t)+'%',this.trackFill.style.width=100*this.scale(this.min+oi(t-this.origin))+'%',this.trackFill.style.left=100*this.scale(hi(t,this.origin))+'%'),this.value!==t&&(this.value=t,this.setAttribute('aria-valuenow',this.value),this.dispatchInput())}dispatchChange(){const t=new Event('change');this.dispatchEvent(t,{})}dispatchInput(){const t=new Event('input');this.dispatchEvent(t,{})}renderTicks(){const e=this.root.querySelector('.ticks');if(!1!==this.ticks){let t=[];t=0<this.ticks?this.scale.ticks(this.ticks):'any'===this.step?this.scale.ticks():wa(this.min,this.max+1e-6,this.step),t.forEach((t)=>{const n=document.createElement('div');n.classList.add('tick'),n.style.left=100*this.scale(t)+'%',e.appendChild(n)})}else e.style.display='none'}}var Jr='<svg viewBox="-607 419 64 64">\n  <path d="M-573.4,478.9c-8,0-14.6-6.4-14.6-14.5s14.6-25.9,14.6-40.8c0,14.9,14.6,32.8,14.6,40.8S-565.4,478.9-573.4,478.9z"/>\n</svg>\n';const Gr=`
+`);
+
+  // ARIA
+  // If the slider has a visible label, it is referenced by aria-labelledby on the slider element. Otherwise, the slider element has a label provided by aria-label.
+  // If the slider is vertically oriented, it has aria-orientation set to vertical. The default value of aria-orientation for a slider is horizontal.
+
+  const keyCodes = {
+    left: 37,
+    up: 38,
+    right: 39,
+    down: 40,
+    pageUp: 33,
+    pageDown: 34,
+    end: 35,
+    home: 36
+  };
+
+  class Slider extends T$b(HTMLElement) {
+
+
+    connectedCallback() {
+      this.connected = true;
+      this.setAttribute('role', 'slider');
+      // Makes the element tab-able.
+      if (!this.hasAttribute('tabindex')) { this.setAttribute('tabindex', 0); }
+
+      // Keeps track of keyboard vs. mouse interactions for focus rings
+      this.mouseEvent = false;
+
+      // Handles to shadow DOM elements
+      this.knob = this.root.querySelector('.knob-container');
+      this.background = this.root.querySelector('.background');
+      this.trackFill = this.root.querySelector('.track-fill');
+      this.track = this.root.querySelector('.track');
+
+      // Default values for attributes
+      this.min = this.min ? this.min : 0;
+      this.max = this.max ? this.max : 100;
+      this.scale = linear$1().domain([this.min, this.max]).range([0, 1]).clamp(true);
+
+      this.origin = this.origin !== undefined ? this.origin : this.min;
+      this.step = this.step ? this.step : 1;
+      this.update(this.value ? this.value : 0);
+
+      this.ticks = this.ticks ? this.ticks : false;
+      this.renderTicks();
+
+      this.drag = drag()
+        .container(this.background)
+        .on('start', () => {
+          this.mouseEvent = true;
+          this.background.classList.add('mousedown');
+          this.changeValue = this.value;
+          this.dragUpdate();
+        })
+        .on('drag', () => {
+          this.dragUpdate();
+        })
+        .on('end', () => {
+          this.mouseEvent = false;
+          this.background.classList.remove('mousedown');
+          this.dragUpdate();
+          if (this.changeValue !== this.value) this.dispatchChange();
+          this.changeValue = this.value;
+        });
+      this.drag(select(this.background));
+
+      this.addEventListener('focusin', () => {
+        if(!this.mouseEvent) {
+          this.background.classList.add('focus');
+        }
+      });
+      this.addEventListener('focusout', () => {
+        this.background.classList.remove('focus');
+      });
+      this.addEventListener('keydown', this.onKeyDown);
+
+    }
+
+    static get observedAttributes() {return ['min', 'max', 'value', 'step', 'ticks', 'origin', 'tickValues', 'tickLabels']; }
+
+    attributeChangedCallback(attr, oldValue, newValue) {
+      if (isNaN(newValue) || newValue === undefined || newValue === null) return;
+      if (attr == 'min') {
+        this.min = +newValue;
+        this.setAttribute('aria-valuemin', this.min);
+      }
+      if (attr == 'max') {
+        this.max = +newValue;
+        this.setAttribute('aria-valuemax', this.max);
+      }
+      if (attr == 'value') {
+        this.update(+newValue);
+      }
+      if (attr == 'origin') {
+        this.origin = +newValue;
+        // this.update(this.value);
+      }
+      if (attr == 'step') {
+        if (newValue > 0) {
+          this.step = +newValue;
+        }
+      }
+      if (attr == 'ticks') {
+        this.ticks = (newValue === '' ? true : newValue);
+      }
+    }
+
+    onKeyDown(event) {
+      this.changeValue = this.value;
+      let stopPropagation = false;
+      switch (event.keyCode) {
+      case keyCodes.left:
+      case keyCodes.down:
+        this.update(this.value - this.step);
+        stopPropagation = true;
+        break;
+      case keyCodes.right:
+      case keyCodes.up:
+        this.update(this.value + this.step);
+        stopPropagation = true;
+        break;
+      case keyCodes.pageUp:
+        this.update(this.value + this.step * 10);
+        stopPropagation = true;
+        break;
+
+      case keyCodes.pageDown:
+        this.update(this.value + this.step * 10);
+        stopPropagation = true;
+        break;
+      case keyCodes.home:
+        this.update(this.min);
+        stopPropagation = true;
+        break;
+      case keyCodes.end:
+        this.update(this.max);
+        stopPropagation = true;
+        break;
+      }
+      if (stopPropagation) {
+        this.background.classList.add('focus');
+        event.preventDefault();
+        event.stopPropagation();
+        if (this.changeValue !== this.value) this.dispatchChange();
+      }
+    }
+
+    validateValueRange(min, max, value) {
+      return Math.max(Math.min(max, value), min);
+    }
+
+    quantizeValue(value, step) {
+      return Math.round(value / step) * step;
+    }
+
+    dragUpdate() {
+      const bbox = this.background.getBoundingClientRect();
+      const x = event.x;
+      const width = bbox.width;
+      this.update(this.scale.invert(x / width));
+    }
+
+    update(value) {
+      let v = value;
+      if (this.step !== 'any') {
+        v = this.quantizeValue(value, this.step);
+      }
+      v = this.validateValueRange(this.min, this.max, v);
+      if (this.connected) {
+        this.knob.style.left = this.scale(v) * 100 + '%';
+        this.trackFill.style.width = this.scale(this.min + Math.abs(v - this.origin)) * 100 + '%';
+        this.trackFill.style.left = this.scale(Math.min(v, this.origin)) * 100 + '%';
+      }
+      if (this.value !== v) {
+        this.value = v;
+        this.setAttribute('aria-valuenow', this.value);
+        this.dispatchInput();
+      }
+    }
+
+    // Dispatches only on a committed change (basically only on mouseup).
+    dispatchChange() {
+      const e = new Event('change');
+      this.dispatchEvent(e, {});
+    }
+
+    // Dispatches on each value change.
+    dispatchInput() {
+      const e = new Event('input');
+      this.dispatchEvent(e, {});
+    }
+
+    renderTicks() {
+      const ticksContainer = this.root.querySelector('.ticks');
+      if (this.ticks !== false) {
+        let tickData = [];
+        if (this.ticks > 0) {
+          tickData = this.scale.ticks(this.ticks);
+        } else if (this.step === 'any') {
+          tickData = this.scale.ticks();
+        } else {
+          tickData = range(this.min, this.max + 1e-6, this.step);
+        }
+        tickData.forEach(d => {
+          const tick = document.createElement('div');
+          tick.classList.add('tick');
+          tick.style.left = this.scale(d) * 100 + '%';
+          ticksContainer.appendChild(tick);
+        });
+      } else {
+        ticksContainer.style.display = 'none';
+      }
+    }
+  }
+
+  var logo = "<svg viewBox=\"-607 419 64 64\">\n  <path d=\"M-573.4,478.9c-8,0-14.6-6.4-14.6-14.5s14.6-25.9,14.6-40.8c0,14.9,14.6,32.8,14.6,40.8S-565.4,478.9-573.4,478.9z\"/>\n</svg>\n";
+
+  const headerTemplate$1 = `
 <style>
 distill-header {
   position: relative;
@@ -630,7 +9126,7 @@ distill-header .nav a {
 </style>
 <div class="content">
   <a href="/" class="logo">
-    ${Jr}
+    ${logo}
     Distill
   </a>
   <nav class="nav">
@@ -639,7 +9135,19 @@ distill-header .nav a {
     <a href="/journal/">Submit</a>
   </nav>
 </div>
-`,eo=Ti('distill-header',Gr,!1);class to extends eo(HTMLElement){}const no=`
+`;
+
+  // Copyright 2018 The Distill Template Authors
+
+  const T$c = Template('distill-header', headerTemplate$1, false);
+
+  class DistillHeader extends T$c(HTMLElement) {
+
+  }
+
+  // Copyright 2018 The Distill Template Authors
+
+  const styles$2 = `
 <style>
   distill-appendix {
     contain: layout style;
@@ -665,7 +9173,55 @@ distill-header .nav a {
     grid-column: text;
   }
 </style>
-`;class io extends HTMLElement{static get is(){return'distill-appendix'}set frontMatter(e){this.innerHTML=ti(e)}}const ao=`
+`;
+
+  function appendixTemplate(frontMatter) {
+    let html = styles$2;
+
+    if (typeof frontMatter.githubUrl !== 'undefined') {
+      html += `
+    <h3 id="updates-and-corrections">Updates and Corrections</h3>
+    <p>`;
+      if (frontMatter.githubCompareUpdatesUrl) {
+        html += `<a href="${frontMatter.githubCompareUpdatesUrl}">View all changes</a> to this article since it was first published.`;
+      }
+      html += `
+    If you see mistakes or want to suggest changes, please <a href="${frontMatter.githubUrl + '/issues/new'}">create an issue on GitHub</a>. </p>
+    `;
+    }
+
+    const journal = frontMatter.journal;
+    if (typeof journal !== 'undefined' && journal.title === 'Distill') {
+      html += `
+    <h3 id="reuse">Reuse</h3>
+    <p>Diagrams and text are licensed under Creative Commons Attribution <a href="https://creativecommons.org/licenses/by/4.0/">CC-BY 4.0</a> with the <a class="github" href="${frontMatter.githubUrl}">source available on GitHub</a>, unless noted otherwise. The figures that have been reused from other sources don’t fall under this license and can be recognized by a note in their caption: “Figure from …”.</p>
+    `;
+    }
+
+    if (typeof frontMatter.publishedDate !== 'undefined') {
+      html += `
+    <h3 id="citation">Citation</h3>
+    <p>For attribution in academic contexts, please cite this work as</p>
+    <pre class="citation short">${frontMatter.concatenatedAuthors}, "${frontMatter.title}", Distill, ${frontMatter.publishedYear}.</pre>
+    <p>BibTeX citation</p>
+    <pre class="citation long">${serializeFrontmatterToBibtex(frontMatter)}</pre>
+    `;
+    }
+
+    return html;
+  }
+
+  class DistillAppendix extends HTMLElement {
+
+    static get is() { return 'distill-appendix'; }
+
+    set frontMatter(frontMatter) {
+      this.innerHTML = appendixTemplate(frontMatter);
+    }
+
+  }
+
+  const footerTemplate = `
 <style>
 
 :host {
@@ -719,7 +9275,7 @@ distill-header .nav a {
 <div class='footer-container'>
 
   <a href="/" class="logo">
-    ${Jr}
+    ${logo}
     Distill
   </a> is dedicated to clear explanations of machine learning
 
@@ -736,5 +9292,101 @@ distill-header .nav a {
 
 </div>
 
-`,ro=Ti('distill-footer',ao);class oo extends ro(HTMLElement){}window.distill={runlevel:0,initialize:function(){if(1>window.distill.runlevel)throw new Error('Insufficient Runlevel for Distill Template!');if('distill'in window&&window.distill.templateIsLoading)throw new Error('Runlevel 1: Distill Template is getting loaded more than once, aborting!');else window.distill.templateIsLoading=!0,console.debug('Runlevel 1: Distill Template has started loading.');p(document),console.debug('Runlevel 1: Static Distill styles have been added.'),console.debug('Runlevel 1->2.'),window.distill.runlevel+=1;for(const[e,t]of Object.entries(Hi.listeners))'function'==typeof t?document.addEventListener(e,t):console.error('Runlevel 2: Controller listeners need to be functions!');console.debug('Runlevel 2: We can now listen to controller events.'),console.debug('Runlevel 2->3.'),window.distill.runlevel+=1;if(2>window.distill.runlevel)throw new Error('Insufficient Runlevel for adding custom elements!');const e=[Bi,Vi,$i,Zi,Ji,ea,na,da,oa,sa,ji,ua,pa,T,fa,ha,ba,Zr,ya].concat([to,io,oo]);for(const t of e)console.debug('Runlevel 2: Registering custom element: '+t.is),customElements.define(t.is,t);console.debug('Runlevel 3: Distill Template finished registering custom elements.'),console.debug('Runlevel 3->4.'),window.distill.runlevel+=1,s()&&Hi.listeners.DOMContentLoaded(),console.debug('Runlevel 4: Distill Template initialisation complete.'),window.distill.templateIsLoading=!1,window.distill.templateHasLoaded=!0},templateIsLoading:!1},zi.browserSupportsAllFeatures()?(console.debug('Runlevel 0: No need for polyfills.'),console.debug('Runlevel 0->1.'),window.distill.runlevel+=1,window.distill.initialize()):(console.debug('Runlevel 0: Distill Template is loading polyfills.'),zi.load(window.distill.initialize))});
+`;
+
+  // Copyright 2018 The Distill Template Authors
+
+  const T$d = Template('distill-footer', footerTemplate);
+
+  class DistillFooter extends T$d(HTMLElement) {
+
+  }
+
+  // Copyright 2018 The Distill Template Authors
+
+  let templateIsLoading = false;
+  let runlevel = 0;
+  const initialize = function() {
+    if (window.distill.runlevel < 1) {
+      throw new Error("Insufficient Runlevel for Distill Template!");
+    }
+
+    /* 1. Flag that we're being loaded */
+    if ("distill" in window && window.distill.templateIsLoading) {
+      throw new Error(
+        "Runlevel 1: Distill Template is getting loaded more than once, aborting!"
+      );
+    } else {
+      window.distill.templateIsLoading = true;
+      console.debug("Runlevel 1: Distill Template has started loading.");
+    }
+
+    /* 2. Add styles if they weren't added during prerendering */
+    makeStyleTag(document);
+    console.debug("Runlevel 1: Static Distill styles have been added.");
+    console.debug("Runlevel 1->2.");
+    window.distill.runlevel += 1;
+
+    /* 3. Register Controller listener functions */
+    /* Needs to happen before components to their connected callbacks have a controller to talk to. */
+    for (const [functionName, callback] of Object.entries(Controller.listeners)) {
+      if (typeof callback === "function") {
+        document.addEventListener(functionName, callback);
+      } else {
+        console.error("Runlevel 2: Controller listeners need to be functions!");
+      }
+    }
+    console.debug("Runlevel 2: We can now listen to controller events.");
+    console.debug("Runlevel 2->3.");
+    window.distill.runlevel += 1;
+
+    /* 4. Register components */
+    const components = [
+      Abstract, Appendix, Article, Bibliography, Byline, Cite, CitationList, Code,
+      Footnote, FootnoteList, FrontMatter$1, HoverBox, Title, DMath, References, TOC, Figure,
+      Header, FigureCaption, Slider, Interstitial
+    ];
+
+    const distillComponents = [DistillHeader, DistillAppendix, DistillFooter];
+
+    if (window.distill.runlevel < 2) {
+      throw new Error("Insufficient Runlevel for adding custom elements!");
+    }
+    const allComponents = components.concat(distillComponents);
+    for (const component of allComponents) {
+      console.debug("Runlevel 2: Registering custom element: " + component.is);
+      customElements.define(component.is, component);
+    }
+
+    console.debug(
+      "Runlevel 3: Distill Template finished registering custom elements."
+    );
+    console.debug("Runlevel 3->4.");
+    window.distill.runlevel += 1;
+
+    // If template was added after DOMContentLoaded we may have missed that event.
+    // Controller will check for that case, so trigger the event explicitly:
+    if (domContentLoaded()) {
+      Controller.listeners.DOMContentLoaded();
+    }
+
+    console.debug("Runlevel 4: Distill Template initialisation complete.");
+    window.distill.templateIsLoading = false;
+    window.distill.templateHasLoaded = true;
+  };
+
+  window.distill = { runlevel, initialize, templateIsLoading };
+
+  /* 0. Check browser feature support; synchronously polyfill if needed */
+  if (Polyfills.browserSupportsAllFeatures()) {
+    console.debug("Runlevel 0: No need for polyfills.");
+    console.debug("Runlevel 0->1.");
+    window.distill.runlevel += 1;
+    window.distill.initialize();
+  } else {
+    console.debug("Runlevel 0: Distill Template is loading polyfills.");
+    Polyfills.load(window.distill.initialize);
+  }
+
+})));
 //# sourceMappingURL=template.v2.js.map
