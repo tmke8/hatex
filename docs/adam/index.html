@@ -1,0 +1,165 @@
+<!--
+  Copyright 2018 The Distill Template Authors
+
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+-->
+<!doctype html>
+<html lang="en-US">
+<head>
+  <title>Adam: A Method for Stochastic Optimization</title>
+  <script src="template.v2.js"></script>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta charset="utf-8">
+</head>
+
+<body>
+  <d-front-matter>
+    <script id='distill-front-matter' type="text/json">{
+    "title": "Adam: A Method for Stochastic Optimization",
+    "published": "ICLR 2015",
+    "authors": [
+      {
+        "author":"Diederik P. Kingma",
+        "authorURL":"mailto:dpkingma@openai.com",
+        "affiliations": [{"name": "University of Amsterdam"}, {"name": "OpenAI", "url": "https://openai.com/"}]
+      },
+      {
+        "author":"Jimmy Lei Ba",
+        "authorURL":"mailto:jimmy@psi.utoronto.ca",
+        "affiliations": [{"name": "University of Toronto"}]
+      }
+    ],
+    "katex": {
+      "delimiters": [
+        {"left": "$", "right": "$", "display": false}
+      ]
+    }
+  }</script>
+  </d-front-matter>
+  <d-header></d-header>
+  <d-title></d-title>
+  <d-byline></d-byline>
+  <d-abstract>
+    <p>
+    We introduce <i>Adam</i>, an algorithm for first-order gradient-based optimization of stochastic objective functions, based on adaptive estimates of lower-order moments.
+    The method is straightforward to implement, is computationally efficient, has little memory requirements, is invariant to diagonal rescaling of the gradients, and is well suited for problems that are large in terms of data and/or parameters.
+    The method is also appropriate for non-stationary objectives and problems with very noisy and/or sparse gradients.
+    The hyper-parameters have intuitive interpretations and typically require little tuning.
+    Some connections to related algorithms, on which <i>Adam</i> was inspired, are discussed.
+    We also analyze the theoretical convergence properties of the algorithm and provide a regret bound on the convergence rate that is comparable to the best known results under the online convex optimization framework.
+    Empirical results demonstrate that Adam works well in practice and compares favorably to other stochastic optimization methods.
+    Finally, we discuss <i>AdaMax</i>, a variant of <i>Adam</i> based on the infinity norm.
+    </p>
+  </d-abstract>
+  <article>
+    <d-toc></d-toc>
+    <h1 id="h1-introduction">Introduction</h1>
+    <p>
+    Stochastic gradient-based optimization is of core practical importance in many fields of science and engineering.
+    Many problems in these fields can be cast as the optimization of some scalar parameterized objective function requiring maximization or minimization with respect to its parameters.
+    If the function is differentiable w.r.t. its parameters,
+    gradient descent is a relatively efficient optimization method,
+    since the computation of first-order partial derivatives w.r.t. all the parameters is of the same computational complexity as just evaluating the function.
+    Often, objective functions are stochastic.
+    For example, many objective functions are composed of a sum of subfunctions evaluated at different subsamples of data;
+    in this case optimization can be made more efficient by taking gradient steps w.r.t. individual subfunctions, i.e. stochastic gradient descent (SGD) or ascent.
+    SGD proved itself as an efficient and effective optimization method that was central in many machine learning success stories, such as recent advances in deep learning <d-cite key="deng2013recent,krizhevsky2012imagenet,hinton2006reducing,hinton2012deep,graves2013speech"></d-cite>.
+    Objectives may also have other sources of noise than data subsampling, such as dropout <d-cite key="hinton2012improving"></d-cite> regularization.
+    For all such noisy objectives, efficient stochastic optimization techniques are required.
+    The focus of this paper is on the optimization of stochastic objectives with high-dimensional parameters spaces.
+    In these cases, higher-order optimization methods are ill-suited, and discussion in this paper will be restricted to first-order methods.
+    </p>
+    <p>
+    We propose <i>Adam</i>, a method for efficient stochastic optimization that only requires first-order gradients with little memory requirement.
+    The method computes individual adaptive learning rates for different parameters from estimates of first and second moments of the gradients;
+    the name <i>Adam</i> is derived from adaptive moment estimation.
+    Our method is designed to combine the advantages of two recently popular methods:
+    AdaGrad <d-cite key="duchi2011adaptive"></d-cite>, which works well with sparse gradients, and RMSProp <d-cite key="tieleman2012coursera"></d-cite>, which works well in on-line and non-stationary settings;
+    important connections to these and other stochastic optimization methods are clarified in section 5.
+    Some of Adam’s advantages are that the magnitudes of parameter updates are invariant to rescaling of the gradient,
+    its stepsizes are approximately bounded by the stepsize hyperparameter,
+    it does not require a stationary objective, it works with sparse gradients,
+    and it naturally performs a form of step size annealing.
+    </p>
+    <p>
+    In <a href="#h1-algorithm">section 2</a> we describe the algorithm and the properties of its update rule.
+    <a href="#h1-initialization-bias">Section 3</a> explains our initialization bias correction technique, and section 4 provides a theoretical analysis of Adam’s convergence in online convex programming.
+    Empirically, our method consistently outperforms other methods for a variety of models and datasets, as shown in section 6.
+    Overall, we show that Adam is a versatile algorithm that scales to large-scale high-dimensional machine learning problems.
+    </p>
+
+    <h1 id="h1-algorithm">Algorithm</h1>
+    <p>
+    See algorithm 1 for pseudo-code of our proposed algorithm <i>Adam</i>.
+    Let $f(\theta)$ be a noisy objective function: a stochastic scalar function that is differentiable w.r.t. parameters $\theta$.
+    We are interested in minimizing the expected value of this function, $\mathbb{E}[f(\theta)]$ w.r.t. its parameters $\theta$.
+    With $f_1(\theta),...,f_T(\theta)$ we denote the realisations of the stochastic function at subsequent timesteps $1,...,T$.
+    The stochasticity might come from the evaluation at random subsamples (minibatches) of datapoints, or arise from inherent function noise.
+    With $g_t = \nabla_\theta f_t(\theta)$ we denote the gradient,
+    i.e. the vector of partial derivatives of $f_t$, w.r.t $\theta$ evaluated at timestep $t$.
+    </p>
+
+    <h2 id="h2-update-rule">Adam&#8217;s update rule</h2>
+    <p>
+    An important property of Adam's update rule is its careful choice of stepsizes.
+    Assuming $\epsilon=0$, the effective step taken in parameter space at timestep $t$ is $\Delta_t=\alpha\cdot \widehat{m}_t/\sqrt{\hat{v}_t}$.
+    The effective stepsize has two upper bounds:
+    $|\Delta_t|\leq \alpha\cdot (1-\beta_1)/\sqrt{1-\beta_2}$ in the case $(1-\beta_1)>\sqrt{1-\beta_2}$,
+    and $|\Delta_t|\leq \alpha$ otherwise.
+    </p>
+
+    <h1 id="h1-initialization-bias">Initialization bias correction</h1>
+    <p>
+    As explained in <a href="#h1-algorithm">section 2</a>, Adam utilizes initialization bias correction terms.
+    We will here derive the term for the second moment estimate; the derivation for the first moment estimate is completely analogous.
+    Let $g$ be the gradient of the stochastic objective $f$,
+    and we wish to estimate its second raw moment<d-footnote>i.e., the uncentered variance</d-footnote> using an exponential moving average of the squared gradient,
+    with decay rate $\beta_2$ .
+    Let $g_1 , ..., g_T$ be the gradients at subsequent timesteps, each a draw from an underlying gradient distribution $g_t \sim p(g_t)$.
+    Let us initialize the exponential moving average as $v_0 = 0$ (a vector of zeros).
+    First note that the update at timestep $t$ of the exponential moving average $v_t = \beta_2 \cdot v_{t-1} + (1-\beta_2)\cdot g_t^2$
+    (where $g_t^2$ indicates the elementwise square $g_t \odot g_t$) can be written as a function of the gradients at all previous timesteps:
+    </p>
+    <d-math block>
+      v_t = (1 -\beta_2) \sum\limits_{i=1}^t \beta_2^{t-i} \cdot g_i^2~.
+    </d-math>
+
+    <div style="grid-column: text; margin: 1rem 0;">
+      <img src="adam-figure1a.png" style="width:49%;" />
+      <img src="adam-figure1b.png" style="width:49%;" />
+      <d-figure-caption>
+        Logistic regression training negative log likelihood on MNIST images
+        and IMDB movie reviews with 10,000 bag-of-words (BoW) feature vectors.
+      </d-figure-caption>
+    </div>
+
+    <h1 id="h1-conclusion">Conclusion</h1>
+    <p>
+    We have introduced a simple and computationally efficient algorithm for gradient-based optimization of stochastic objective functions.
+    Our method is aimed towards machine learning problems with large datasets and/or high-dimensional parameter spaces.
+    The method combines the advantages of two recently popular optimization methods:
+    the ability of AdaGrad to deal with sparse gradients, and the ability of RMSProp to deal with non-stationary objectives.
+    The method is straightforward to implement and requires little memory.
+    The experiments confirm the analysis on the rate of convergence in convex problems.
+    Overall, we found Adam to be robust and well-suited to a wide range of non-convex optimization problems in the field machine learning.
+    </p>
+  </article>
+
+  <d-appendix>
+    <d-bibliography src="adam.bib"></d-bibliography>
+    <d-footnote-list></d-footnote-list>
+    <d-citation-list></d-citation-list>
+  </d-appendix>
+
+</body>
+</html>
